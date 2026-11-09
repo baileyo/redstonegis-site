@@ -20,7 +20,6 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
 
       # Uploads only changed files. Never deletes anything on the server,
       # and skips the folders that are uploaded by hand (see .deployignore).
@@ -28,5 +27,5 @@ jobs:
         run: |
           rsync -rlvz --checksum \
             --exclude-from=.deployignore \
-            -e "ssh -i ~/.ssh/deploy_key" \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30" \
             ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:redstonegis.com/"
