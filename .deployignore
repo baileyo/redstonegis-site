@@ -1,0 +1,9 @@
+# Repo-only files (never uploaded)
+.git/
+.github/
+.deployignore
+README.md
+
+# Large folders uploaded by hand — the deploy never touches these
+GLO/d/
+GLO/n/
