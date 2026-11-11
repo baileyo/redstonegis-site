@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How a Wilderness Society project scraped BLM's LR2000 with Python and Selenium and turned legal land descriptions into mapped federal leases.">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>LR2000 Lease Mapping</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: a survey plat. Wide measure for maps, narrow measure for prose,
+   section-grid line work as the only ornament, lease-status red as the only loud color. */
+:root{
+  --paper:#f2f4f1; --panel:#ffffff; --ink:#17211d; --muted:#56635d; --rule:#cdd4cf;
+  --lease:#c4302b; --closed:#737b77; --plat:#235a7a; --tint:#e4e9e5; --shot:#ffffff;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#121816; --panel:#1a2320; --ink:#e8ede9; --muted:#9fada6; --rule:#33403b;
+  --lease:#ef5a52; --closed:#8b9590; --plat:#7fb9dc; --tint:#212c28; --shot:#ffffff; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --paper:#121816; --panel:#1a2320; --ink:#e8ede9; --muted:#9fada6; --rule:#33403b;
+  --lease:#ef5a52; --closed:#8b9590; --plat:#7fb9dc; --tint:#212c28; --shot:#ffffff; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6}
+a{color:var(--plat)}
+a:focus-visible,button:focus-visible,input:focus-visible,video:focus-visible{outline:2px solid var(--plat);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.prose{max-width:66ch}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.6rem,6.4vw,4.6rem);letter-spacing:-.005em}
+h2{font-size:clamp(2rem,4vw,2.9rem)}
+h3{font-size:1.45rem;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.stack{display:flex;flex-direction:column;gap:1rem}
+.stack-lg{display:flex;flex-direction:column;gap:2rem}
+
+/* top bar */
+.top{border-bottom:1px solid var(--rule)}
+.top .wrap{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:baseline;justify-content:space-between;padding-block:.9rem}
+.brand{font-family:var(--display);font-weight:700;font-size:1.25rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);text-decoration:none}
+.top nav{display:flex;flex-wrap:wrap;gap:.3rem 1.2rem;font-size:.9rem}
+.top nav a{color:var(--muted);text-decoration:none}
+.top nav a:hover{color:var(--ink);text-decoration:underline}
+
+/* hero */
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:3rem;padding-block:3.5rem 3rem;align-items:start}
+.hero .lede{font-size:1.15rem;color:var(--muted);max-width:52ch}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;font-family:var(--mono);font-size:.8rem;color:var(--muted);padding-top:.5rem}
+
+/* decoder */
+.decoder{background:var(--panel);border:1px solid var(--rule);padding:1.25rem;display:flex;flex-direction:column;gap:1rem;min-width:0}
+.decoder label{font-family:var(--mono);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.35rem}
+.decoder input{width:100%;font-family:var(--mono);font-size:1rem;padding:.6rem .7rem;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:0}
+.presets{display:flex;flex-wrap:wrap;gap:.4rem}
+.presets button{font-family:var(--mono);font-size:.78rem;padding:.3rem .55rem;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
+.presets button:hover{border-color:var(--ink)}
+.presets button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dec-body{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:1.1rem;align-items:start}
+#plat{width:100%;height:auto;display:block}
+.readout{display:flex;flex-direction:column;gap:.7rem;min-width:0;font-size:.9rem}
+.readout dt{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.readout dd{margin:0;font-family:var(--mono);font-size:.86rem;overflow-wrap:anywhere}
+.readout dl{margin:0;display:flex;flex-direction:column;gap:.7rem}
+.readout .big{font-family:var(--display);font-size:2rem;font-weight:600;line-height:1}
+.note{font-size:.82rem;color:var(--muted)}
+#err{color:var(--lease);font-size:.85rem}
+
+/* sections */
+section{border-top:1px solid var(--rule)}
+section>.wrap{padding-block:3.5rem}
+.sec-head{display:flex;flex-direction:column;gap:.6rem;margin-bottom:2rem}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2.5rem;align-items:start}
+.two>*{min-width:0}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:2px solid var(--ink);border-bottom:1px solid var(--rule)}
+.facts div{padding:1rem 1rem 1rem 0;display:flex;flex-direction:column;gap:.2rem}
+.facts div+div{padding-left:1rem;border-left:1px solid var(--rule)}
+.facts b{font-family:var(--display);font-size:2.4rem;font-weight:600;line-height:1}
+.facts span{font-size:.88rem;color:var(--muted)}
+
+figure{margin:0;display:flex;flex-direction:column;gap:.5rem;min-width:0}
+figure img,figure video{display:block;width:100%;height:auto;background:var(--shot);border:1px solid var(--rule)}
+figure button.zoom{all:unset;cursor:zoom-in;display:block}
+figure button.zoom:focus-visible{outline:2px solid var(--plat);outline-offset:2px}
+figcaption{font-size:.84rem;color:var(--muted);line-height:1.45}
+figcaption b{color:var(--ink);font-weight:600}
+blockquote{margin:0;padding:.2rem 0 .2rem 1.1rem;border-left:3px solid var(--lease);font-family:var(--display);font-size:1.7rem;line-height:1.15;font-weight:500}
+blockquote cite{display:block;font-family:var(--body);font-style:normal;font-size:.84rem;color:var(--muted);padding-top:.4rem;font-weight:400}
+
+/* pipeline */
+.pipe{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--ink);border-left:1px solid var(--rule)}
+.pipe li{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:1.1rem;display:flex;flex-direction:column;gap:.45rem;min-width:0}
+.pipe .n{font-family:var(--mono);font-size:.74rem;color:var(--lease);letter-spacing:.1em}
+.pipe p{font-size:.92rem;color:var(--muted)}
+.pipe code,.prose code,figcaption code,td code{font-family:var(--mono);font-size:.86em;background:var(--tint);padding:.05em .3em;overflow-wrap:anywhere}
+.cascade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.cascade div{border:1px solid var(--rule);background:var(--panel);padding:1rem;display:flex;flex-direction:column;gap:.35rem}
+.cascade .lvl{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.cascade p{font-size:.9rem;color:var(--muted)}
+
+/* table */
+.scroll{overflow-x:auto;border:1px solid var(--rule);background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:.88rem;font-variant-numeric:tabular-nums;min-width:680px}
+th,td{padding:.5rem .75rem;text-align:right;border-bottom:1px solid var(--rule);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:500;vertical-align:bottom;white-space:normal}
+tbody tr:last-child td{border-bottom:0}
+tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
+.bar{display:inline-block;width:110px;height:10px;background:var(--tint);vertical-align:middle;margin-right:.5rem;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--lease)}
+
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem 2rem}
+.gallery.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.status{display:flex;flex-wrap:wrap;gap:.4rem 1.2rem;font-family:var(--mono);font-size:.82rem;list-style:none;margin:0;padding:0}
+.status li{display:flex;align-items:center;gap:.4rem}
+.sw{width:.8rem;height:.8rem;display:inline-block;border:1px solid var(--rule)}
+
+.timeline{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:2px solid var(--ink)}
+.timeline li{padding:1rem 1rem 0 0;display:flex;flex-direction:column;gap:.3rem}
+.timeline time{font-family:var(--mono);font-size:.8rem;color:var(--lease)}
+.timeline p{font-size:.92rem;color:var(--muted)}
+
+footer .wrap{padding-block:2.5rem;display:flex;flex-wrap:wrap;gap:1.5rem 3rem;justify-content:space-between;font-size:.9rem;color:var(--muted)}
+footer{border-top:2px solid var(--ink)}
+footer p{max-width:60ch}
+
+dialog{border:0;padding:0;background:transparent;max-width:min(96vw,1500px);max-height:94vh}
+dialog::backdrop{background:rgba(10,14,12,.82)}
+dialog img{display:block;max-width:100%;max-height:88vh;background:var(--shot)}
+dialog form{display:flex;justify-content:flex-end;padding-bottom:.4rem}
+dialog button{font-family:var(--mono);font-size:.8rem;padding:.35rem .7rem;background:var(--panel);color:var(--ink);border:1px solid var(--rule);cursor:pointer}
+
+@media (max-width:860px){
+  .hero .wrap,.two{grid-template-columns:minmax(0,1fr)}
+  .pipe,.cascade,.gallery.three,.timeline{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .timeline li{padding-bottom:1rem}
+}
+@media (max-width:560px){
+  body{font-size:16px}
+  .pipe,.cascade,.gallery,.gallery.three,.timeline,.facts{grid-template-columns:minmax(0,1fr)}
+  .facts div+div{padding-left:0;border-left:0;border-top:1px solid var(--rule)}
+  .dec-body{grid-template-columns:minmax(0,1fr)}
+  #plat{max-width:240px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://redstonegis.com">Redstone GIS</a>
+    <nav aria-label="Sections">
+      <a href="#problem">Problem</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#matching">Matching</a>
+      <a href="#coverage">Coverage</a>
+      <a href="#results">Results</a>
+      <a href="#timeline">Timeline</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="stack">
+      <p class="eyebrow">Project archive · The Wilderness Society · 2015–2019</p>
+      <h1>Putting a century of federal leases on the map</h1>
+      <p class="lede">The Bureau of Land Management records every oil, gas, coal, wind and solar authorization on public land. For years it published them only as text reports with legal land descriptions. This project scraped those reports with Python and Selenium and turned each description into a polygon.</p>
+      <p class="lede">The decoder on this page does the core step by hand. Type a legal description and it shades the part of a one-mile section it describes.</p>
+      <div class="meta">
+        <span>Python · Selenium · ArcPy</span>
+        <span>548,745 case records scraped</span>
+        <span>Presented at Esri Developer Summit 2017</span>
+      </div>
+    </div>
+
+    <div class="decoder" aria-label="Aliquot decoder">
+      <div>
+        <label for="aliq">Subdivision, as LR2000 writes it</label>
+        <input id="aliq" type="text" value="E2NE,SWNE,E2SW,SWSW,SE;" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="presets" id="presets" role="group" aria-label="Rows from a California solar test file">
+        <button type="button" data-v="E2NE,SWNE,E2SW,SWSW,SE;" data-s="21">Sec 21</button>
+        <button type="button" data-v="SWNE,W2,W2SE,SESE;" data-s="22">Sec 22</button>
+        <button type="button" data-v="W2NWSE,S2SESE;" data-s="26">Sec 26</button>
+        <button type="button" data-v="ENTIRE SECTION" data-s="27">Sec 27</button>
+        <button type="button" data-v="N2,N2S2" data-s="32">Sec 32</button>
+      </div>
+      <div class="dec-body">
+        <svg id="plat" viewBox="0 0 220 220" role="img" aria-label="One section divided into aliquot parts"></svg>
+        <div class="readout">
+          <dl>
+            <div><dt>Nominal area</dt><dd><span class="big" id="acres">0</span> acres of 640</dd></div>
+            <div><dt>First division ID</dt><dd id="fid"></dd></div>
+            <div><dt>Second division IDs matched</dt><dd id="sids"></dd></div>
+          </dl>
+          <p id="err" role="status"></p>
+        </div>
+      </div>
+      <p class="note">Examples are rows from a California solar right-of-way used to test the tool: San Bernardino Meridian, T3S R15E, Riverside County. IDs follow the PLSS geodatabase key the scripts build.</p>
+    </div>
+  </div>
+</div>
+
+<section id="problem">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">The problem</p>
+      <h2>You can't plan conservation if you can't see how the land is being used</h2>
+    </div>
+    <div class="facts">
+      <div><b>640 million</b><span>acres owned by the federal government, about 28% of the United States</span></div>
+      <div><b>92%</b><span>of those acres sit in 12 Western states</span></div>
+      <div><b>7</b><span>kinds of authorization tracked: oil and gas, coal, geothermal, wind, solar, rights-of-way, other minerals</span></div>
+    </div>
+    <div class="two">
+      <div class="stack prose">
+        <p>The BLM manages the federal mineral estate, including minerals under land run by the Forest Service, Park Service and Fish and Wildlife Service. Its system of record was LR2000, the Legacy Rehost System. LR2000 could report on any lease or right-of-way, but only as a table.</p>
+        <p>GIS coverage was patchy. State offices published some layers, not every state published mineral leasing, and none carried everything in LR2000. The BLM's GeoCommunicator site filled part of the gap until its funding was removed in 2011 over concerns about data quality. The boundaries it derived from LR2000's legal descriptions were not accurate enough.</p>
+        <p>Each record describes its location in the Public Land Survey System: meridian, township, range, section, then aliquot parts such as <code>E2NE</code>. A person can find one in ArcMap by selecting PLSS polygons by hand. The Wyoming state office alone had more than 155,000 case records.</p>
+        <blockquote>Manual selection = mind-numbing madness.<cite>Slide 8, Esri Developer Summit 2017</cite></blockquote>
+      </div>
+      <figure>
+        <button class="zoom" type="button"><img src="img/federal-lands.webp" alt="Map of federal lands in the United States colored by managing agency" loading="lazy"></button>
+        <figcaption><b>Federal lands by agency.</b> BLM land in yellow. Map by The Wilderness Society.</figcaption>
+      </figure>
+    </div>
+    <div class="gallery three">
+      <figure>
+        <button class="zoom" type="button"><img src="img/lr2000-site.webp" alt="The LR2000 reporting website home page" loading="lazy"></button>
+        <figcaption><b>The source.</b> LR2000's public reporting site.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/lr2000-list.webp" alt="LR2000 report listing serial numbers, case types, dispositions and acres" loading="lazy"></button>
+        <figcaption><b>What you get back.</b> A list of serial numbers with case type, disposition and acres. No geometry.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/plss-arcmap.webp" alt="ArcMap showing PLSS second division polygons labeled with aliquot parts" loading="lazy"></button>
+        <figcaption><b>What it has to match.</b> PLSS second-division polygons. About 1.5 million polygons in the layer shown.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="pipeline">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">The pipeline</p>
+      <h2>One ArcGIS toolbox, from search form to finished polygon</h2>
+      <p class="prose">The final version is seven Python modules, about 2,500 lines, run from an ArcGIS script tool. It went through 28 numbered revisions of the shape-building module between 2015 and 2016.</p>
+    </div>
+    <ol class="pipe">
+      <li><span class="n">01 · INPUT</span><h3>Choose what to pull</h3><p>Administrative state, case types, date range, disposition, a list or range of serial numbers, or a master search for everything.</p></li>
+      <li><span class="n">02 · SCRAPE</span><h3>Download the case list</h3><p>Selenium drives Firefox through the LR2000 criteria form and saves the summary report. A custom profile sends downloads straight to a folder with no dialog.</p></li>
+      <li><span class="n">03 · SCRAPE</span><h3>Fetch details, 60 at a time</h3><p>LR2000 accepts 60 serial numbers per detail request. The script loops until the list is done, with randomized pauses and up to three attempts at each click.</p></li>
+      <li><span class="n">04 · PARSE</span><h3>Split each report into tables</h3><p>One detail file holds several stacked sub-tables. Regular expressions separate them into lessee, coordinates, relinquished, action and remarks tables.</p></li>
+      <li><span class="n">05 · MATCH</span><h3>Build the shape</h3><p>Each coordinate row becomes a PLSS key. ArcPy selects the matching polygons with a SQL <code>IN</code> query, which ran faster than a join, then dissolves them by serial number.</p></li>
+      <li><span class="n">06 · MANAGE</span><h3>Append to the master database</h3><p>Each run is appended to a per-state, per-commodity geodatabase and de-duplicated. A master list records which cases have shapes and which have no detail in LR2000.</p></li>
+    </ol>
+    <div class="two">
+      <figure>
+        <video controls preload="none" poster="img/scrape-poster.jpg" playsinline>
+          <source src="media/lr2000-scrape.mp4" type="video/mp4">
+        </video>
+        <figcaption><b>A run, recorded in March 2017.</b> Firefox opens LR2000 under Selenium's control, downloads the reports, and the ArcMap tool reports each PLSS query as it builds shapes. Three minutes, no sound.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/toolbox.webp" alt="ArcGIS script tool dialog with parameters for state, case types, date range, disposition and geodatabase paths" loading="lazy"></button>
+        <figcaption><b>The front end.</b> Thirteen parameters. Only the output geodatabase is required.</figcaption>
+      </figure>
+    </div>
+    <div class="gallery three">
+      <figure>
+        <button class="zoom" type="button"><img src="img/lr2000-detail.webp" alt="LR2000 serial register page exported as a spreadsheet with stacked sub-tables" loading="lazy"></button>
+        <figcaption><b>Step 4 input.</b> A serial register page for one right-of-way. Lessee, land description and action history are stacked in one sheet.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/gdb-tables.webp" alt="Geodatabase contents for Arizona oil and gas showing action, coordinates, dispositions, lessee, master list and remarks tables" loading="lazy"></button>
+        <figcaption><b>Step 6 output.</b> One geodatabase per state and commodity: the shapes plus every related table.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/master-list.webp" alt="ArcMap showing Arizona oil and gas lease shapes with the master list table open" loading="lazy"></button>
+        <figcaption><b>Master list.</b> Arizona oil and gas, with the status of every record.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="matching">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">Matching and error checking</p>
+      <h2>When the fine grid has no match, fall back to a coarser one and say so</h2>
+    </div>
+    <div class="two">
+      <div class="stack prose">
+        <p>The same parcel shows up in LR2000 as <code>lot 1</code>, <code>L1</code> or <code>1</code>. Ranges such as <code>1-4</code> have to be expanded. Columns that hold comma-separated lists are quoted in the CSV, and some values contain quotes themselves. In places the PLSS layer is simply missing.</p>
+        <p>The tool normalizes what it can. Anything it still can't match at the quarter-quarter level is drawn from the next level up, and the miss is counted. Every finished shape carries the two counts and an accuracy flag, so a map reader can tell an exact boundary from an approximation.</p>
+      </div>
+      <figure>
+        <button class="zoom" type="button"><img src="img/accuracy.webp" alt="Table of serial numbers with second division error count, first division error count and an accuracy column reading correct or incorrect" loading="lazy"></button>
+        <figcaption><b>Per-lease accuracy.</b> A shape is <code>correct</code> only when both error counts are zero.</figcaption>
+      </figure>
+    </div>
+    <div class="cascade">
+      <div><span class="lvl">First try</span><h3>Second division</h3><p>Quarter-quarter sections and lots, nominally 40 acres. Exact match on the concatenated key.</p></div>
+      <div><span class="lvl">If unmatched</span><h3>First division</h3><p>The whole section, 640 acres. Counted in <code>SUM_ERROR_SECDIV_NUM</code>.</p></div>
+      <div><span class="lvl">If still unmatched</span><h3>Township</h3><p>The 36-section township. Counted in <code>SUM_ERROR_FRSTDIV_NUM</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="coverage">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">Coverage · 12 September 2019</p>
+      <h2>87% of authorized cases in the West had shapes</h2>
+      <p class="prose">Counts are by BLM administrative state, across all commodities. About one case in five fell back from the second division for at least one row, and 3.4% fell back to the township.</p>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Admin state</th><th>Records scraped</th><th>Total records</th><th>Authorized scraped</th><th>Authorized total</th><th>Authorized complete</th><th>2nd division fallback</th><th>1st division fallback</th></tr></thead>
+        <tbody id="cov"></tbody>
+        <tfoot><tr><td>Total</td><td>548,745</td><td>797,851</td><td>218,754</td><td>251,245</td><td><span class="bar"><i style="width:87%"></i></span>87%</td><td>19.89%</td><td>3.41%</td></tr></tfoot>
+      </table>
+    </div>
+    <p class="note">Source: project tracking sheet shown in the September 2019 overview. Eastern States had not been scraped. Remaining at that date: 32,491 authorized cases and 249,106 records in all.</p>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">What it made possible</p>
+      <h2>Web maps, lease-sale tracking and a West-wide leasing history</h2>
+      <p class="prose">The shapes were loaded to PostgreSQL and ArcGIS Server and published as map services with their related tables. By 2019 the work had a name, the Federal Lands Use &amp; Transparency Tool.</p>
+    </div>
+
+    <div class="two">
+      <figure>
+        <button class="zoom" type="button"><img src="img/wy-leases.webp" alt="Wyoming oil and gas leases, authorized in red and closed in grey" loading="lazy"></button>
+        <figcaption><b>Wyoming oil and gas.</b> From the 2017 talk.</figcaption>
+      </figure>
+      <div class="stack">
+        <h3>109,283 Wyoming leases by status</h3>
+        <ul class="status">
+          <li><span class="sw" style="background:#e8262a"></span>Authorized 15,071</li>
+          <li><span class="sw" style="background:#7a7a7a"></span>Closed 93,904</li>
+          <li><span class="sw" style="background:#f6b03c"></span>Pending 190</li>
+          <li><span class="sw" style="background:#b23ae0"></span>Cancelled 116</li>
+          <li><span class="sw" style="background:#a6e34b"></span>Relinquished 2</li>
+        </ul>
+        <p class="prose">Six of every seven were already closed. Mapping them shows where leasing has been, as well as where it is now.</p>
+      </div>
+    </div>
+
+    <div class="gallery">
+      <figure>
+        <button class="zoom" type="button"><img src="img/oil-gas-app.webp" alt="Web map of oil and gas leasing across the Western states" loading="lazy"></button>
+        <figcaption><b>Oil &amp; Gas Leasing web map.</b> Current and historic leases across the West, updated from LR2000.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/wind-tracker.webp" alt="Web map of wind energy applications on public lands" loading="lazy"></button>
+        <figcaption><b>Wind Energy Tracker.</b> Renewables were where the project started.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/lease-sales.webp" alt="Web map of upcoming oil and gas lease sale parcels by state and month" loading="lazy"></button>
+        <figcaption><b>Upcoming lease sales.</b> Parcels proposed for auction, by state and month.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/eoi-dashboard.webp" alt="Dashboard of expressions of interest for oil and gas leasing" loading="lazy"></button>
+        <figcaption><b>Expressions of interest.</b> Industry nominations, tracked as they were filed.</figcaption>
+      </figure>
+    </div>
+
+    <div class="two">
+      <figure>
+        <video controls loop muted playsinline preload="none" poster="img/time-series-poster.jpg">
+          <source src="media/lease-time-series.mp4" type="video/mp4">
+        </video>
+        <figcaption><b>Leasing through time, 1920 to 2015.</b> Oil and gas leases in red over federal public land in green, stepped year by year. Preliminary research animation, 20 seconds.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/idle-producing.webp" alt="Map of producing and idle oil and gas leases on federal lands with a pie chart of acres" loading="lazy"></button>
+        <figcaption><b>Idle versus producing, September 2019.</b> 9,676,956 leased acres were producing. 8,532,391 were sitting idle.</figcaption>
+      </figure>
+    </div>
+
+    <div class="stack">
+      <h3>Share of land leased to oil and gas since 1920</h3>
+      <p class="prose">Because closed leases were mapped too, the full footprint could be measured. Forty percent of federal public land in the Western states has been under lease at some point.</p>
+    </div>
+    <div class="gallery three">
+      <figure>
+        <button class="zoom" type="button"><img src="img/pct-federal.webp" alt="Map and table of the percentage of federal public land leased in each Western state" loading="lazy"></button>
+        <figcaption><b>Of federal public land.</b> From 17% in California to 65% in Wyoming.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/pct-blm.webp" alt="Map and table of the percentage of BLM land leased in each Western state" loading="lazy"></button>
+        <figcaption><b>Of BLM land.</b> 90% in Wyoming, 95% in Montana.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/pct-state.webp" alt="Map and table of the percentage of each Western state's total area leased" loading="lazy"></button>
+        <figcaption><b>Of the whole state.</b> 51% of Wyoming, 44% of Utah.</figcaption>
+      </figure>
+    </div>
+
+    <div class="gallery three">
+      <figure>
+        <button class="zoom" type="button"><img src="img/migration.webp" alt="Story map showing oil and gas leases over the Red Desert to Hoback mule deer migration corridor" loading="lazy"></button>
+        <figcaption><b>Red Desert-to-Hoback.</b> Leases over a mule deer migration corridor, in a story map with the Center for Western Priorities.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/gsenm-coal.webp" alt="Coal leases around Grand Staircase-Escalante National Monument with a record popup" loading="lazy"></button>
+        <figcaption><b>Grand Staircase-Escalante.</b> Coal leases with lessee and action history one click away.</figcaption>
+      </figure>
+      <figure>
+        <button class="zoom" type="button"><img src="img/corporate.webp" alt="Web map and chart of public land acres controlled by major corporations" loading="lazy"></button>
+        <figcaption><b>Corporate lands.</b> Public land acres under lease, by company.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="timeline">
+  <div class="wrap stack-lg">
+    <div class="sec-head">
+      <p class="eyebrow">Timeline</p>
+      <h2>Four years from a test spreadsheet to a West-wide database</h2>
+    </div>
+    <ol class="timeline">
+      <li><time datetime="2015-05">May 2015</time><h3>PLSS to Shape</h3><p>The first toolbox models turn one California solar right-of-way's land description into polygons.</p></li>
+      <li><time datetime="2016-08">August 2016</time><h3>Full automation</h3><p>Selenium scraping, parsing and shape building run as one tool. The shape module reaches version 28.</p></li>
+      <li><time datetime="2017-03">March 2017</time><h3>Esri Developer Summit</h3><p>Presented as "Using Python and Selenium to Make Geographical Sense of BLM's LR2000."</p></li>
+      <li><time datetime="2019-09">September 2019</time><h3>FLURTT</h3><p>548,745 records scraped. Next steps: extract everything, update services weekly, add mining claims and land transfers.</p></li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Work by Connor Bailey as Enterprise GIS Manager at The Wilderness Society. Immense thanks to Matt Immerman, whose willingness to learn Python, Selenium, PostgreSQL, and GIS made this project possible. Source data: BLM LR2000 and the BLM PLSS CadNSDI. Background on GeoCommunicator from Brian Timoney's <a href="http://mapbrief.com/2011/06/29/open-government-is-a-slammed-door-at-the-blm/">MapBrief</a>.</p>
+    <p>Connor now runs <a href="https://redstonegis.com">Redstone GIS Consulting</a> in Carbondale, Colorado.</p>
+  </div>
+</footer>
+
+<dialog id="lightbox" aria-label="Enlarged figure">
+  <form method="dialog"><button type="submit">Close</button></form>
+  <img id="lightimg" alt="">
+</dialog>
+
+<script>
+(function(){
+  /* ---------- aliquot decoder ---------- */
+  var N=8, S=200, O=10, NS="http://www.w3.org/2000/svg";
+  var svg=document.getElementById('plat'), input=document.getElementById('aliq');
+  var section='21';
+  var QQ=[['NWNW','NENW','NWNE','NENE'],['SWNW','SENW','SWNE','SENE'],['NWSW','NESW','NWSE','NESE'],['SWSW','SESW','SWSE','SESE']];
+
+  function narrow(r,t){ // r = [x0,y0,x1,y1], x west->east, y north->south
+    var mx=(r[0]+r[2])/2, my=(r[1]+r[3])/2;
+    if(t.length===2 && t[1]==='2'){
+      if(t[0]==='N') return [r[0],r[1],r[2],my];
+      if(t[0]==='S') return [r[0],my,r[2],r[3]];
+      if(t[0]==='E') return [mx,r[1],r[2],r[3]];
+      return [r[0],r[1],mx,r[3]];
+    }
+    return [t[1]==='E'?mx:r[0], t[0]==='S'?my:r[1], t[1]==='E'?r[2]:mx, t[0]==='S'?r[3]:my];
+  }
+  function parse(text){
+    var cells=[], bad=[], i, j;
+    for(i=0;i<N*N;i++) cells.push(false);
+    var parts=text.toUpperCase().replace(/;/g,'').split(',');
+    parts.forEach(function(p){
+      p=p.trim(); if(!p) return;
+      var r;
+      if(p==='ALL'||p==='ENTIRE SECTION'){ r=[0,0,1,1]; }
+      else if(/^(?:[NSEW]2|NE|NW|SE|SW)+$/.test(p)){
+        var toks=p.match(/[NSEW]2|NE|NW|SE|SW/g); r=[0,0,1,1];
+        for(var k=toks.length-1;k>=0;k--) r=narrow(r,toks[k]);
+      } else { bad.push(p); return; }
+      for(i=0;i<N;i++) for(j=0;j<N;j++){
+        var cx=(j+.5)/N, cy=(i+.5)/N;
+        if(cx>r[0]&&cx<r[2]&&cy>r[1]&&cy<r[3]) cells[i*N+j]=true;
+      }
+    });
+    return {cells:cells,bad:bad};
+  }
+  function el(n,a){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);return e;}
+  function draw(){
+    var res=parse(input.value), c=S/N, i, j, count=0;
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    svg.appendChild(el('rect',{x:O,y:O,width:S,height:S,fill:'var(--paper)'}));
+    for(i=0;i<N;i++) for(j=0;j<N;j++) if(res.cells[i*N+j]){ count++;
+      svg.appendChild(el('rect',{x:O+j*c,y:O+i*c,width:c,height:c,fill:'var(--lease)'})); }
+    for(i=0;i<=N;i++){
+      var w=i%4===0?1.6:(i%2===0?.8:.3), col=i%2===0?'var(--ink)':'var(--closed)';
+      svg.appendChild(el('line',{x1:O+i*c,y1:O,x2:O+i*c,y2:O+S,stroke:col,'stroke-width':w,fill:'none'}));
+      svg.appendChild(el('line',{x1:O,y1:O+i*c,x2:O+S,y2:O+i*c,stroke:col,'stroke-width':w,fill:'none'}));
+    }
+    var ids=[], fid='CA27'+'0030S'+'0150E'+'0SN'+section+'0';
+    for(i=0;i<4;i++) for(j=0;j<4;j++){
+      var hit=res.cells[(2*i)*N+2*j]||res.cells[(2*i)*N+2*j+1]||res.cells[(2*i+1)*N+2*j]||res.cells[(2*i+1)*N+2*j+1];
+      if(hit) ids.push(QQ[i][j]);
+    }
+    document.getElementById('acres').textContent=String(count*10);
+    document.getElementById('fid').textContent=fid;
+    document.getElementById('sids').textContent=ids.length? ids.length+' of 16: '+fid+'A + '+ids.join(', ') : 'none';
+    document.getElementById('err').textContent=res.bad.length? 'Not an aliquot part: '+res.bad.join(', ')+'. Lots and metes-and-bounds parcels are matched by lot number in the real tool.' : '';
+  }
+  input.addEventListener('input',function(){
+    Array.prototype.forEach.call(document.querySelectorAll('#presets button'),function(b){b.setAttribute('aria-pressed','false');});
+    draw();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('#presets button'),function(b,idx){
+    b.setAttribute('aria-pressed',idx===0?'true':'false');
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('#presets button'),function(x){x.setAttribute('aria-pressed','false');});
+      b.setAttribute('aria-pressed','true'); section=b.getAttribute('data-s'); input.value=b.getAttribute('data-v'); draw();
+    });
+  });
+  draw();
+
+  /* ---------- coverage table ---------- */
+  var rows=[
+    ['AZ','25,179','28,575','7,896','7,930',100,'30.66%','5.60%'],
+    ['CA','36,311','53,387','17,985','18,520',97,'38.12%','2.56%'],
+    ['CO','51,579','57,185','15,972','16,118',99,'15.84%','2.42%'],
+    ['Eastern States','0','61,870','0','4,207',0,'n/a','n/a'],
+    ['ID','12,686','28,088','9,085','10,459',87,'24.29%','3.98%'],
+    ['MT (with ND, SD)','53,971','78,025','18,895','27,954',68,'22.17%','7.76%'],
+    ['NM (with KS, OK)','72,982','134,552','54,904','70,251',78,'9.27%','1.36%'],
+    ['NV','39,951','77,897','15,763','16,079',98,'15.24%','6.65%'],
+    ['OR (with WA)','57,105','58,028','24,643','25,007',99,'49.24%','3.84%'],
+    ['UT','51,763','65,205','13,129','13,222',99,'12.63%','6.83%'],
+    ['WY (with NE)','147,218','155,039','40,482','41,498',98,'11.46%','0.72%']
+  ];
+  var tb=document.getElementById('cov');
+  rows.forEach(function(r){
+    var tr=document.createElement('tr');
+    r.forEach(function(v,i){
+      var td=document.createElement('td');
+      if(i===5){ var bar=document.createElement('span'); bar.className='bar'; var f=document.createElement('i'); f.style.width=v+'%'; bar.appendChild(f); td.appendChild(bar); td.appendChild(document.createTextNode(v+'%')); }
+      else td.textContent=v;
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+
+  /* ---------- lightbox ---------- */
+  var dlg=document.getElementById('lightbox'), big=document.getElementById('lightimg');
+  Array.prototype.forEach.call(document.querySelectorAll('button.zoom'),function(b){
+    b.addEventListener('click',function(){
+      var im=b.querySelector('img'); big.src=im.currentSrc||im.src; big.alt=im.alt;
+      if(dlg.showModal) dlg.showModal();
+    });
+  });
+  dlg.addEventListener('click',function(e){ if(e.target===dlg) dlg.close(); });
+})();
+</script>
+</body>
+</html>
