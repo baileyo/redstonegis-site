@@ -66,7 +66,7 @@ ul { padding: 0; list-style: none; }
 .hero-copy { position: relative; z-index: 1; padding-block: 48px 64px; display: flex; flex-direction: column; gap: 28px; align-items: flex-start; }
 .hero h1 { font-family: var(--display); font-weight: 900; font-size: clamp(60px, 15vw, 216px); line-height: .88; letter-spacing: -.005em; }
 .hero p { font-size: 24px; line-height: 1.4; max-width: 30em; }
-.button { display: inline-block; background: var(--shell); color: var(--basalt); padding: 14px 24px; font-weight: 600; text-decoration: none; }
+.button { display: inline-block; background: var(--shell); color: var(--basalt); padding: 14px 24px; font-weight: 600; text-decoration: none; border-radius: var(--radius); }
 .bands { display: block; width: 100%; height: 150px; }
 
 .stats { padding-block: 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 32px; }
@@ -75,7 +75,7 @@ ul { padding: 0; list-style: none; }
 
 .expertise { padding-block: 40px 32px; display: flex; flex-direction: column; gap: 32px; }
 .expertise ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
-.expertise li { background: var(--white); border-top: 4px solid var(--redstone); padding: 20px; min-height: 96px; box-sizing: border-box; font-size: 22px; line-height: 1.25; font-weight: 600; }
+.expertise li { background: var(--white); border-top: 4px solid var(--redstone); border-radius: var(--radius-lg); padding: 20px; min-height: 96px; box-sizing: border-box; font-size: 22px; line-height: 1.25; font-weight: 600; }
 
 .approach { padding-block: 40px 72px; display: flex; flex-direction: column; gap: 8px; }
 .approach .title { margin-bottom: 24px; }
@@ -90,7 +90,7 @@ ul { padding: 0; list-style: none; }
 .projects .card { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
 .projects .text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 /* Thumbnail beside each project title. Projects without an image yet show the strata bands. */
-.projects .thumb { display: block; width: 120px; height: 90px; object-fit: cover; background: linear-gradient(168deg, var(--redstone) 0 40%, var(--oxide) 40% 64%, var(--blush) 64% 76%, var(--basalt) 76%); outline: 1px solid rgba(230, 184, 175, .35); outline-offset: -1px; }
+.projects .thumb { display: block; width: 120px; height: 90px; object-fit: cover; border-radius: var(--radius); background: linear-gradient(168deg, var(--redstone) 0 40%, var(--oxide) 40% 64%, var(--blush) 64% 76%, var(--basalt) 76%); outline: 1px solid rgba(230, 184, 175, .35); outline-offset: -1px; }
 .projects span.thumb { opacity: .45; }
 .projects h3 { font-size: 21px; line-height: 1.25; }
 .projects p { font-size: 15px; color: var(--blush); }
