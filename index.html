@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Redstone GIS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Geospatial work in service of conservation, from Redstone GIS Consulting in Carbondale, Colorado.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a redrock hero of photos and maps above sedimentary bands, then stacked content strata. */
+:root {
+  --redstone: #A61C00; --blush: #E6B8AF; --oxide: #6B1200; --basalt: #2A1410;
+  --shell: #FBF1EE; --white: #FFFFFF; --hero-tint: #D9543A;
+  --display: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  --body: 'Public Sans', Arial, Helvetica, sans-serif;
+  --gutter: clamp(16px, 4vw, 48px);
+}
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--shell); color: var(--basalt); font-family: var(--body); font-size: 18px; line-height: 1.55; }
+a { color: var(--basalt); }
+a:hover { color: var(--redstone); }
+a:focus-visible { outline: 3px solid var(--redstone); outline-offset: 3px; }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+.wrap { box-sizing: border-box; max-width: 1320px; margin-inline: auto; padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
+.title { font-family: var(--display); font-weight: 900; font-size: clamp(44px, 6vw, 64px); line-height: 1; text-wrap: balance; overflow-wrap: anywhere; }
+
+.topbar { background: var(--white); }
+.topbar .wrap { padding-block: 24px; display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: center; justify-content: space-between; }
+.topbar img { display: block; height: 44px; width: auto; }
+.topbar nav { display: flex; flex-wrap: wrap; gap: 8px 32px; }
+.topbar nav a { padding-block: 10px; }
+
+.hero { position: relative; overflow: hidden; isolation: isolate; background: var(--redstone); color: var(--white); }
+.hero-media { position: absolute; inset: 0; z-index: 0; }
+.hero-media img, .hero-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; }
+.hero-media .p1, .hero-media .m1 { opacity: 1; }
+.hero-maps { position: absolute; top: 0; right: 0; bottom: 0; width: 66%; -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%); mask-image: linear-gradient(90deg, transparent, #000 30%); }
+.hero-photos { position: absolute; inset: 0; -webkit-mask: linear-gradient(90deg, #000 33.3%, transparent 66.6%) 50% 0 / 300% 100% no-repeat; mask: linear-gradient(90deg, #000 33.3%, transparent 66.6%) 50% 0 / 300% 100% no-repeat; animation: wipe 72s linear infinite; }
+.hero-media .p1 { object-position: 50% 62%; animation: p1 216s linear infinite; }
+.hero-media .p2 { object-position: 50% 55%; animation: p2 216s linear infinite; }
+.hero-media .p3 { object-position: 50% 50%; transform: scale(1.5); transform-origin: 52% 50%; animation: p3 216s linear infinite; }
+.hero-media .m1 { animation: m1 216s linear infinite; }
+.hero-media .m2 { animation: m2 216s linear infinite; }
+.hero-media .m3 { animation: m3 216s linear infinite; }
+.tint-multiply { position: absolute; inset: 0; background: var(--hero-tint); mix-blend-mode: multiply; }
+.tint-wash { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(166, 28, 0, .62) 0%, rgba(166, 28, 0, .46) 60%, rgba(166, 28, 0, .16) 100%); }
+@keyframes wipe {
+  0%, 8.33% { -webkit-mask-position: 0% 0; mask-position: 0% 0; }
+  50%, 58.33% { -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+  100% { -webkit-mask-position: 0% 0; mask-position: 0% 0; }
+}
+@keyframes p1 { 0%, 18.05% { opacity: 1; } 18.06%, 84.71% { opacity: 0; } 84.72%, 100% { opacity: 1; } }
+@keyframes p2 { 0%, 18.05% { opacity: 0; } 18.06%, 51.38% { opacity: 1; } 51.39%, 100% { opacity: 0; } }
+@keyframes p3 { 0%, 51.38% { opacity: 0; } 51.39%, 84.71% { opacity: 1; } 84.72%, 100% { opacity: 0; } }
+@keyframes m1 { 0%, 1.38% { opacity: 0; } 1.39%, 34.71% { opacity: 1; } 34.72%, 100% { opacity: 0; } }
+@keyframes m2 { 0%, 34.71% { opacity: 0; } 34.72%, 68.05% { opacity: 1; } 68.06%, 100% { opacity: 0; } }
+@keyframes m3 { 0%, 1.38% { opacity: 1; } 1.39%, 68.05% { opacity: 0; } 68.06%, 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-photos, .hero-media img, .hero-media video { animation: none; }
+}
+.hero-copy { position: relative; z-index: 1; padding-block: 48px 64px; display: flex; flex-direction: column; gap: 28px; align-items: flex-start; }
+.hero h1 { font-family: var(--display); font-weight: 900; font-size: clamp(60px, 15vw, 216px); line-height: .88; letter-spacing: -.005em; }
+.hero p { font-size: 24px; line-height: 1.4; max-width: 30em; }
+.button { display: inline-block; background: var(--shell); color: var(--basalt); padding: 14px 24px; font-weight: 600; text-decoration: none; }
+.bands { display: block; width: 100%; height: 150px; }
+
+.stats { padding-block: 24px 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 32px; }
+.stats strong { display: block; font-family: var(--display); font-size: 80px; line-height: 1; font-weight: 900; color: var(--redstone); }
+.stats span { display: block; margin-top: 8px; }
+
+.expertise { padding-block: 40px 32px; display: flex; flex-direction: column; gap: 32px; }
+.expertise ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; }
+.expertise li { background: var(--white); border-top: 4px solid var(--redstone); padding: 20px; min-height: 96px; box-sizing: border-box; font-size: 22px; line-height: 1.25; font-weight: 600; }
+
+.approach { padding-block: 40px 72px; display: flex; flex-direction: column; gap: 8px; }
+.approach .title { margin-bottom: 24px; }
+.step { border-top: 2px solid var(--basalt); padding-block: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 12px 40px; }
+.step:last-child { border-bottom: 2px solid var(--basalt); }
+.step h3 { font-size: 28px; line-height: 1.2; }
+
+.work { background: var(--basalt); color: var(--shell); }
+.work .wrap { padding-block: 72px; display: flex; flex-direction: column; gap: 32px; }
+.projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 32px 40px; }
+.projects li { border-top: 1px solid var(--blush); padding-top: 12px; }
+.projects .card { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: start; }
+.projects .text { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+/* Thumbnail beside each project title. Projects without an image yet show the strata bands. */
+.projects .thumb { display: block; width: 120px; height: 90px; object-fit: cover; background: linear-gradient(168deg, var(--redstone) 0 40%, var(--oxide) 40% 64%, var(--blush) 64% 76%, var(--basalt) 76%); outline: 1px solid rgba(230, 184, 175, .35); outline-offset: -1px; }
+.projects span.thumb { opacity: .45; }
+.projects h3 { font-size: 21px; line-height: 1.25; }
+.projects p { font-size: 15px; color: var(--blush); }
+/* Project cards that open a live map: the whole card is the link. */
+.projects li.linked { border-top-width: 3px; border-top-color: var(--shell); }
+.projects .card-link { color: var(--shell); text-decoration: none; }
+.projects .card-link:focus-visible { outline-color: var(--blush); }
+.projects .more { font-size: 15px; font-weight: 600; color: var(--shell); text-decoration: underline; text-decoration-color: var(--blush); text-underline-offset: 4px; }
+.projects .card-link:hover h3, .projects .card-link:hover .more { color: var(--blush); }
+
+.clients { background: var(--blush); }
+.clients .wrap { padding-block: 72px; display: flex; flex-direction: column; gap: 32px; }
+.clients ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px 40px; font-size: 20px; font-weight: 500; }
+
+.contact { padding-block: 72px; display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between; align-items: flex-end; }
+.contact h2 { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 8vw, 96px); line-height: .95; margin-bottom: 8px; }
+.contact-links { display: flex; flex-direction: column; gap: 8px; font-size: 22px; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.contact-links a { padding-block: 6px; }
+</style>
+
+</head>
+<body>
+<div class="topbar">
+  <div class="wrap">
+    <a href="#top"><img src="assets/redstone-gis-logo.svg" alt="Redstone GIS" width="186" height="44"></a>
+    <nav aria-label="Primary">
+      <a href="#expertise">Expertise</a>
+      <a href="#approach">Approach</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</div>
+
+<div class="hero" id="top">
+  <div class="hero-media" aria-hidden="true">
+    <div class="hero-maps">
+      <img class="m1" src="assets/routt.jpg" alt="">
+      <video class="m2" src="assets/patents.mp4" poster="assets/patents-poster.jpg" autoplay muted loop playsinline preload="auto"></video>
+      <video class="m3" src="assets/ferris.mp4" poster="assets/ferris-poster.jpg" autoplay muted loop playsinline preload="auto"></video>
+    </div>
+    <div class="hero-photos">
+      <img class="p1" src="assets/sopris.jpg" alt="">
+      <img class="p2" src="assets/hawaii.jpg" alt="">
+      <img class="p3" src="assets/sopris.jpg" alt="">
+    </div>
+    <div class="tint-multiply"></div>
+    <div class="tint-wash"></div>
+  </div>
+  <section class="wrap hero-copy">
+    <h1>UNDERSTAND<br>YOUR<br>LANDSCAPE.</h1>
+    <p>Geospatial work in service of conservation. Rooted in the Roaring Fork Valley, and regional, national, and global in nature.</p>
+    <a class="button" href="#contact">Start a conversation</a>
+  </section>
+</div>
+
+<svg class="bands" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 0H1440V52C1200 90 980 30 720 62C460 94 240 44 0 76Z" fill="#A61C00"/>
+  <path d="M0 76C240 44 460 94 720 62C980 30 1200 90 1440 52V78C1200 116 980 56 720 88C460 120 240 70 0 102Z" fill="#6B1200"/>
+  <path d="M0 102C240 70 460 120 720 88C980 56 1200 116 1440 78V98C1200 136 980 76 720 108C460 140 240 90 0 122Z" fill="#E6B8AF"/>
+</svg>
+
+<main>
+  <section class="wrap stats" aria-label="Experience">
+    <div><strong>26</strong><span>years in professional GIS</span></div>
+    <div><strong>20</strong><span>years with conservation nonprofits</span></div>
+    <div><strong>6</strong><span>years in the private sector</span></div>
+    <div><strong>13</strong><span>years of consulting</span></div>
+  </section>
+
+  <section class="wrap expertise" id="expertise">
+    <h2 class="title">EXPERTISE</h2>
+    <ul>
+      <li>Wildlife Connectivity</li>
+      <li>Public Lands</li>
+      <li>Policy and Economics in Geospatial Research</li>
+      <li>Enterprise GIS</li>
+      <li>Cartography</li>
+      <li>Product Design and Deployment</li>
+      <li>Data Administration</li>
+      <li>Artificial Intelligence in Geospatial Technology</li>
+    </ul>
+  </section>
+
+  <section class="wrap approach" id="approach">
+    <h2 class="title">EXPLORATION, INNOVATION, COLLABORATION</h2>
+    <div class="step"><h3>Listen</h3><p>Understand the decision, the audience, and the constraints before opening any software.</p></div>
+    <div class="step"><h3>Build</h3><p>Prototype analyses openly, document methods, iterate against feedback from partners on the ground.</p></div>
+    <div class="step"><h3>Deliver</h3><p>Hand off maps, data, and documentation built to outlast the project and support future work.</p></div>
+  </section>
+
+  <section class="work" id="work">
+    <div class="wrap">
+      <h2 class="title">SELECTED PROJECTS</h2>
+      <ul class="projects">
+        <li><div class="card"><video class="thumb" src="assets/ferris.mp4" poster="assets/ferris-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video><div class="text"><h3>USFS Hazardous Fuel Treatments and 2026 Fires Investigation</h3><p>Grassroots Wildland Firefighters</p></div></div></li>
+        <li><div class="card"><span class="thumb" aria-hidden="true"></span><div class="text"><h3>Dolores Conservation Recreation Area Development</h3><p>Colorado Wildlands Project</p></div></div></li>
+        <li><div class="card"><span class="thumb" aria-hidden="true"></span><div class="text"><h3>Chaffee County Wildlife-Vehicle Collision Mitigation and Connectivity Planning</h3><p>Eco-Resolutions for Chaffee County, CO</p></div></div></li>
+        <li><div class="card"><span class="thumb" aria-hidden="true"></span><div class="text"><h3>Roan Plateau Oil and Gas Leasing and Economic Value Analysis</h3><p>Wilderness Workshop</p></div></div></li>
+        <li><div class="card"><span class="thumb" aria-hidden="true"></span><div class="text"><h3>ArcGIS Online Administration and Data Management</h3><p>Wilderness Workshop</p></div></div></li>
+        <li><div class="card"><span class="thumb" aria-hidden="true"></span><div class="text"><h3>Hunter-Fryingpan Wilderness Field Maps Cartography</h3><p>USFS, White River National Forest</p></div></div></li>
+        <li><div class="card"><img class="thumb" src="assets/routt.jpg" alt="" loading="lazy"><div class="text"><h3>Prioritizing Wildlife-Transportation Mitigation in Routt County</h3><p>Eco-Resolutions for TNC Colorado</p></div></div></li>
+        <li class="linked"><a class="card-link" href="https://redstonegis.com/GLO/index.html#map"><div class="card"><video class="thumb" src="assets/patents.mp4" poster="assets/patents-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video><div class="text"><h3>GLO Records Data Mining and Time Series</h3><p>Research</p><span class="more">Explore the map &rarr;</span></div></div></a></li>
+        <li class="linked"><a class="card-link" href="https://redstonegis.com/LR2000/"><div class="card"><video class="thumb" src="assets/leases-thumb.mp4" poster="assets/leases-thumb.jpg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"></video><div class="text"><h3>Federal Leasing on Public Lands Through Time</h3><p>Research at The Wilderness Society</p><span class="more">Read the case study &rarr;</span></div></div></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="clients" id="clients">
+    <div class="wrap">
+      <h2 class="title">CLIENTS</h2>
+      <ul>
+        <li>Rocky Mountain Wild</li><li>Wilderness Workshop</li><li>Audubon Vermont</li><li>National Audubon Society</li><li>Western Conservation Foundation</li><li>US Forest Service</li><li>The Nature Conservancy</li><li>Eco-Resolutions</li><li>BBA Water Consultants</li><li>Roaring Fork Safe Passages</li><li>MRV Collective</li><li>State Political Maps</li><li>Western Watersheds Project</li><li>Grassroots Wildland Firefighters</li><li>Colorado Wildlands Project</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap contact" id="contact">
+    <div>
+      <h2>LET'S TALK.</h2>
+      <p>Redstone GIS Consulting, LLC · Carbondale, Colorado</p>
+    </div>
+    <div class="contact-links">
+      <a href="mailto:connor@redstonegis.com">connor@redstonegis.com</a>
+      <a href="tel:+13038592816">303-859-2816</a>
+    </div>
+  </section>
+</main>
+<script>
+if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.querySelectorAll('video.thumb').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+}
+</script>
+</body>
+</html>
