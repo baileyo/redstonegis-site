@@ -16,6 +16,7 @@
   --display: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
   --body: 'Public Sans', Arial, Helvetica, sans-serif;
   --gutter: clamp(16px, 4vw, 48px);
+  --radius: 6px; --radius-lg: 10px;
 }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--shell); color: var(--basalt); font-family: var(--body); font-size: 18px; line-height: 1.55; }
@@ -100,6 +101,34 @@ ul { padding: 0; list-style: none; }
 .projects .more { font-size: 15px; font-weight: 600; color: var(--shell); text-decoration: underline; text-decoration-color: var(--blush); text-underline-offset: 4px; }
 .projects .card-link:hover h3, .projects .card-link:hover .more { color: var(--blush); }
 
+/* Featured project: the recording of the live map beside its story. */
+.featured { background: var(--basalt); color: var(--shell); }
+.featured a { color: var(--shell); }
+.featured a:hover { color: var(--blush); }
+.featured a:focus-visible { outline-color: var(--blush); }
+.featured .wrap { padding-block: 72px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 40px 56px; align-items: center; }
+.featured-media { margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 10px; max-width: 560px; justify-self: center; width: 100%; }
+.featured-frame { position: relative; border: 1px solid rgba(230, 184, 175, .45); border-radius: var(--radius-lg); overflow: hidden; background: #121918; line-height: 0; }
+.featured-frame video { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; }
+.featured-toggle { flex: none; min-height: 44px; padding: 0 16px; border: 1px solid var(--blush); border-radius: var(--radius); background: transparent; color: var(--shell); font: 600 15px/1 var(--body); cursor: pointer; }
+.featured-toggle:hover { background: var(--oxide); }
+.featured-toggle:focus-visible { outline: 3px solid var(--blush); outline-offset: 2px; }
+.featured-media figcaption { display: flex; gap: 16px; align-items: center; justify-content: space-between; font-size: 14px; color: var(--blush); }
+.featured-copy { min-width: 0; display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+.kicker { font-size: 14px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--blush); }
+.featured h2 { font-family: var(--display); font-weight: 900; font-size: clamp(44px, 5.4vw, 72px); line-height: .95; text-wrap: balance; }
+.featured .lede { font-size: 20px; line-height: 1.5; max-width: 34em; }
+.figures { display: flex; flex-wrap: wrap; gap: 16px 48px; width: 100%; box-sizing: border-box; border-block: 1px solid rgba(230, 184, 175, .45); padding-block: 16px; }
+.figures strong { display: block; font-family: var(--display); font-weight: 900; font-size: clamp(34px, 4vw, 48px); line-height: 1; color: var(--blush); font-variant-numeric: tabular-nums; }
+.figures span { display: block; margin-top: 6px; font-size: 15px; line-height: 1.35; }
+.method { display: flex; flex-direction: column; gap: 8px; font-size: 16px; line-height: 1.5; max-width: 38em; }
+.method li { padding-left: 20px; position: relative; }
+.method li::before { content: ""; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--redstone); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.featured .button { background: var(--shell); color: var(--basalt); border-radius: var(--radius); }
+.featured .button:hover { background: var(--blush); color: var(--basalt); }
+.text-link { font-weight: 600; text-decoration-color: var(--blush); text-underline-offset: 4px; padding-block: 12px; }
+
 .clients { background: var(--blush); }
 .clients .wrap { padding-block: 72px; display: flex; flex-direction: column; gap: 32px; }
 .clients ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px 40px; font-size: 20px; font-weight: 500; }
@@ -158,6 +187,36 @@ ul { padding: 0; list-style: none; }
     <div><strong>20</strong><span>years with conservation nonprofits</span></div>
     <div><strong>6</strong><span>years in the private sector</span></div>
     <div><strong>13</strong><span>years of consulting</span></div>
+  </section>
+
+  <section class="featured" id="featured" aria-labelledby="featured-title">
+    <div class="wrap">
+      <figure class="featured-media">
+        <div class="featured-frame">
+          <video id="featured-video" src="assets/glo-featured.mp4" poster="assets/glo-featured-poster.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Animated map, 1800 to 2025: the public-land states fill in by patent type as federal land passes into private ownership, with running totals of acres patented and patent records and the land laws behind each surge"></video>
+        </div>
+        <figcaption><span>Every dated GLO land patent, 1790–2025, animated from the project's data.</span><button class="featured-toggle" id="featured-toggle" type="button" aria-controls="featured-video">Pause</button></figcaption>
+      </figure>
+      <div class="featured-copy">
+        <p class="kicker">Featured project · GLO Patent Mapping</p>
+        <h2 id="featured-title">PUBLIC DOMAIN TO PRIVATE HANDS</h2>
+        <p class="lede">An interactive map of when the American public domain passed into private ownership. Every surviving General Land Office land patent is placed on the Public Land Survey grid and played back through time.</p>
+        <div class="figures">
+          <div><strong>5.9M</strong><span>dated land patents mapped</span></div>
+          <div><strong>30</strong><span>public-land states</span></div>
+          <div><strong>1785–2026</strong><span>years of patent records</span></div>
+        </div>
+        <ul class="method">
+          <li>Downloaded patent records state by state from BLM's GLO Records search, split into date ranges to get past its 100,000-record query limit.</li>
+          <li>Parsed every legal description and placed each patent on its PLSS section, using BLM township polygons to correct grid drift. That cut North Dakota's median location error from 35 km to 8 km.</li>
+          <li>Binned located patents by year and entry type, from homesteads to cash sales and railroad grants, for the time slider.</li>
+        </ul>
+        <div class="actions">
+          <a class="button" href="https://redstonegis.com/GLO/index.html#map">Explore the map</a>
+          <a class="text-link" href="https://redstonegis.com/GLO/index.html#about">How it was built</a>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="wrap expertise" id="expertise">
@@ -222,6 +281,22 @@ ul { padding: 0; list-style: none; }
 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   document.querySelectorAll('video.thumb').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
 }
+</script>
+<script>
+(function () {
+  var video = document.getElementById('featured-video');
+  var toggle = document.getElementById('featured-toggle');
+  if (!video || !toggle) return;
+  function sync() { toggle.textContent = video.paused ? 'Play' : 'Pause'; }
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce) { video.removeAttribute('autoplay'); video.pause(); }
+  toggle.addEventListener('click', function () {
+    if (video.paused) { var p = video.play(); if (p && p.catch) p.catch(function () {}); } else { video.pause(); }
+  });
+  video.addEventListener('play', sync);
+  video.addEventListener('pause', sync);
+  sync();
+})();
 </script>
 </body>
 </html>
