@@ -259,7 +259,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112h';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112i';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -377,7 +377,7 @@ const L=[
  {id:'ctxRiverL',type:'symbol',source:'ctx',filter:['==',['get','k'],'river'],layout:{'symbol-placement':'line','symbol-spacing':420,'text-field':['get','n'],'text-font':['Barlow SemiBold Italic'],'text-size':11.5,'text-max-angle':70,'text-offset':[0,-.8],'text-padding':3}},
  {id:'ctxCountyL',type:'symbol',source:'ctx',filter:['==',['get','k'],'county'],layout:{'symbol-placement':'line','symbol-spacing':520,'text-field':['upcase',['get','n']],'text-font':['Barlow SemiBold'],'text-size':12,'text-letter-spacing':.14,'text-max-angle':70,'text-keep-upright':true,'text-offset':[0,.9]}},
  {id:'ctxRoadL',type:'symbol',source:'ctx',filter:['all',['==',['get','k'],'road'],['!=',['get','c'],3],['>',['length',['get','n']],0]],layout:{'symbol-placement':'line','symbol-spacing':300,'text-field':['get','n'],'text-font':['Barlow SemiBold'],'text-size':11,'text-rotation-alignment':'viewport','icon-rotation-alignment':'viewport','icon-image':['concat','sh',['to-string',['get','c']],'-',['to-string',['get','b']]],'text-offset':['match',['get','c'],0,['literal',[0,.2]],1,['literal',[0,.08]],['literal',[0,0]]],'text-max-angle':180,'symbol-sort-key':['get','c']}},
- {id:'pt',type:'symbol',source:'pt',layout:{'icon-image':'origin','icon-size':1,'icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['get','label'],'text-font':['Barlow SemiBold'],'text-size':15.5,'text-anchor':'top','text-offset':[0,1.65],'text-allow-overlap':true,'text-ignore-placement':true,'text-line-height':1.1}}
+ {id:'pt',type:'symbol',source:'pt',layout:{'icon-image':'origin','icon-size':.78,'icon-allow-overlap':true,'icon-ignore-placement':true,'text-field':['get','label'],'text-font':['Barlow SemiBold'],'text-size':14,'text-anchor':'top','text-offset':[0,1.4],'text-allow-overlap':true,'text-ignore-placement':true,'text-line-height':1.1}}
 ];
 function addIcons(){
   const mk=(w,h,fn)=>{const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'));return c.getContext('2d').getImageData(0,0,w,h)};
