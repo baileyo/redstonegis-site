@@ -1,3 +1,4 @@
 FireCost/data/
 FireCost/fires.json
 FireCost/asof.json
+__pycache__/
