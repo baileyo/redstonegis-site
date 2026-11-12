@@ -17,7 +17,7 @@
   --redstone:#A61C00; --blush:#E6B8AF; --oxide:#6B1200; --basalt:#2A1410; --shell:#FBF1EE; --white:#fff;
   --bg:var(--shell); --panel:#fff; --panel2:#F7E6E1; --ink:var(--basalt); --ink2:#5E4741; --ink3:#86706A; --rule:#EBD5CE;
   --sea:#DCE5EA; --land:#F4EEEA; --state:#9C8B85; --county:#E4D8D3;
-  --fire:#A61C00; --fireline:#6B1200; --hot:#F0380F; --accent:#A61C00; --cost:#C98A00; --costline:#8A5A00;
+  --fire:#A61C00; --fireline:#6B1200; --hot:#F0380F; --accent:#A61C00; --cost:#2E9E5B; --costline:#1B6B3A;
   --hud:rgba(255,255,255,.95); --shadow:0 6px 24px rgba(42,20,16,.16),0 1px 3px rgba(42,20,16,.12);
   --r:16px; --r-sm:10px; --pill:999px;
   --display:Oswald,"Arial Narrow",Arial,sans-serif; --body:"Public Sans",Arial,Helvetica,sans-serif; --mono:Oswald,"Arial Narrow",Arial,sans-serif;
@@ -143,6 +143,7 @@ main{display:flex;flex-direction:column}
 .stat .x{font-size:13px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat.hero .v{color:var(--costline)}
 .stat.hero .k{color:var(--ink)}
+.stat.acres .v{color:var(--fireline)}
 #toll{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule);padding-top:9px}
 .chip{display:inline-flex;align-items:baseline;gap:7px;background:var(--panel2);border-radius:var(--pill);padding:5px 13px;font-size:13.5px;color:var(--ink2)}
 .chip b{font:600 19px/1 var(--display);color:var(--redstone);font-variant-numeric:tabular-nums}
@@ -324,7 +325,7 @@ main{display:flex;flex-direction:column}
 (async function(){
 const $=s=>document.querySelector(s), DAY=864e5;
 /* V stamps data requests so a daily refresh is picked up; ASOF is when the fire data was last rebuilt from WFIGS */
-let V='20261112m',ASOF=Date.UTC(2026,10,3,18);
+let V='20261112n',ASOF=Date.UTC(2026,10,3,18);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -660,7 +661,7 @@ $('#q').addEventListener('input',renderRoster);$('#sort').addEventListener('chan
 $('#all').addEventListener('click',()=>{ if(national){go(fires[0].id,false)} else showAll(); });
 
 /* ---- readouts ---- */
-function statsHTML(items){$('#stats').innerHTML=items.map((s,i)=>`<div class="stat${s.hero?' hero':''}"><div class="k">${s.k}</div><div class="v" id="v${i}">${s.v}</div><div class="x" id="x${i}">${s.x||'&nbsp;'}</div></div>`).join('')}
+function statsHTML(items){$('#stats').innerHTML=items.map((s,i)=>`<div class="stat${s.hero?' hero':''}${s.ac?' acres':''}"><div class="k">${s.k}</div><div class="v" id="v${i}">${s.v}</div><div class="x" id="x${i}">${s.x||'&nbsp;'}</div></div>`).join('')}
 let raf=0;
 function animateTo(a,b){
   cancelAnimationFrame(raf);
@@ -681,13 +682,13 @@ function drawChart(){
   const fd=line('a',YA),cd=line('c',YC),c=n=>css(n),mono='Oswald,Arial Narrow,sans-serif',nar=W<470;
   el.setAttribute('viewBox',`0 0 ${W} ${H}`);
   el.innerHTML=`<line x1="6" x2="${W-6}" y1="${bot}" y2="${bot}" stroke="${c('--rule')}"/>
-   <path d="${fd}V${bot}H${X(t0)}Z" fill="${c('--fire')}" opacity=".13"/>${hasC?`<path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--cost')}" opacity=".2"/>`:''}
+   <path d="${fd}V${bot}H${X(t0)}Z" fill="${c('--fire')}" opacity=".35"/>${hasC?`<path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--panel')}"/><path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--cost')}" opacity=".32"/>`:''}
    <path d="${fd}" fill="none" stroke="${c('--fireline')}" stroke-width="2" stroke-linejoin="round"/>${hasC?`<path d="${cd}" fill="none" stroke="${c('--costline')}" stroke-width="2.4" stroke-linejoin="round"/>`:''}
    ${s.map(p=>`<line x1="${X(p.t).toFixed(1)}" x2="${X(p.t).toFixed(1)}" y1="${bot}" y2="${bot+4}" stroke="${c('--ink3')}"/>`).join('')}
    <text x="6" y="${H-2}" font-size="12" fill="${c('--ink3')}" font-family="${mono}">${date(t0)}</text>
    <text x="${W-6}" y="${H-2}" font-size="12" text-anchor="end" fill="${c('--ink3')}" font-family="${mono}">${date(s[s.length-1].t)}</text>
    <rect x="6" y="3" width="14" height="4" fill="${c('--costline')}"/><text x="24" y="10" font-size="12" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${hasC?(nar?`Cost to ${money(cmax)}`:`Cost to date, $0 to ${money(cmax)}`):'Cost not reported'}</text>
-   <rect x="${W-(nar?112:176)}" y="3" width="14" height="4" fill="${c('--fireline')}"/><text x="${W-6}" y="10" font-size="12" text-anchor="end" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${nar?`to ${num(amax)} ac`:`Acres, 0 to ${num(amax)}`}</text>
+   <rect x="${W-26-5.7*(nar?`to ${num(amax)} ac`:`Acres, 0 to ${num(amax)}`).length}" y="3" width="14" height="4" fill="${c('--fireline')}"/><text x="${W-6}" y="10" font-size="12" text-anchor="end" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${nar?`to ${num(amax)} ac`:`Acres, 0 to ${num(amax)}`}</text>
    <line id="head" y1="${top-3}" y2="${bot+4}" stroke="${c('--ink')}" stroke-width="2"/><circle id="dotA" r="4.5" fill="${c('--fireline')}" stroke="${c('--panel')}" stroke-width="2"/><circle id="dot" r="4.5" fill="${c('--costline')}" stroke="${c('--panel')}" stroke-width="2"/>`;
   head();
 }
@@ -748,7 +749,7 @@ async function makePDF(){
     P.setFillColor(255,255,255);P.rect(mx+6,my+mh-27,bw+46,21,'F');P.setFillColor(...hx('#18231f'));P.rect(mx+11,my+mh-13,bw,3,'F');txt(`${n} mi`,mx+11,my+mh-16,7.5,'bold');
     txt('N',mx+bw+37,my+mh-16,9,'bold');P.setLineWidth(1);P.setDrawColor(...hx('#18231f'));P.line(mx+bw+40,my+mh-8,mx+bw+40,my+mh-14);
     let y=my+mh+17;const cols=[['DATE',date(s.t)],['FIRE SIZE',num(s.a)+' ac'],['ESTIMATED COST TO DATE',money(s.c)||'Not reported'],['COST PER ACRE',s.c&&s.a>=1?'$'+num(s.c/s.a):'n/a']];
-    cols.forEach(([k,v],i)=>{const x=L+i*W/4;txt(k,x,y,6.8,'bold','#46554f');txt(v,x,y+16,14.5,'bold',i===2?'#8a5a00':null)});
+    cols.forEach(([k,v],i)=>{const x=L+i*W/4;txt(k,x,y,6.8,'bold','#46554f');txt(v,x,y+16,14.5,'bold',i===2?'#1b6b3a':null)});
     if(s.pc!=null)txt(`${Math.round(s.pc)}% contained`,L+W/4,y+26,8,'normal','#66756e');if(m.fin)txt(`Final estimate ${money(m.fin)}`,L+W/2,y+26,8,'normal','#66756e');if(m.pers)txt(`Peak of ${num(m.pers)} personnel`,L+.75*W,y+26,8,'normal','#66756e');
     y+=36;const st=d.steps,t0=st[0].t,t1=Math.max(st[st.length-1].t,t0+DAY),ch=52,am=Math.max(...st.map(p=>p.a),1),cm=Math.max(...st.map(p=>p.c||0),1),px=t=>L+W*(t-t0)/(t1-t0),py=(v,mxv)=>y+11+ch-ch*(v||0)/mxv;
     const key=(x,c,l)=>{P.setFillColor(...hx(c));P.rect(x,y+2,12,3,'F');txt(l,x+15,y+6,8,'normal','#46554f')};key(L,'#9a6700',`Cost to date, $0 to ${money(cm)||'$0'}`);key(L+W-150,'#6B1200',`Acres, 0 to ${num(am)}`);
@@ -822,7 +823,7 @@ async function load(m){
   }else if(m.f===-1){const r=await fetch('data/'+m.id+'.json?v='+V);if(!r.ok)throw new Error('load');d=await r.json()}
   else{if(!bundles.has(m.f)){const r=await fetch(`data/b${m.f}.json?v=${V}`);if(!r.ok)throw new Error('load');if(bundles.size>5)bundles.delete(bundles.keys().next().value);bundles.set(m.f,await r.json())}d=bundles.get(m.f)[m.id];if(!d)throw new Error('load')}
   if(cache.size>40)cache.delete(cache.keys().next().value);cache.set(m.id,d);return d}
-const STATS=[{k:'Date',v:''},{k:'Fire size',v:''},{k:'Estimated cost to date',v:'',hero:1},{k:'Cost per acre',v:''}];
+const STATS=[{k:'Date',v:''},{k:'Fire size',v:'',ac:1},{k:'Estimated cost to date',v:'',hero:1},{k:'Cost per acre',v:''}];
 function dmgText(m){const d=DMG[m.id];return [d?d.t:'',m.fat&&!(d&&d.k)?`${m.fat} ${m.fat>1?'deaths':'death'} recorded in WFIGS.`:''].filter(Boolean).join(' ')}
 /* space left for the fire once the title and readouts are on screen: either below the title or beside it, whichever shows the fire larger */
 function clearPad(bb){
