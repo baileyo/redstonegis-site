@@ -65,7 +65,7 @@ aside{min-height:0;display:flex;flex-direction:column;background:var(--shell);bo
 .note ul{margin:6px 0 2px;padding-left:18px;color:var(--ink2);max-height:34vh;overflow:auto}
 .note li{margin-bottom:6px}
 main{position:relative;min-height:0;min-width:0;background:var(--sea)}
-.mapbox{position:absolute;inset:0}
+.mapbox{position:absolute;inset:0;isolation:isolate}
 #map{position:absolute;inset:0}
 #veil{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:var(--shell);font:500 20px var(--display);letter-spacing:.04em;color:var(--redstone);transition:opacity .35s}
 #veil.out{opacity:0;pointer-events:none}
@@ -259,7 +259,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112g';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112h';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
