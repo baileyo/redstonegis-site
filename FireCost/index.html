@@ -239,14 +239,15 @@ main{display:flex;flex-direction:column}
   </div>
   <ol id="roster"></ol>
   <details class="note"><summary>How these numbers were made</summary><ul>
-    <li><b>Fires:</b> wildfires in WFIGS discovered January 1 to November 1, 2026 that report an estimated cost above zero or reached 500 acres or more. Prescribed burns and complex parent records are excluded.</li>
+    <li><b>Updates:</b> the fire list, costs, acres, causes and perimeters are rebuilt from WFIGS once a day. This copy was extracted <span class="asof">November 3, 2026</span>. Structure, death and injury figures from public reports are updated by hand, not daily.</li>
+    <li><b>Fires:</b> wildfires in WFIGS discovered since January 1, 2026 that report an estimated cost above zero or reached 500 acres or more. Prescribed burns and complex parent records are excluded.</li>
     <li><b>Cost:</b> the WFIGS estimated cost to date, as entered by each incident. It covers fighting the fire, not property loss, recovery or economic damage. Many small fires never report a cost; they show as not reported and add nothing to the totals, so the totals are low.</li>
     <li><b>Cost over time:</b> each step shows the highest cost reported up to that date on the perimeter records. The last step, marked "Latest cost report," is the figure on the incident record when the data was extracted.</li>
     <li><b>Final estimate:</b> the incident's own projection of final cost, where one was entered.</li>
     <li><b>Acres:</b> the ranked list uses the incident's reported size. The time series uses the mapped perimeter acres, so the two can differ slightly.</li>
     <li><b>Timing:</b> perimeters are dated by the record's modified date, which can trail the actual mapping time. The animation keeps the last perimeter of each UTC day and drops records that shrink, since those are remaps or errors.</li>
     <li><b>Active fire edge:</b> the red edge marks where a perimeter differs from the one before it. Edges that did not move are drawn as a plain outline, and steps that only update cost show no red edge. Movement smaller than about 10 to 60 meters, depending on fire size, is not marked.</li>
-    <li><b>Fires not mapped:</b> 749 fires have no perimeter on record. They appear in the lists, totals and U.S. map, with a map of the reported location only.</li>
+    <li><b>Fires not mapped:</b> <span class="nunmapped">749</span> fires have no perimeter on record. They appear in the lists, totals and U.S. map, with a map of the reported location only.</li>
     <li><b>Fire start:</b> the point of origin on the WFIGS incident record. A few points sit outside the first mapped perimeter, since both are reported separately.</li>
     <li><b>Ignition cause:</b> the FireCause field in WFIGS (Human, Natural or Undetermined), with the general and specific cause where an investigator entered one.</li>
     <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
@@ -262,7 +263,7 @@ main{display:flex;flex-direction:column}
     <li><b>Land ownership:</b> BLM Surface Management Agency, drawn from BLM's map tiles. Tribal and Alaska Native lands are grouped with other federal lands. Private and unknown land is left clear.</li>
     <li><b>Ocean:</b> drawn in the same blue as lakes for fires near a coast. The shoreline comes from Census TIGERweb water areas, and open water beyond them from elevation at or below sea level.</li>
     <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable.</li>
-    <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
+    <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted <span class="asof">November 3, 2026</span>. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
   <section id="legwrap"><button id="legBtn" type="button" aria-expanded="false" aria-controls="legend"><span>Legend</span><span id="legArrow">Show</span></button><div id="legend" aria-label="Map legend" hidden></div></section>
   </ul></details>
 </aside>
@@ -311,7 +312,7 @@ main{display:flex;flex-direction:column}
       <li>Compare cost, acres, structures and lives across every state.</li>
     </ul>
     <div class="sp-go"><button id="enter" type="button">Explore the map</button></div>
-    <p class="sp-src"><b>Data sources:</b> fire locations, daily perimeters, cost and cause from the National Interagency Fire Center's WFIGS, extracted November 3, 2026. Base maps and terrain from USGS The National Map and Mapzen terrain tiles. Land ownership from the BLM. Roads, counties and coastline from the US Census Bureau. Rivers and lakes from the USGS National Hydrography Dataset. Structures, deaths and injuries from news and agency reports, which are incomplete.</p>
+    <p class="sp-src"><b>Data sources:</b> fire locations, daily perimeters, cost and cause from the National Interagency Fire Center's WFIGS, refreshed daily and last extracted <span class="asof">November 3, 2026</span>. Base maps and terrain from USGS The National Map and Mapzen terrain tiles. Land ownership from the BLM. Roads, counties and coastline from the US Census Bureau. Rivers and lakes from the USGS National Hydrography Dataset. Structures, deaths and injuries from news and agency reports, which are incomplete.</p>
     <p class="sp-src">Photo: the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026. U.S. Forest Service via InciWeb, public domain.</p>
   </div>
 </div>
@@ -321,7 +322,9 @@ main{display:flex;flex-direction:column}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112l';
+const $=s=>document.querySelector(s), DAY=864e5;
+/* V stamps data requests so a daily refresh is picked up; ASOF is when the fire data was last rebuilt from WFIGS */
+let V='20261112m',ASOF=Date.UTC(2026,10,3,18);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -339,12 +342,16 @@ const ST={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO
 const LIVE=true;
 let basemap=LIVE?'relief':'plain', ownOn=LIVE, tileErr=0;
 let fires=[], cache=new Map(), cur=null, step=0, playing=false, timer=null, speed=1, shown={a:0,b:0}, national=false;
+try{const a=await (await fetch('asof.json',{cache:'no-store'})).json();if(a&&a.t>1.7e12){ASOF=a.t;V+='-'+Math.floor(a.t/36e5)}}catch(e){}
+const asofLong=new Date(ASOF).toLocaleDateString('en-US',{timeZone:'America/Denver',month:'long',day:'numeric',year:'numeric'}),asofDay=asofLong.replace(/, \d+$/,'');
+document.querySelectorAll('.asof').forEach(e=>e.textContent=asofLong);
 try{ fires=await (await fetch('fires.json?v='+V)).json(); }catch(e){ $('#lede').textContent='The fire list did not load. Reload the page to try again.'; return; }
 fires.forEach((f,i)=>{f.rank=i+1;f.name=title(f.name);f.cost=f.cost||0;f.cpa=f.cost&&f.ac>=1?f.cost/f.ac:null});
 const sum=(l,k)=>l.reduce((a,f)=>a+(f[k]||0),0);
 const statsFor=l=>({n:l.length,ac:sum(l,'ac'),cost:sum(l,'cost'),nc:l.filter(f=>f.cost).length,pers:sum(l,'pers'),sd:sum(l,'sd'),sm:sum(l,'sm'),dth:sum(l,'dth'),inj:sum(l,'inj'),nsd:l.filter(f=>f.sd||f.sm).length,plus:l.some(f=>f.sdp)});
 let totals=statsFor(fires);
-$('#lede').innerHTML=`<b>${num(totals.n)} wildfires</b> in 2026 reported a firefighting cost or burned 500 acres or more. Together they cost an estimated <b>${money(totals.cost)}</b> to fight and burned <b>${(totals.ac/1e6).toFixed(1)} million acres</b>, January 1 to November 3.`;
+$('#lede').innerHTML=`<b>${num(totals.n)} wildfires</b> in 2026 reported a firefighting cost or burned 500 acres or more. Together they cost an estimated <b>${money(totals.cost)}</b> to fight and burned <b>${(totals.ac/1e6).toFixed(1)} million acres</b>, January 1 to ${asofDay}.`;
+document.querySelectorAll('.nunmapped').forEach(e=>e.textContent=num(fires.filter(f=>f.f==null).length));
 $('#sp-lede').innerHTML=$('#lede').innerHTML;
 /* opening screen: the map loads underneath, and playback and rotation wait until it is dismissed */
 let splashDone;const splashGone=new Promise(r=>splashDone=r),splash=$('#splash');
@@ -755,7 +762,7 @@ async function makePDF(){
     const dm=dmgText(m);if(dm){P.setFont('helvetica','normal');P.setFontSize(8);P.setTextColor(...hx('#18231f'));P.text(P.splitTextToSize('Losses: '+dm,W),L,y+18+Math.ceil(rows.length/3)*11)}
     P.setDrawColor(...hx('#c9d2cd'));P.setLineWidth(.5);P.line(L,738,L+W,738);
     P.setFont('helvetica','normal');P.setFontSize(6.6);P.setTextColor(...hx('#66756e'));
-    P.text(P.splitTextToSize(`Cost is the WFIGS estimated cost to date, the highest value reported so far at each date, ending with the latest report. It covers firefighting only, not property loss or recovery. Perimeters are dated by WFIGS record modified date. Sources: NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026; USGS The National Map; BLM Surface Management Agency; Census TIGERweb; USGS NHD. Created ${new Date().toLocaleDateString('en-US')}.`,W),L,746);
+    P.text(P.splitTextToSize(`Cost is the WFIGS estimated cost to date, the highest value reported so far at each date, ending with the latest report. It covers firefighting only, not property loss or recovery. Perimeters are dated by WFIGS record modified date. Sources: NIFC WFIGS Incident Locations and Daily Perimeters, extracted ${asofLong}; USGS The National Map; BLM Surface Management Agency; Census TIGERweb; USGS NHD. Created ${new Date().toLocaleDateString('en-US')}.`,W),L,746);
     const name=`${m.name.replace(/[^A-Za-z0-9]+/g,'_')}_Fire_Cost_Map.pdf`,blob=P.output('blob');
     const dl=window.claude?await claude.use('downloads'):null;
     if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(e&&e.code!=='declined')throw e}}else P.save(name);

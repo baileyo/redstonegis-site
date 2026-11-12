@@ -7,3 +7,9 @@ README.md
 # Large folders uploaded by hand — the deploy never touches these
 GLO/d/
 GLO/n/
+
+# Cost of Fire data — rebuilt daily by the firecost-refresh workflow and
+# uploaded straight to the server, so the deploy must not overwrite it
+FireCost/data/
+FireCost/fires.json
+FireCost/asof.json
