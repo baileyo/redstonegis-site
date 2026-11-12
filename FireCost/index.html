@@ -227,7 +227,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112a';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112b';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -424,7 +424,7 @@ async function ask(url,where,fields,bb,off){
   let out=[],start=0;
   for(let i=0;i<4;i++){
     const p=new URLSearchParams({where,geometry:bb.join(','),geometryType:'esriGeometryEnvelope',inSR:4326,spatialRel:'esriSpatialRelIntersects',outFields:fields,outSR:4326,returnGeometry:'true',maxAllowableOffset:off,geometryPrecision:5,f:'geojson',resultOffset:start,resultRecordCount:1000});
-    const r=await fetch(url+'?'+p);if(!r.ok)throw new Error('ctx');const j=await r.json();if(j.error)throw new Error('ctx');
+    const r=await fetch(url+'?'+p,{signal:AbortSignal.timeout?AbortSignal.timeout(30000):undefined});if(!r.ok)throw new Error('ctx');const j=await r.json();if(j.error)throw new Error('ctx');
     const g=j.features||[];out=out.concat(g);
     if(g.length<1000&&!j.exceededTransferLimit&&!(j.properties&&j.properties.exceededTransferLimit))break;start+=g.length}
   return out}
@@ -443,15 +443,17 @@ async function loadCtx(d){
     ask(NHD+'4/query',`GNIS_NAME IS NOT NULL AND GNIS_NAME <> ' ' AND StreamOrde >= ${so}`,'GNIS_NAME,StreamOrde',bb,off),
     ask(NHD+'10/query',`FTYPE IN ('LakePond','Reservoir') AND AREASQKM >= ${km>130?3:.2}`,'GNIS_NAME',bb,off),
     ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',bb,off)];
-  const r=(await Promise.allSettled(jobs)).map(x=>x.status==='fulfilled'?x.value:null),fs=[];
-  [0,1,2,3].forEach(i=>(r[i]||[]).forEach(f=>f.geometry&&fs.push(roadF(f,i===0))));
-  (r[4]||[]).forEach(f=>f.geometry&&fs.push({type:'Feature',properties:{k:'river',n:(f.properties.GNIS_NAME||'').trim(),o:f.properties.StreamOrde},geometry:f.geometry}));
-  (r[5]||[]).forEach(f=>f.geometry&&fs.push({type:'Feature',properties:{k:'lake'},geometry:f.geometry}));
-  (r[6]||[]).forEach(f=>f.geometry&&fs.push({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry}));
+  /* each layer draws as soon as its own answer arrives, so one slow service does not hold back the rest */
+  const fs=[],conv=[f=>roadF(f,true),f=>roadF(f),f=>roadF(f),f=>roadF(f),
+    f=>({type:'Feature',properties:{k:'river',n:(f.properties.GNIS_NAME||'').trim(),o:f.properties.StreamOrde},geometry:f.geometry}),
+    f=>({type:'Feature',properties:{k:'lake'},geometry:f.geometry}),
+    f=>({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry})];
+  const show=()=>{kinds(fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:fs})};
+  const r=await Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false)));
   if(r.every(x=>x)){if(ctxCache.size>8)ctxCache.delete(ctxCache.keys().next().value);ctxCache.set(id,fs)}
-  kinds(fs);
-  if(cur===d&&!national){src.setData({type:'FeatureCollection',features:fs});
-    if(r.some(x=>!x)){const st=$('#lstat');st.hidden=false;st.textContent=r.every(x=>!x)?'Roads, rivers and county lines did not load. The outside map services may be busy.':'Some roads, rivers or county lines did not load.'}}
+  show();
+  if(cur===d&&!national&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines'].filter((n,i)=>!r[i]))];
+    st.hidden=false;st.textContent=nm.join(', ')+' did not load. The outside map service may be slow or busy.'}
 }
 function ctxVis(){Object.entries(CTX).forEach(([t,ls])=>ls.forEach(l=>map.setLayoutProperty(l,'visibility',!national&&$('#'+t).checked?'visible':'none')))}
 Object.keys(CTX).forEach(t=>$('#'+t).addEventListener('change',()=>{ctxVis();legendSoon()}));
