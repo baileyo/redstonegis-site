@@ -221,7 +221,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <main>
   <div id="map" role="application" aria-label="Map of the fire perimeter over time"></div>
   <svg id="nat" role="img" aria-label="Equal area map of fires by state" hidden></svg>
-  <div class="hud" id="title"><div class="thead"><h2 id="fname"></h2><div class="fnav" id="fnav"><button id="prev" type="button" aria-label="Previous fire by cost">&#8249;</button><button id="next" type="button" aria-label="Next fire by cost">&#8250;</button></div></div><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
+  <div class="hud" id="title"><div class="thead"><h2 id="fname">Loading fires…</h2><div class="fnav" id="fnav"><button id="prev" type="button" aria-label="Previous fire by cost">&#8249;</button><button id="next" type="button" aria-label="Next fire by cost">&#8250;</button></div></div><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
   <div id="rail"><div class="hud" id="layers">
     <fieldset class="seg"><legend>Base map</legend>
       <label><input type="radio" name="base" value="plain"><span>Plain</span></label>
@@ -248,7 +248,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112c';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112d';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -330,7 +330,7 @@ map.addSource('relief',{type:'raster',tiles:[USGS+'USGSShadedReliefOnly/MapServe
 map.addSource('imagery',{type:'raster',tiles:[USGS+'USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:16});
 map.addSource('own',{type:'raster',tiles:['own://{z}/{x}/{y}'],tileSize:256,minzoom:4,maxzoom:14});
 const L=[
- {id:'land',type:'fill',source:'land'},
+ {id:'land',type:'fill',source:'land',paint:{'fill-color':'#F4EEEA'}},
  {id:'relief',type:'raster',source:'relief',layout:{visibility:'none'},paint:{'raster-fade-duration':150}},
  {id:'imagery',type:'raster',source:'imagery',layout:{visibility:'none'},paint:{'raster-fade-duration':150}},
  {id:'own',type:'raster',source:'own',layout:{visibility:'none'},paint:{'raster-opacity':.5,'raster-fade-duration':150}},
