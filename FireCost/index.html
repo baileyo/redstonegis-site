@@ -5,176 +5,195 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>The Cost of Fire, 2026</title>
 <meta name="description" content="What it cost to fight the wildfires of 2026: every fire with a reported cost or 500 acres or more, mapped over time.">
+<meta name="theme-color" content="#A61C00">
 <script defer src="/analytics/rs.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Public+Sans:wght@400;500;600&display=swap">
 <style>body{margin:0}</style>
 <style>.maplibregl-map{font:12px/20px Helvetica Neue,Arial,Helvetica,sans-serif;overflow:hidden;position:relative;-webkit-tap-highlight-color:rgb(0 0 0/0)}.maplibregl-canvas{left:0;position:absolute;top:0}.maplibregl-map:fullscreen{height:100%;width:100%}.maplibregl-ctrl-group button.maplibregl-ctrl-compass{touch-action:none}.maplibregl-canvas-container.maplibregl-interactive,.maplibregl-ctrl-group button.maplibregl-ctrl-compass{cursor:grab;-webkit-user-select:none;-moz-user-select:none;user-select:none}.maplibregl-canvas-container.maplibregl-interactive.maplibregl-track-pointer{cursor:pointer}.maplibregl-canvas-container.maplibregl-interactive:active,.maplibregl-ctrl-group button.maplibregl-ctrl-compass:active{cursor:grabbing}.maplibregl-canvas-container.maplibregl-touch-zoom-rotate,.maplibregl-canvas-container.maplibregl-touch-zoom-rotate .maplibregl-canvas{touch-action:pan-x pan-y}.maplibregl-canvas-container.maplibregl-touch-drag-pan,.maplibregl-canvas-container.maplibregl-touch-drag-pan .maplibregl-canvas{touch-action:pinch-zoom}.maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan,.maplibregl-canvas-container.maplibregl-touch-zoom-rotate.maplibregl-touch-drag-pan .maplibregl-canvas{touch-action:none}.maplibregl-canvas-container.maplibregl-touch-drag-pan.maplibregl-cooperative-gestures,.maplibregl-canvas-container.maplibregl-touch-drag-pan.maplibregl-cooperative-gestures .maplibregl-canvas{touch-action:pan-x pan-y}.maplibregl-ctrl-bottom-left,.maplibregl-ctrl-bottom-right,.maplibregl-ctrl-top-left,.maplibregl-ctrl-top-right{pointer-events:none;position:absolute;z-index:2}.maplibregl-ctrl-top-left{left:0;top:0}.maplibregl-ctrl-top-right{right:0;top:0}.maplibregl-ctrl-bottom-left{bottom:0;left:0}.maplibregl-ctrl-bottom-right{bottom:0;right:0}.maplibregl-ctrl{clear:both;pointer-events:auto;transform:translate(0)}.maplibregl-ctrl-top-left .maplibregl-ctrl{float:left;margin:10px 0 0 10px}.maplibregl-ctrl-top-right .maplibregl-ctrl{float:right;margin:10px 10px 0 0}.maplibregl-ctrl-bottom-left .maplibregl-ctrl{float:left;margin:0 0 10px 10px}.maplibregl-ctrl-bottom-right .maplibregl-ctrl{float:right;margin:0 10px 10px 0}.maplibregl-ctrl-group{background:#fff;border-radius:4px}.maplibregl-ctrl-group:not(:empty){box-shadow:0 0 0 2px rgba(0,0,0,.1)}@media (forced-colors:active){.maplibregl-ctrl-group:not(:empty){box-shadow:0 0 0 2px ButtonText}}.maplibregl-ctrl-group button{background-color:transparent;border:0;box-sizing:border-box;cursor:pointer;display:block;height:29px;outline:none;padding:0;width:29px}.maplibregl-ctrl-group button+button{border-top:1px solid #ddd}.maplibregl-ctrl button .maplibregl-ctrl-icon{background-position:50%;background-repeat:no-repeat;display:block;height:100%;width:100%}@media (forced-colors:active){.maplibregl-ctrl-icon{background-color:transparent}.maplibregl-ctrl-group button+button{border-top:1px solid ButtonText}}.maplibregl-ctrl button::-moz-focus-inner{border:0;padding:0}.maplibregl-ctrl-attrib-button:focus,.maplibregl-ctrl-group button:focus{box-shadow:0 0 2px 2px #0096ff}.maplibregl-ctrl button:disabled{cursor:not-allowed}.maplibregl-ctrl button:disabled .maplibregl-ctrl-icon{opacity:.25}.maplibregl-ctrl button:not(:disabled):hover{background-color:rgb(0 0 0/5%)}.maplibregl-ctrl-group button:focus:focus-visible{box-shadow:0 0 2px 2px #0096ff}.maplibregl-ctrl-group button:focus:not(:focus-visible){box-shadow:none}.maplibregl-ctrl-group button:focus:first-child{border-radius:4px 4px 0 0}.maplibregl-ctrl-group button:focus:last-child{border-radius:0 0 4px 4px}.maplibregl-ctrl-group button:focus:only-child{border-radius:inherit}.maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5'/%3E%3C/svg%3E")}@media (forced-colors:active){.maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 29 29'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5'/%3E%3C/svg%3E")}}@media (forced-colors:active) and (prefers-color-scheme:light){.maplibregl-ctrl button.maplibregl-ctrl-zoom-out .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-zoom-in .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5'/%3E%3C/svg%3E")}}.maplibregl-ctrl button.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='M24 16v5.5c0 1.75-.75 2.5-2.5 2.5H16v-1l3-1.5-4-5.5 1-1 5.5 4 1.5-3zM6 16l1.5 3 5.5-4 1 1-4 5.5 3 1.5v1H7.5C5.75 24 5 23.25 5 21.5V16zm7-11v1l-3 1.5 4 5.5-1 1-5.5-4L6 13H5V7.5C5 5.75 5.75 5 7.5 5zm11 2.5c0-1.75-.75-2.5-2.5-2.5H16v1l3 1.5-4 5.5 1 1 5.5-4 1.5 3h1z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-shrink .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='M18.5 16c-1.75 0-2.5.75-2.5 2.5V24h1l1.5-3 5.5 4 1-1-4-5.5 3-1.5v-1zM13 18.5c0-1.75-.75-2.5-2.5-2.5H5v1l3 1.5L4 24l1 1 5.5-4 1.5 3h1zm3-8c0 1.75.75 2.5 2.5 2.5H24v-1l-3-1.5L25 5l-1-1-5.5 4L17 5h-1zM10.5 13c1.75 0 2.5-.75 2.5-2.5V5h-1l-1.5 3L5 4 4 5l4 5.5L5 12v1z'/%3E%3C/svg%3E")}@media (forced-colors:active){.maplibregl-ctrl button.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 29 29'%3E%3Cpath d='M24 16v5.5c0 1.75-.75 2.5-2.5 2.5H16v-1l3-1.5-4-5.5 1-1 5.5 4 1.5-3zM6 16l1.5 3 5.5-4 1 1-4 5.5 3 1.5v1H7.5C5.75 24 5 23.25 5 21.5V16zm7-11v1l-3 1.5 4 5.5-1 1-5.5-4L6 13H5V7.5C5 5.75 5.75 5 7.5 5zm11 2.5c0-1.75-.75-2.5-2.5-2.5H16v1l3 1.5-4 5.5 1 1 5.5-4 1.5 3h1z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-shrink .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 29 29'%3E%3Cpath d='M18.5 16c-1.75 0-2.5.75-2.5 2.5V24h1l1.5-3 5.5 4 1-1-4-5.5 3-1.5v-1zM13 18.5c0-1.75-.75-2.5-2.5-2.5H5v1l3 1.5L4 24l1 1 5.5-4 1.5 3h1zm3-8c0 1.75.75 2.5 2.5 2.5H24v-1l-3-1.5L25 5l-1-1-5.5 4L17 5h-1zM10.5 13c1.75 0 2.5-.75 2.5-2.5V5h-1l-1.5 3L5 4 4 5l4 5.5L5 12v1z'/%3E%3C/svg%3E")}}@media (forced-colors:active) and (prefers-color-scheme:light){.maplibregl-ctrl button.maplibregl-ctrl-fullscreen .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='M24 16v5.5c0 1.75-.75 2.5-2.5 2.5H16v-1l3-1.5-4-5.5 1-1 5.5 4 1.5-3zM6 16l1.5 3 5.5-4 1 1-4 5.5 3 1.5v1H7.5C5.75 24 5 23.25 5 21.5V16zm7-11v1l-3 1.5 4 5.5-1 1-5.5-4L6 13H5V7.5C5 5.75 5.75 5 7.5 5zm11 2.5c0-1.75-.75-2.5-2.5-2.5H16v1l3 1.5-4 5.5 1 1 5.5-4 1.5 3h1z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-shrink .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='M18.5 16c-1.75 0-2.5.75-2.5 2.5V24h1l1.5-3 5.5 4 1-1-4-5.5 3-1.5v-1zM13 18.5c0-1.75-.75-2.5-2.5-2.5H5v1l3 1.5L4 24l1 1 5.5-4 1.5 3h1zm3-8c0 1.75.75 2.5 2.5 2.5H24v-1l-3-1.5L25 5l-1-1-5.5 4L17 5h-1zM10.5 13c1.75 0 2.5-.75 2.5-2.5V5h-1l-1.5 3L5 4 4 5l4 5.5L5 12v1z'/%3E%3C/svg%3E")}}.maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 29 29'%3E%3Cpath d='m10.5 14 4-8 4 8z'/%3E%3Cpath fill='%23ccc' d='m10.5 16 4 8 4-8z'/%3E%3C/svg%3E")}@media (forced-colors:active){.maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 29 29'%3E%3Cpath d='m10.5 14 4-8 4 8z'/%3E%3Cpath fill='%23ccc' d='m10.5 16 4 8 4-8z'/%3E%3C/svg%3E")}}@media (forced-colors:active) and (prefers-color-scheme:light){.maplibregl-ctrl button.maplibregl-ctrl-compass .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 29 29'%3E%3Cpath d='m10.5 14 4-8 4 8z'/%3E%3Cpath fill='%23ccc' d='m10.5 16 4 8 4-8z'/%3E%3C/svg%3E")}}.maplibregl-ctrl button.maplibregl-ctrl-terrain .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='%23333' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-terrain-enabled .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' fill='%2333b5e5' viewBox='0 0 22 22'%3E%3Cpath d='m1.754 13.406 4.453-4.851 3.09 3.09 3.281 3.277.969-.969-3.309-3.312 3.844-4.121 6.148 6.886h1.082v-.855l-7.207-8.07-4.84 5.187L6.169 6.57l-5.48 5.965v.871ZM.688 16.844h20.625v1.375H.688Zm0 0'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23333' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate:disabled .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23aaa' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Cpath fill='red' d='m14 5 1 1-9 9-1-1z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%2333b5e5' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active-error .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23e58978' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%2333b5e5' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background-error .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23e54e33' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-waiting .maplibregl-ctrl-icon{animation:maplibregl-spin 2s linear infinite}@media (forced-colors:active){.maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23fff' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate:disabled .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23999' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Cpath fill='red' d='m14 5 1 1-9 9-1-1z'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%2333b5e5' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-active-error .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23e58978' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%2333b5e5' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate.maplibregl-ctrl-geolocate-background-error .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23e54e33' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3C/svg%3E")}}@media (forced-colors:active) and (prefers-color-scheme:light){.maplibregl-ctrl button.maplibregl-ctrl-geolocate .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3C/svg%3E")}.maplibregl-ctrl button.maplibregl-ctrl-geolocate:disabled .maplibregl-ctrl-icon{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='29' height='29' fill='%23666' viewBox='0 0 20 20'%3E%3Cpath d='M10 4C9 4 9 5 9 5v.1A5 5 0 0 0 5.1 9H5s-1 0-1 1 1 1 1 1h.1A5 5 0 0 0 9 14.9v.1s0 1 1 1 1-1 1-1v-.1a5 5 0 0 0 3.9-3.9h.1s1 0 1-1-1-1-1-1h-.1A5 5 0 0 0 11 5.1V5s0-1-1-1m0 2.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 1 1 0-7'/%3E%3Ccircle cx='10' cy='10' r='2'/%3E%3Cpath fill='red' d='m14 5 1 1-9 9-1-1z'/%3E%3C/svg%3E")}}@keyframes maplibregl-spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}a.maplibregl-ctrl-logo{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='23' fill='none'%3E%3Cpath fill='%23000' fill-opacity='.4' fill-rule='evenodd' d='M17.408 16.796h-1.827l2.501-12.095h.198l3.324 6.533.988 2.19.988-2.19 3.258-6.533h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.929 5.644h-.098l-2.914-5.644-.757-1.71-.345 1.71zm1.958-3.42-.726 3.663a1.255 1.255 0 0 1-1.232 1.011h-1.827a1.255 1.255 0 0 1-1.229-1.509l2.501-12.095a1.255 1.255 0 0 1 1.23-1.001h.197a1.25 1.25 0 0 1 1.12.685l3.19 6.273 3.125-6.263a1.25 1.25 0 0 1 1.123-.695h.181a1.255 1.255 0 0 1 1.227.991l1.443 6.71a5 5 0 0 1 .314-.787l.009-.016a4.6 4.6 0 0 1 1.777-1.887c.782-.46 1.668-.667 2.611-.667a4.6 4.6 0 0 1 1.7.32l.306.134c.21-.16.474-.256.759-.256h1.694a1.255 1.255 0 0 1 1.212.925 1.255 1.255 0 0 1 1.212-.925h1.711c.284 0 .545.094.755.252.613-.3 1.312-.45 2.075-.45 1.356 0 2.557.445 3.482 1.4q.47.48.763 1.064V4.701a1.255 1.255 0 0 1 1.255-1.255h1.86A1.255 1.255 0 0 1 54.44 4.7v9.194h2.217c.19 0 .37.043.532.118v-4.77c0-.356.147-.678.385-.906a2.42 2.42 0 0 1-.682-1.71c0-.665.267-1.253.735-1.7a2.45 2.45 0 0 1 1.722-.674 2.43 2.43 0 0 1 1.705.675q.318.302.504.683V4.7a1.255 1.255 0 0 1 1.255-1.255h1.744A1.255 1.255 0 0 1 65.812 4.7v3.335a4.8 4.8 0 0 1 1.526-.246c.938 0 1.817.214 2.59.69a4.47 4.47 0 0 1 1.67 1.743v-.98a1.255 1.255 0 0 1 1.256-1.256h1.777c.233 0 .451.064.639.174a3.4 3.4 0 0 1 1.567-.372c.346 0 .861.02 1.285.232a1.25 1.25 0 0 1 .689 1.004 4.7 4.7 0 0 1 .853-.588c.795-.44 1.675-.647 2.61-.647 1.385 0 2.65.39 3.525 1.396.836.938 1.168 2.173 1.168 3.528q-.001.515-.056 1.051a1.255 1.255 0 0 1-.947 1.09l.408.952a1.255 1.255 0 0 1-.477 1.552c-.418.268-.92.463-1.458.612-.613.171-1.304.244-2.049.244-1.06 0-2.043-.207-2.886-.698l-.015-.008c-.798-.48-1.419-1.135-1.818-1.963l-.004-.008a5.8 5.8 0 0 1-.548-2.512q0-.429.053-.843a1.3 1.3 0 0 1-.333-.086l-.166-.004c-.223 0-.426.062-.643.228-.03.024-.142.139-.142.59v3.883a1.255 1.255 0 0 1-1.256 1.256h-1.777a1.255 1.255 0 0 1-1.256-1.256V15.69l-.032.057a4.8 4.8 0 0 1-1.86 1.833 5.04 5.04 0 0 1-2.484.634 4.5 4.5 0 0 1-1.935-.424 1.25 1.25 0 0 1-.764.258h-1.71a1.255 1.255 0 0 1-1.256-1.255V7.687a2.4 2.4 0 0 1-.428.625c.253.23.412.561.412.93v7.553a1.255 1.255 0 0 1-1.256 1.255h-1.843a1.25 1.25 0 0 1-.894-.373c-.228.23-.544.373-.894.373H51.32a1.255 1.255 0 0 1-1.256-1.255v-1.251l-.061.117a4.7 4.7 0 0 1-1.782 1.884 4.77 4.77 0 0 1-2.485.67 5.6 5.6 0 0 1-1.485-.188l.009 2.764a1.255 1.255 0 0 1-1.255 1.259h-1.729a1.255 1.255 0 0 1-1.255-1.255v-3.537a1.255 1.255 0 0 1-1.167.793h-1.679a1.25 1.25 0 0 1-.77-.263 4.5 4.5 0 0 1-1.945.429c-.885 0-1.724-.21-2.495-.632l-.017-.01a5 5 0 0 1-1.081-.836 1.255 1.255 0 0 1-1.254 1.312h-1.81a1.255 1.255 0 0 1-1.228-.99l-.782-3.625-2.044 3.939a1.25 1.25 0 0 1-1.115.676h-.098a1.25 1.25 0 0 1-1.116-.68l-2.061-3.994zM35.92 16.63l.207-.114.223-.15q.493-.356.735-.785l.061-.118.033 1.332h1.678V9.242h-1.694l-.033 1.267q-.133-.329-.526-.658l-.032-.028a3.2 3.2 0 0 0-.668-.428l-.27-.12a3.3 3.3 0 0 0-1.235-.23q-1.136-.001-1.974.493a3.36 3.36 0 0 0-1.3 1.382q-.445.89-.444 2.074 0 1.2.51 2.107a3.8 3.8 0 0 0 1.382 1.381 3.9 3.9 0 0 0 1.893.477q.795 0 1.455-.33zm-2.789-5.38q-.576.675-.575 1.762 0 1.102.559 1.794.576.675 1.645.675a2.25 2.25 0 0 0 .934-.19 2.2 2.2 0 0 0 .468-.29l.178-.161a2.2 2.2 0 0 0 .397-.561q.244-.5.244-1.15v-.115q0-.708-.296-1.267l-.043-.077a2.2 2.2 0 0 0-.633-.709l-.13-.086-.047-.028a2.1 2.1 0 0 0-1.073-.285q-1.052 0-1.629.692zm2.316 2.706c.163-.17.28-.407.28-.83v-.114c0-.292-.06-.508-.15-.68a.96.96 0 0 0-.353-.389.85.85 0 0 0-.464-.127c-.4 0-.56.114-.664.239l-.01.012c-.148.174-.275.45-.275.945 0 .506.122.801.27.99.097.11.266.224.68.224.303 0 .504-.09.687-.269zm7.545 1.705a2.6 2.6 0 0 0 .331.423q.319.33.755.548l.173.074q.65.255 1.49.255 1.02 0 1.844-.493a3.45 3.45 0 0 0 1.316-1.4q.493-.904.493-2.089 0-1.909-.988-2.913-.988-1.02-2.584-1.02-.898 0-1.575.347a3 3 0 0 0-.415.262l-.199.166a3.4 3.4 0 0 0-.64.82V9.242h-1.712v11.553h1.729l-.017-5.134zm.53-1.138q.206.29.48.5l.155.11.053.034q.51.296 1.119.297 1.07 0 1.645-.675.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.435 0-.835.16a2 2 0 0 0-.284.136 2 2 0 0 0-.363.254 2.2 2.2 0 0 0-.46.569l-.082.162a2.6 2.6 0 0 0-.213 1.072v.115q0 .707.296 1.267l.135.211zm.964-.818a1.1 1.1 0 0 0 .367.385.94.94 0 0 0 .476.118c.423 0 .59-.117.687-.23.159-.194.28-.478.28-.95 0-.53-.133-.8-.266-.952l-.021-.025c-.078-.094-.231-.221-.68-.221a1 1 0 0 0-.503.135l-.012.007a.86.86 0 0 0-.335.343c-.073.133-.132.324-.132.614v.115a1.4 1.4 0 0 0 .14.66zm15.7-6.222q.347-.346.346-.856a1.05 1.05 0 0 0-.345-.79 1.18 1.18 0 0 0-.84-.329q-.51 0-.855.33a1.05 1.05 0 0 0-.346.79q0 .51.346.855.345.346.856.346.51 0 .839-.346zm4.337 9.314.033-1.332q.191.403.59.747l.098.081a4 4 0 0 0 .316.224l.223.122a3.2 3.2 0 0 0 1.44.322 3.8 3.8 0 0 0 1.875-.477 3.5 3.5 0 0 0 1.382-1.366q.527-.89.526-2.09 0-1.184-.444-2.073a3.24 3.24 0 0 0-1.283-1.399q-.823-.51-1.942-.51a3.5 3.5 0 0 0-1.527.344l-.086.043-.165.09a3 3 0 0 0-.33.214q-.432.315-.656.707a2 2 0 0 0-.099.198l.082-1.283V4.701h-1.744v12.095zm.473-2.509a2.5 2.5 0 0 0 .566.7q.117.098.245.18l.144.08a2.1 2.1 0 0 0 .975.232q1.07 0 1.645-.675.576-.69.576-1.778 0-1.102-.576-1.777-.56-.691-1.645-.692a2.2 2.2 0 0 0-1.015.235q-.22.113-.415.282l-.15.142a2.1 2.1 0 0 0-.42.594q-.223.479-.223 1.1v.115q0 .705.293 1.26zm2.616-.293c.157-.191.28-.479.28-.967 0-.51-.13-.79-.276-.961l-.021-.026c-.082-.1-.232-.225-.67-.225a.87.87 0 0 0-.681.279l-.012.011c-.154.155-.274.38-.274.807v.115c0 .285.057.499.144.669a1.1 1.1 0 0 0 .367.405c.137.082.28.123.455.123.423 0 .59-.118.686-.23zm8.266-3.013q.345-.13.724-.14l.069-.002q.493 0 .642.099l.247-1.794q-.196-.099-.717-.099a2.3 2.3 0 0 0-.545.063 2 2 0 0 0-.411.148 2.2 2.2 0 0 0-.4.249 2.5 2.5 0 0 0-.485.499 2.7 2.7 0 0 0-.32.581l-.05.137v-1.48h-1.778v7.553h1.777v-3.884q0-.546.159-.943a1.5 1.5 0 0 1 .466-.636 2.5 2.5 0 0 1 .399-.253 2 2 0 0 1 .224-.099zm9.784 2.656.05-.922q0-1.743-.856-2.698-.838-.97-2.584-.97-1.119-.001-2.007.493a3.46 3.46 0 0 0-1.4 1.382q-.493.906-.493 2.106 0 1.07.428 1.975.428.89 1.332 1.432.906.526 2.255.526.973 0 1.668-.185l.044-.012.135-.04q.613-.184.984-.421l-.542-1.267q-.3.162-.642.274l-.297.087q-.51.131-1.3.131-.954 0-1.497-.444a1.6 1.6 0 0 1-.192-.193q-.366-.44-.512-1.234l-.004-.021zm-5.427-1.256-.003.022h3.752v-.138q-.011-.727-.288-1.118a1 1 0 0 0-.156-.176q-.46-.428-1.316-.428-.986 0-1.494.604-.379.45-.494 1.234zm-27.053 2.77V4.7h-1.86v12.095h5.333V15.15zm7.103-5.908v7.553h-1.843V9.242h1.843z'/%3E%3Cpath fill='%23fff' d='m19.63 11.151-.757-1.71-.345 1.71-1.12 5.644h-1.827L18.083 4.7h.197l3.325 6.533.988 2.19.988-2.19L26.839 4.7h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.93 5.644h-.098l-2.913-5.644zm14.836 5.81q-1.02 0-1.893-.478a3.8 3.8 0 0 1-1.381-1.382q-.51-.906-.51-2.106 0-1.185.444-2.074a3.36 3.36 0 0 1 1.3-1.382q.839-.494 1.974-.494a3.3 3.3 0 0 1 1.234.231 3.3 3.3 0 0 1 .97.575q.396.33.527.659l.033-1.267h1.694v7.553H37.18l-.033-1.332q-.279.593-1.02 1.053a3.17 3.17 0 0 1-1.662.444zm.296-1.482q.938 0 1.58-.642.642-.66.642-1.711v-.115q0-.708-.296-1.267a2.2 2.2 0 0 0-.807-.872 2.1 2.1 0 0 0-1.119-.313q-1.053 0-1.629.692-.575.675-.575 1.76 0 1.103.559 1.795.577.675 1.645.675zm6.521-6.237h1.711v1.4q.906-1.597 2.83-1.597 1.596 0 2.584 1.02.988 1.005.988 2.914 0 1.185-.493 2.09a3.46 3.46 0 0 1-1.316 1.399 3.5 3.5 0 0 1-1.844.493q-.954 0-1.662-.329a2.67 2.67 0 0 1-1.086-.97l.017 5.134h-1.728zm4.048 6.22q1.07 0 1.645-.674.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.592 0-1.12.296-.51.28-.822.823-.296.527-.296 1.234v.115q0 .708.296 1.267.313.543.823.855.51.296 1.119.297z'/%3E%3Cpath fill='%23e1e3e9' d='M51.325 4.7h1.86v10.45h3.473v1.646h-5.333zm7.12 4.542h1.843v7.553h-1.843zm.905-1.415a1.16 1.16 0 0 1-.856-.346 1.17 1.17 0 0 1-.346-.856 1.05 1.05 0 0 1 .346-.79q.346-.329.856-.329.494 0 .839.33a1.05 1.05 0 0 1 .345.79 1.16 1.16 0 0 1-.345.855q-.33.346-.84.346zm7.875 9.133a3.17 3.17 0 0 1-1.662-.444q-.723-.46-1.004-1.053l-.033 1.332h-1.71V4.701h1.743v4.657l-.082 1.283q.279-.658 1.086-1.119a3.5 3.5 0 0 1 1.778-.477q1.119 0 1.942.51a3.24 3.24 0 0 1 1.283 1.4q.445.888.444 2.072 0 1.201-.526 2.09a3.5 3.5 0 0 1-1.382 1.366 3.8 3.8 0 0 1-1.876.477zm-.296-1.481q1.069 0 1.645-.675.577-.69.577-1.778 0-1.102-.577-1.776-.56-.691-1.645-.692a2.12 2.12 0 0 0-1.58.659q-.642.641-.642 1.694v.115q0 .71.296 1.267a2.4 2.4 0 0 0 .807.872 2.1 2.1 0 0 0 1.119.313zm5.927-6.237h1.777v1.481q.263-.757.856-1.217a2.14 2.14 0 0 1 1.349-.46q.527 0 .724.098l-.247 1.794q-.149-.099-.642-.099-.774 0-1.416.494-.626.493-.626 1.58v3.883h-1.777V9.242zm9.534 7.718q-1.35 0-2.255-.526-.904-.543-1.332-1.432a4.6 4.6 0 0 1-.428-1.975q0-1.2.493-2.106a3.46 3.46 0 0 1 1.4-1.382q.889-.495 2.007-.494 1.744 0 2.584.97.855.956.856 2.7 0 .444-.05.92h-5.43q.18 1.005.708 1.45.542.443 1.497.443.79 0 1.3-.131a4 4 0 0 0 .938-.362l.542 1.267q-.411.263-1.119.46-.708.198-1.711.197zm1.596-4.558q.016-1.02-.444-1.432-.46-.428-1.316-.428-1.728 0-1.991 1.86z'/%3E%3Cpath d='M5.074 15.948a.484.657 0 0 0-.486.659v1.84a.484.657 0 0 0 .486.659h4.101a.484.657 0 0 0 .486-.659v-1.84a.484.657 0 0 0-.486-.659zm3.56 1.16H5.617v.838h3.017z' style='fill:%23fff;fill-rule:evenodd;stroke-width:1.03600001'/%3E%3Cg style='stroke-width:1.12603545'%3E%3Cpath d='M-9.408-1.416c-3.833-.025-7.056 2.912-7.08 6.615-.02 3.08 1.653 4.832 3.107 6.268.903.892 1.721 1.74 2.32 2.902l-.525-.004c-.543-.003-.992.304-1.24.639a1.87 1.87 0 0 0-.362 1.121l-.011 1.877c-.003.402.104.787.347 1.125.244.338.688.653 1.23.656l4.142.028c.542.003.99-.306 1.238-.641a1.87 1.87 0 0 0 .363-1.121l.012-1.875a1.87 1.87 0 0 0-.348-1.127c-.243-.338-.688-.653-1.23-.656l-.518-.004c.597-1.145 1.425-1.983 2.348-2.87 1.473-1.414 3.18-3.149 3.2-6.226-.016-3.59-2.923-6.684-6.993-6.707m-.006 1.1v.002c3.274.02 5.92 2.532 5.9 5.6-.017 2.706-1.39 4.026-2.863 5.44-1.034.994-2.118 2.033-2.814 3.633-.018.041-.052.055-.075.065q-.013.004-.02.01a.34.34 0 0 1-.226.084.34.34 0 0 1-.224-.086l-.092-.077c-.699-1.615-1.768-2.669-2.781-3.67-1.454-1.435-2.797-2.762-2.78-5.478.02-3.067 2.7-5.545 5.975-5.523m-.02 2.826c-1.62-.01-2.944 1.315-2.955 2.96-.01 1.646 1.295 2.988 2.916 2.999h.002c1.621.01 2.943-1.316 2.953-2.961.011-1.646-1.294-2.988-2.916-2.998m-.005 1.1c1.017.006 1.829.83 1.822 1.89s-.83 1.874-1.848 1.867c-1.018-.006-1.829-.83-1.822-1.89s.83-1.874 1.848-1.868m-2.155 11.857 4.14.025c.271.002.49.305.487.676l-.013 1.875c-.003.37-.224.67-.495.668l-4.14-.025c-.27-.002-.487-.306-.485-.676l.012-1.875c.003-.37.224-.67.494-.668' style='color:%23000;font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:%23000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:evenodd;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:%23000;solid-opacity:1;vector-effect:none;fill:%23000;fill-opacity:.4;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-9.415-.316C-12.69-.338-15.37 2.14-15.39 5.207c-.017 2.716 1.326 4.041 2.78 5.477 1.013 1 2.081 2.055 2.78 3.67l.092.076a.34.34 0 0 0 .225.086.34.34 0 0 0 .227-.083l.019-.01c.022-.009.057-.024.074-.064.697-1.6 1.78-2.64 2.814-3.634 1.473-1.414 2.847-2.733 2.864-5.44.02-3.067-2.627-5.58-5.901-5.601m-.057 8.784c1.621.011 2.944-1.315 2.955-2.96.01-1.646-1.295-2.988-2.916-2.999-1.622-.01-2.945 1.315-2.955 2.96s1.295 2.989 2.916 3' style='clip-rule:evenodd;fill:%23e1e3e9;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-11.594 15.465c-.27-.002-.492.297-.494.668l-.012 1.876c-.003.371.214.673.485.675l4.14.027c.271.002.492-.298.495-.668l.012-1.877c.003-.37-.215-.672-.485-.674z' style='clip-rule:evenodd;fill:%23fff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3C/g%3E%3C/svg%3E");background-repeat:no-repeat;cursor:pointer;display:block;height:23px;margin:0 0 -4px -4px;overflow:hidden;width:88px}a.maplibregl-ctrl-logo.maplibregl-compact{width:14px}@media (forced-colors:active){a.maplibregl-ctrl-logo{background-color:transparent;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='23' fill='none'%3E%3Cpath fill='%23000' fill-opacity='.4' fill-rule='evenodd' d='M17.408 16.796h-1.827l2.501-12.095h.198l3.324 6.533.988 2.19.988-2.19 3.258-6.533h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.929 5.644h-.098l-2.914-5.644-.757-1.71-.345 1.71zm1.958-3.42-.726 3.663a1.255 1.255 0 0 1-1.232 1.011h-1.827a1.255 1.255 0 0 1-1.229-1.509l2.501-12.095a1.255 1.255 0 0 1 1.23-1.001h.197a1.25 1.25 0 0 1 1.12.685l3.19 6.273 3.125-6.263a1.25 1.25 0 0 1 1.123-.695h.181a1.255 1.255 0 0 1 1.227.991l1.443 6.71a5 5 0 0 1 .314-.787l.009-.016a4.6 4.6 0 0 1 1.777-1.887c.782-.46 1.668-.667 2.611-.667a4.6 4.6 0 0 1 1.7.32l.306.134c.21-.16.474-.256.759-.256h1.694a1.255 1.255 0 0 1 1.212.925 1.255 1.255 0 0 1 1.212-.925h1.711c.284 0 .545.094.755.252.613-.3 1.312-.45 2.075-.45 1.356 0 2.557.445 3.482 1.4q.47.48.763 1.064V4.701a1.255 1.255 0 0 1 1.255-1.255h1.86A1.255 1.255 0 0 1 54.44 4.7v9.194h2.217c.19 0 .37.043.532.118v-4.77c0-.356.147-.678.385-.906a2.42 2.42 0 0 1-.682-1.71c0-.665.267-1.253.735-1.7a2.45 2.45 0 0 1 1.722-.674 2.43 2.43 0 0 1 1.705.675q.318.302.504.683V4.7a1.255 1.255 0 0 1 1.255-1.255h1.744A1.255 1.255 0 0 1 65.812 4.7v3.335a4.8 4.8 0 0 1 1.526-.246c.938 0 1.817.214 2.59.69a4.47 4.47 0 0 1 1.67 1.743v-.98a1.255 1.255 0 0 1 1.256-1.256h1.777c.233 0 .451.064.639.174a3.4 3.4 0 0 1 1.567-.372c.346 0 .861.02 1.285.232a1.25 1.25 0 0 1 .689 1.004 4.7 4.7 0 0 1 .853-.588c.795-.44 1.675-.647 2.61-.647 1.385 0 2.65.39 3.525 1.396.836.938 1.168 2.173 1.168 3.528q-.001.515-.056 1.051a1.255 1.255 0 0 1-.947 1.09l.408.952a1.255 1.255 0 0 1-.477 1.552c-.418.268-.92.463-1.458.612-.613.171-1.304.244-2.049.244-1.06 0-2.043-.207-2.886-.698l-.015-.008c-.798-.48-1.419-1.135-1.818-1.963l-.004-.008a5.8 5.8 0 0 1-.548-2.512q0-.429.053-.843a1.3 1.3 0 0 1-.333-.086l-.166-.004c-.223 0-.426.062-.643.228-.03.024-.142.139-.142.59v3.883a1.255 1.255 0 0 1-1.256 1.256h-1.777a1.255 1.255 0 0 1-1.256-1.256V15.69l-.032.057a4.8 4.8 0 0 1-1.86 1.833 5.04 5.04 0 0 1-2.484.634 4.5 4.5 0 0 1-1.935-.424 1.25 1.25 0 0 1-.764.258h-1.71a1.255 1.255 0 0 1-1.256-1.255V7.687a2.4 2.4 0 0 1-.428.625c.253.23.412.561.412.93v7.553a1.255 1.255 0 0 1-1.256 1.255h-1.843a1.25 1.25 0 0 1-.894-.373c-.228.23-.544.373-.894.373H51.32a1.255 1.255 0 0 1-1.256-1.255v-1.251l-.061.117a4.7 4.7 0 0 1-1.782 1.884 4.77 4.77 0 0 1-2.485.67 5.6 5.6 0 0 1-1.485-.188l.009 2.764a1.255 1.255 0 0 1-1.255 1.259h-1.729a1.255 1.255 0 0 1-1.255-1.255v-3.537a1.255 1.255 0 0 1-1.167.793h-1.679a1.25 1.25 0 0 1-.77-.263 4.5 4.5 0 0 1-1.945.429c-.885 0-1.724-.21-2.495-.632l-.017-.01a5 5 0 0 1-1.081-.836 1.255 1.255 0 0 1-1.254 1.312h-1.81a1.255 1.255 0 0 1-1.228-.99l-.782-3.625-2.044 3.939a1.25 1.25 0 0 1-1.115.676h-.098a1.25 1.25 0 0 1-1.116-.68l-2.061-3.994zM35.92 16.63l.207-.114.223-.15q.493-.356.735-.785l.061-.118.033 1.332h1.678V9.242h-1.694l-.033 1.267q-.133-.329-.526-.658l-.032-.028a3.2 3.2 0 0 0-.668-.428l-.27-.12a3.3 3.3 0 0 0-1.235-.23q-1.136-.001-1.974.493a3.36 3.36 0 0 0-1.3 1.382q-.445.89-.444 2.074 0 1.2.51 2.107a3.8 3.8 0 0 0 1.382 1.381 3.9 3.9 0 0 0 1.893.477q.795 0 1.455-.33zm-2.789-5.38q-.576.675-.575 1.762 0 1.102.559 1.794.576.675 1.645.675a2.25 2.25 0 0 0 .934-.19 2.2 2.2 0 0 0 .468-.29l.178-.161a2.2 2.2 0 0 0 .397-.561q.244-.5.244-1.15v-.115q0-.708-.296-1.267l-.043-.077a2.2 2.2 0 0 0-.633-.709l-.13-.086-.047-.028a2.1 2.1 0 0 0-1.073-.285q-1.052 0-1.629.692zm2.316 2.706c.163-.17.28-.407.28-.83v-.114c0-.292-.06-.508-.15-.68a.96.96 0 0 0-.353-.389.85.85 0 0 0-.464-.127c-.4 0-.56.114-.664.239l-.01.012c-.148.174-.275.45-.275.945 0 .506.122.801.27.99.097.11.266.224.68.224.303 0 .504-.09.687-.269zm7.545 1.705a2.6 2.6 0 0 0 .331.423q.319.33.755.548l.173.074q.65.255 1.49.255 1.02 0 1.844-.493a3.45 3.45 0 0 0 1.316-1.4q.493-.904.493-2.089 0-1.909-.988-2.913-.988-1.02-2.584-1.02-.898 0-1.575.347a3 3 0 0 0-.415.262l-.199.166a3.4 3.4 0 0 0-.64.82V9.242h-1.712v11.553h1.729l-.017-5.134zm.53-1.138q.206.29.48.5l.155.11.053.034q.51.296 1.119.297 1.07 0 1.645-.675.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.435 0-.835.16a2 2 0 0 0-.284.136 2 2 0 0 0-.363.254 2.2 2.2 0 0 0-.46.569l-.082.162a2.6 2.6 0 0 0-.213 1.072v.115q0 .707.296 1.267l.135.211zm.964-.818a1.1 1.1 0 0 0 .367.385.94.94 0 0 0 .476.118c.423 0 .59-.117.687-.23.159-.194.28-.478.28-.95 0-.53-.133-.8-.266-.952l-.021-.025c-.078-.094-.231-.221-.68-.221a1 1 0 0 0-.503.135l-.012.007a.86.86 0 0 0-.335.343c-.073.133-.132.324-.132.614v.115a1.4 1.4 0 0 0 .14.66zm15.7-6.222q.347-.346.346-.856a1.05 1.05 0 0 0-.345-.79 1.18 1.18 0 0 0-.84-.329q-.51 0-.855.33a1.05 1.05 0 0 0-.346.79q0 .51.346.855.345.346.856.346.51 0 .839-.346zm4.337 9.314.033-1.332q.191.403.59.747l.098.081a4 4 0 0 0 .316.224l.223.122a3.2 3.2 0 0 0 1.44.322 3.8 3.8 0 0 0 1.875-.477 3.5 3.5 0 0 0 1.382-1.366q.527-.89.526-2.09 0-1.184-.444-2.073a3.24 3.24 0 0 0-1.283-1.399q-.823-.51-1.942-.51a3.5 3.5 0 0 0-1.527.344l-.086.043-.165.09a3 3 0 0 0-.33.214q-.432.315-.656.707a2 2 0 0 0-.099.198l.082-1.283V4.701h-1.744v12.095zm.473-2.509a2.5 2.5 0 0 0 .566.7q.117.098.245.18l.144.08a2.1 2.1 0 0 0 .975.232q1.07 0 1.645-.675.576-.69.576-1.778 0-1.102-.576-1.777-.56-.691-1.645-.692a2.2 2.2 0 0 0-1.015.235q-.22.113-.415.282l-.15.142a2.1 2.1 0 0 0-.42.594q-.223.479-.223 1.1v.115q0 .705.293 1.26zm2.616-.293c.157-.191.28-.479.28-.967 0-.51-.13-.79-.276-.961l-.021-.026c-.082-.1-.232-.225-.67-.225a.87.87 0 0 0-.681.279l-.012.011c-.154.155-.274.38-.274.807v.115c0 .285.057.499.144.669a1.1 1.1 0 0 0 .367.405c.137.082.28.123.455.123.423 0 .59-.118.686-.23zm8.266-3.013q.345-.13.724-.14l.069-.002q.493 0 .642.099l.247-1.794q-.196-.099-.717-.099a2.3 2.3 0 0 0-.545.063 2 2 0 0 0-.411.148 2.2 2.2 0 0 0-.4.249 2.5 2.5 0 0 0-.485.499 2.7 2.7 0 0 0-.32.581l-.05.137v-1.48h-1.778v7.553h1.777v-3.884q0-.546.159-.943a1.5 1.5 0 0 1 .466-.636 2.5 2.5 0 0 1 .399-.253 2 2 0 0 1 .224-.099zm9.784 2.656.05-.922q0-1.743-.856-2.698-.838-.97-2.584-.97-1.119-.001-2.007.493a3.46 3.46 0 0 0-1.4 1.382q-.493.906-.493 2.106 0 1.07.428 1.975.428.89 1.332 1.432.906.526 2.255.526.973 0 1.668-.185l.044-.012.135-.04q.613-.184.984-.421l-.542-1.267q-.3.162-.642.274l-.297.087q-.51.131-1.3.131-.954 0-1.497-.444a1.6 1.6 0 0 1-.192-.193q-.366-.44-.512-1.234l-.004-.021zm-5.427-1.256-.003.022h3.752v-.138q-.011-.727-.288-1.118a1 1 0 0 0-.156-.176q-.46-.428-1.316-.428-.986 0-1.494.604-.379.45-.494 1.234zm-27.053 2.77V4.7h-1.86v12.095h5.333V15.15zm7.103-5.908v7.553h-1.843V9.242h1.843z'/%3E%3Cpath fill='%23fff' d='m19.63 11.151-.757-1.71-.345 1.71-1.12 5.644h-1.827L18.083 4.7h.197l3.325 6.533.988 2.19.988-2.19L26.839 4.7h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.93 5.644h-.098l-2.913-5.644zm14.836 5.81q-1.02 0-1.893-.478a3.8 3.8 0 0 1-1.381-1.382q-.51-.906-.51-2.106 0-1.185.444-2.074a3.36 3.36 0 0 1 1.3-1.382q.839-.494 1.974-.494a3.3 3.3 0 0 1 1.234.231 3.3 3.3 0 0 1 .97.575q.396.33.527.659l.033-1.267h1.694v7.553H37.18l-.033-1.332q-.279.593-1.02 1.053a3.17 3.17 0 0 1-1.662.444zm.296-1.482q.938 0 1.58-.642.642-.66.642-1.711v-.115q0-.708-.296-1.267a2.2 2.2 0 0 0-.807-.872 2.1 2.1 0 0 0-1.119-.313q-1.053 0-1.629.692-.575.675-.575 1.76 0 1.103.559 1.795.577.675 1.645.675zm6.521-6.237h1.711v1.4q.906-1.597 2.83-1.597 1.596 0 2.584 1.02.988 1.005.988 2.914 0 1.185-.493 2.09a3.46 3.46 0 0 1-1.316 1.399 3.5 3.5 0 0 1-1.844.493q-.954 0-1.662-.329a2.67 2.67 0 0 1-1.086-.97l.017 5.134h-1.728zm4.048 6.22q1.07 0 1.645-.674.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.592 0-1.12.296-.51.28-.822.823-.296.527-.296 1.234v.115q0 .708.296 1.267.313.543.823.855.51.296 1.119.297z'/%3E%3Cpath fill='%23e1e3e9' d='M51.325 4.7h1.86v10.45h3.473v1.646h-5.333zm7.12 4.542h1.843v7.553h-1.843zm.905-1.415a1.16 1.16 0 0 1-.856-.346 1.17 1.17 0 0 1-.346-.856 1.05 1.05 0 0 1 .346-.79q.346-.329.856-.329.494 0 .839.33a1.05 1.05 0 0 1 .345.79 1.16 1.16 0 0 1-.345.855q-.33.346-.84.346zm7.875 9.133a3.17 3.17 0 0 1-1.662-.444q-.723-.46-1.004-1.053l-.033 1.332h-1.71V4.701h1.743v4.657l-.082 1.283q.279-.658 1.086-1.119a3.5 3.5 0 0 1 1.778-.477q1.119 0 1.942.51a3.24 3.24 0 0 1 1.283 1.4q.445.888.444 2.072 0 1.201-.526 2.09a3.5 3.5 0 0 1-1.382 1.366 3.8 3.8 0 0 1-1.876.477zm-.296-1.481q1.069 0 1.645-.675.577-.69.577-1.778 0-1.102-.577-1.776-.56-.691-1.645-.692a2.12 2.12 0 0 0-1.58.659q-.642.641-.642 1.694v.115q0 .71.296 1.267a2.4 2.4 0 0 0 .807.872 2.1 2.1 0 0 0 1.119.313zm5.927-6.237h1.777v1.481q.263-.757.856-1.217a2.14 2.14 0 0 1 1.349-.46q.527 0 .724.098l-.247 1.794q-.149-.099-.642-.099-.774 0-1.416.494-.626.493-.626 1.58v3.883h-1.777V9.242zm9.534 7.718q-1.35 0-2.255-.526-.904-.543-1.332-1.432a4.6 4.6 0 0 1-.428-1.975q0-1.2.493-2.106a3.46 3.46 0 0 1 1.4-1.382q.889-.495 2.007-.494 1.744 0 2.584.97.855.956.856 2.7 0 .444-.05.92h-5.43q.18 1.005.708 1.45.542.443 1.497.443.79 0 1.3-.131a4 4 0 0 0 .938-.362l.542 1.267q-.411.263-1.119.46-.708.198-1.711.197zm1.596-4.558q.016-1.02-.444-1.432-.46-.428-1.316-.428-1.728 0-1.991 1.86z'/%3E%3Cpath d='M5.074 15.948a.484.657 0 0 0-.486.659v1.84a.484.657 0 0 0 .486.659h4.101a.484.657 0 0 0 .486-.659v-1.84a.484.657 0 0 0-.486-.659zm3.56 1.16H5.617v.838h3.017z' style='fill:%23fff;fill-rule:evenodd;stroke-width:1.03600001'/%3E%3Cg style='stroke-width:1.12603545'%3E%3Cpath d='M-9.408-1.416c-3.833-.025-7.056 2.912-7.08 6.615-.02 3.08 1.653 4.832 3.107 6.268.903.892 1.721 1.74 2.32 2.902l-.525-.004c-.543-.003-.992.304-1.24.639a1.87 1.87 0 0 0-.362 1.121l-.011 1.877c-.003.402.104.787.347 1.125.244.338.688.653 1.23.656l4.142.028c.542.003.99-.306 1.238-.641a1.87 1.87 0 0 0 .363-1.121l.012-1.875a1.87 1.87 0 0 0-.348-1.127c-.243-.338-.688-.653-1.23-.656l-.518-.004c.597-1.145 1.425-1.983 2.348-2.87 1.473-1.414 3.18-3.149 3.2-6.226-.016-3.59-2.923-6.684-6.993-6.707m-.006 1.1v.002c3.274.02 5.92 2.532 5.9 5.6-.017 2.706-1.39 4.026-2.863 5.44-1.034.994-2.118 2.033-2.814 3.633-.018.041-.052.055-.075.065q-.013.004-.02.01a.34.34 0 0 1-.226.084.34.34 0 0 1-.224-.086l-.092-.077c-.699-1.615-1.768-2.669-2.781-3.67-1.454-1.435-2.797-2.762-2.78-5.478.02-3.067 2.7-5.545 5.975-5.523m-.02 2.826c-1.62-.01-2.944 1.315-2.955 2.96-.01 1.646 1.295 2.988 2.916 2.999h.002c1.621.01 2.943-1.316 2.953-2.961.011-1.646-1.294-2.988-2.916-2.998m-.005 1.1c1.017.006 1.829.83 1.822 1.89s-.83 1.874-1.848 1.867c-1.018-.006-1.829-.83-1.822-1.89s.83-1.874 1.848-1.868m-2.155 11.857 4.14.025c.271.002.49.305.487.676l-.013 1.875c-.003.37-.224.67-.495.668l-4.14-.025c-.27-.002-.487-.306-.485-.676l.012-1.875c.003-.37.224-.67.494-.668' style='color:%23000;font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:%23000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:evenodd;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:%23000;solid-opacity:1;vector-effect:none;fill:%23000;fill-opacity:.4;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-9.415-.316C-12.69-.338-15.37 2.14-15.39 5.207c-.017 2.716 1.326 4.041 2.78 5.477 1.013 1 2.081 2.055 2.78 3.67l.092.076a.34.34 0 0 0 .225.086.34.34 0 0 0 .227-.083l.019-.01c.022-.009.057-.024.074-.064.697-1.6 1.78-2.64 2.814-3.634 1.473-1.414 2.847-2.733 2.864-5.44.02-3.067-2.627-5.58-5.901-5.601m-.057 8.784c1.621.011 2.944-1.315 2.955-2.96.01-1.646-1.295-2.988-2.916-2.999-1.622-.01-2.945 1.315-2.955 2.96s1.295 2.989 2.916 3' style='clip-rule:evenodd;fill:%23e1e3e9;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-11.594 15.465c-.27-.002-.492.297-.494.668l-.012 1.876c-.003.371.214.673.485.675l4.14.027c.271.002.492-.298.495-.668l.012-1.877c.003-.37-.215-.672-.485-.674z' style='clip-rule:evenodd;fill:%23fff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3C/g%3E%3C/svg%3E")}}@media (forced-colors:active) and (prefers-color-scheme:light){a.maplibregl-ctrl-logo{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='23' fill='none'%3E%3Cpath fill='%23000' fill-opacity='.4' fill-rule='evenodd' d='M17.408 16.796h-1.827l2.501-12.095h.198l3.324 6.533.988 2.19.988-2.19 3.258-6.533h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.929 5.644h-.098l-2.914-5.644-.757-1.71-.345 1.71zm1.958-3.42-.726 3.663a1.255 1.255 0 0 1-1.232 1.011h-1.827a1.255 1.255 0 0 1-1.229-1.509l2.501-12.095a1.255 1.255 0 0 1 1.23-1.001h.197a1.25 1.25 0 0 1 1.12.685l3.19 6.273 3.125-6.263a1.25 1.25 0 0 1 1.123-.695h.181a1.255 1.255 0 0 1 1.227.991l1.443 6.71a5 5 0 0 1 .314-.787l.009-.016a4.6 4.6 0 0 1 1.777-1.887c.782-.46 1.668-.667 2.611-.667a4.6 4.6 0 0 1 1.7.32l.306.134c.21-.16.474-.256.759-.256h1.694a1.255 1.255 0 0 1 1.212.925 1.255 1.255 0 0 1 1.212-.925h1.711c.284 0 .545.094.755.252.613-.3 1.312-.45 2.075-.45 1.356 0 2.557.445 3.482 1.4q.47.48.763 1.064V4.701a1.255 1.255 0 0 1 1.255-1.255h1.86A1.255 1.255 0 0 1 54.44 4.7v9.194h2.217c.19 0 .37.043.532.118v-4.77c0-.356.147-.678.385-.906a2.42 2.42 0 0 1-.682-1.71c0-.665.267-1.253.735-1.7a2.45 2.45 0 0 1 1.722-.674 2.43 2.43 0 0 1 1.705.675q.318.302.504.683V4.7a1.255 1.255 0 0 1 1.255-1.255h1.744A1.255 1.255 0 0 1 65.812 4.7v3.335a4.8 4.8 0 0 1 1.526-.246c.938 0 1.817.214 2.59.69a4.47 4.47 0 0 1 1.67 1.743v-.98a1.255 1.255 0 0 1 1.256-1.256h1.777c.233 0 .451.064.639.174a3.4 3.4 0 0 1 1.567-.372c.346 0 .861.02 1.285.232a1.25 1.25 0 0 1 .689 1.004 4.7 4.7 0 0 1 .853-.588c.795-.44 1.675-.647 2.61-.647 1.385 0 2.65.39 3.525 1.396.836.938 1.168 2.173 1.168 3.528q-.001.515-.056 1.051a1.255 1.255 0 0 1-.947 1.09l.408.952a1.255 1.255 0 0 1-.477 1.552c-.418.268-.92.463-1.458.612-.613.171-1.304.244-2.049.244-1.06 0-2.043-.207-2.886-.698l-.015-.008c-.798-.48-1.419-1.135-1.818-1.963l-.004-.008a5.8 5.8 0 0 1-.548-2.512q0-.429.053-.843a1.3 1.3 0 0 1-.333-.086l-.166-.004c-.223 0-.426.062-.643.228-.03.024-.142.139-.142.59v3.883a1.255 1.255 0 0 1-1.256 1.256h-1.777a1.255 1.255 0 0 1-1.256-1.256V15.69l-.032.057a4.8 4.8 0 0 1-1.86 1.833 5.04 5.04 0 0 1-2.484.634 4.5 4.5 0 0 1-1.935-.424 1.25 1.25 0 0 1-.764.258h-1.71a1.255 1.255 0 0 1-1.256-1.255V7.687a2.4 2.4 0 0 1-.428.625c.253.23.412.561.412.93v7.553a1.255 1.255 0 0 1-1.256 1.255h-1.843a1.25 1.25 0 0 1-.894-.373c-.228.23-.544.373-.894.373H51.32a1.255 1.255 0 0 1-1.256-1.255v-1.251l-.061.117a4.7 4.7 0 0 1-1.782 1.884 4.77 4.77 0 0 1-2.485.67 5.6 5.6 0 0 1-1.485-.188l.009 2.764a1.255 1.255 0 0 1-1.255 1.259h-1.729a1.255 1.255 0 0 1-1.255-1.255v-3.537a1.255 1.255 0 0 1-1.167.793h-1.679a1.25 1.25 0 0 1-.77-.263 4.5 4.5 0 0 1-1.945.429c-.885 0-1.724-.21-2.495-.632l-.017-.01a5 5 0 0 1-1.081-.836 1.255 1.255 0 0 1-1.254 1.312h-1.81a1.255 1.255 0 0 1-1.228-.99l-.782-3.625-2.044 3.939a1.25 1.25 0 0 1-1.115.676h-.098a1.25 1.25 0 0 1-1.116-.68l-2.061-3.994zM35.92 16.63l.207-.114.223-.15q.493-.356.735-.785l.061-.118.033 1.332h1.678V9.242h-1.694l-.033 1.267q-.133-.329-.526-.658l-.032-.028a3.2 3.2 0 0 0-.668-.428l-.27-.12a3.3 3.3 0 0 0-1.235-.23q-1.136-.001-1.974.493a3.36 3.36 0 0 0-1.3 1.382q-.445.89-.444 2.074 0 1.2.51 2.107a3.8 3.8 0 0 0 1.382 1.381 3.9 3.9 0 0 0 1.893.477q.795 0 1.455-.33zm-2.789-5.38q-.576.675-.575 1.762 0 1.102.559 1.794.576.675 1.645.675a2.25 2.25 0 0 0 .934-.19 2.2 2.2 0 0 0 .468-.29l.178-.161a2.2 2.2 0 0 0 .397-.561q.244-.5.244-1.15v-.115q0-.708-.296-1.267l-.043-.077a2.2 2.2 0 0 0-.633-.709l-.13-.086-.047-.028a2.1 2.1 0 0 0-1.073-.285q-1.052 0-1.629.692zm2.316 2.706c.163-.17.28-.407.28-.83v-.114c0-.292-.06-.508-.15-.68a.96.96 0 0 0-.353-.389.85.85 0 0 0-.464-.127c-.4 0-.56.114-.664.239l-.01.012c-.148.174-.275.45-.275.945 0 .506.122.801.27.99.097.11.266.224.68.224.303 0 .504-.09.687-.269zm7.545 1.705a2.6 2.6 0 0 0 .331.423q.319.33.755.548l.173.074q.65.255 1.49.255 1.02 0 1.844-.493a3.45 3.45 0 0 0 1.316-1.4q.493-.904.493-2.089 0-1.909-.988-2.913-.988-1.02-2.584-1.02-.898 0-1.575.347a3 3 0 0 0-.415.262l-.199.166a3.4 3.4 0 0 0-.64.82V9.242h-1.712v11.553h1.729l-.017-5.134zm.53-1.138q.206.29.48.5l.155.11.053.034q.51.296 1.119.297 1.07 0 1.645-.675.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.435 0-.835.16a2 2 0 0 0-.284.136 2 2 0 0 0-.363.254 2.2 2.2 0 0 0-.46.569l-.082.162a2.6 2.6 0 0 0-.213 1.072v.115q0 .707.296 1.267l.135.211zm.964-.818a1.1 1.1 0 0 0 .367.385.94.94 0 0 0 .476.118c.423 0 .59-.117.687-.23.159-.194.28-.478.28-.95 0-.53-.133-.8-.266-.952l-.021-.025c-.078-.094-.231-.221-.68-.221a1 1 0 0 0-.503.135l-.012.007a.86.86 0 0 0-.335.343c-.073.133-.132.324-.132.614v.115a1.4 1.4 0 0 0 .14.66zm15.7-6.222q.347-.346.346-.856a1.05 1.05 0 0 0-.345-.79 1.18 1.18 0 0 0-.84-.329q-.51 0-.855.33a1.05 1.05 0 0 0-.346.79q0 .51.346.855.345.346.856.346.51 0 .839-.346zm4.337 9.314.033-1.332q.191.403.59.747l.098.081a4 4 0 0 0 .316.224l.223.122a3.2 3.2 0 0 0 1.44.322 3.8 3.8 0 0 0 1.875-.477 3.5 3.5 0 0 0 1.382-1.366q.527-.89.526-2.09 0-1.184-.444-2.073a3.24 3.24 0 0 0-1.283-1.399q-.823-.51-1.942-.51a3.5 3.5 0 0 0-1.527.344l-.086.043-.165.09a3 3 0 0 0-.33.214q-.432.315-.656.707a2 2 0 0 0-.099.198l.082-1.283V4.701h-1.744v12.095zm.473-2.509a2.5 2.5 0 0 0 .566.7q.117.098.245.18l.144.08a2.1 2.1 0 0 0 .975.232q1.07 0 1.645-.675.576-.69.576-1.778 0-1.102-.576-1.777-.56-.691-1.645-.692a2.2 2.2 0 0 0-1.015.235q-.22.113-.415.282l-.15.142a2.1 2.1 0 0 0-.42.594q-.223.479-.223 1.1v.115q0 .705.293 1.26zm2.616-.293c.157-.191.28-.479.28-.967 0-.51-.13-.79-.276-.961l-.021-.026c-.082-.1-.232-.225-.67-.225a.87.87 0 0 0-.681.279l-.012.011c-.154.155-.274.38-.274.807v.115c0 .285.057.499.144.669a1.1 1.1 0 0 0 .367.405c.137.082.28.123.455.123.423 0 .59-.118.686-.23zm8.266-3.013q.345-.13.724-.14l.069-.002q.493 0 .642.099l.247-1.794q-.196-.099-.717-.099a2.3 2.3 0 0 0-.545.063 2 2 0 0 0-.411.148 2.2 2.2 0 0 0-.4.249 2.5 2.5 0 0 0-.485.499 2.7 2.7 0 0 0-.32.581l-.05.137v-1.48h-1.778v7.553h1.777v-3.884q0-.546.159-.943a1.5 1.5 0 0 1 .466-.636 2.5 2.5 0 0 1 .399-.253 2 2 0 0 1 .224-.099zm9.784 2.656.05-.922q0-1.743-.856-2.698-.838-.97-2.584-.97-1.119-.001-2.007.493a3.46 3.46 0 0 0-1.4 1.382q-.493.906-.493 2.106 0 1.07.428 1.975.428.89 1.332 1.432.906.526 2.255.526.973 0 1.668-.185l.044-.012.135-.04q.613-.184.984-.421l-.542-1.267q-.3.162-.642.274l-.297.087q-.51.131-1.3.131-.954 0-1.497-.444a1.6 1.6 0 0 1-.192-.193q-.366-.44-.512-1.234l-.004-.021zm-5.427-1.256-.003.022h3.752v-.138q-.011-.727-.288-1.118a1 1 0 0 0-.156-.176q-.46-.428-1.316-.428-.986 0-1.494.604-.379.45-.494 1.234zm-27.053 2.77V4.7h-1.86v12.095h5.333V15.15zm7.103-5.908v7.553h-1.843V9.242h1.843z'/%3E%3Cpath fill='%23fff' d='m19.63 11.151-.757-1.71-.345 1.71-1.12 5.644h-1.827L18.083 4.7h.197l3.325 6.533.988 2.19.988-2.19L26.839 4.7h.181l2.6 12.095h-1.81l-1.218-5.644-.362-1.71-.658 1.71-2.93 5.644h-.098l-2.913-5.644zm14.836 5.81q-1.02 0-1.893-.478a3.8 3.8 0 0 1-1.381-1.382q-.51-.906-.51-2.106 0-1.185.444-2.074a3.36 3.36 0 0 1 1.3-1.382q.839-.494 1.974-.494a3.3 3.3 0 0 1 1.234.231 3.3 3.3 0 0 1 .97.575q.396.33.527.659l.033-1.267h1.694v7.553H37.18l-.033-1.332q-.279.593-1.02 1.053a3.17 3.17 0 0 1-1.662.444zm.296-1.482q.938 0 1.58-.642.642-.66.642-1.711v-.115q0-.708-.296-1.267a2.2 2.2 0 0 0-.807-.872 2.1 2.1 0 0 0-1.119-.313q-1.053 0-1.629.692-.575.675-.575 1.76 0 1.103.559 1.795.577.675 1.645.675zm6.521-6.237h1.711v1.4q.906-1.597 2.83-1.597 1.596 0 2.584 1.02.988 1.005.988 2.914 0 1.185-.493 2.09a3.46 3.46 0 0 1-1.316 1.399 3.5 3.5 0 0 1-1.844.493q-.954 0-1.662-.329a2.67 2.67 0 0 1-1.086-.97l.017 5.134h-1.728zm4.048 6.22q1.07 0 1.645-.674.577-.69.576-1.762 0-1.119-.576-1.777-.558-.675-1.645-.675-.592 0-1.12.296-.51.28-.822.823-.296.527-.296 1.234v.115q0 .708.296 1.267.313.543.823.855.51.296 1.119.297z'/%3E%3Cpath fill='%23e1e3e9' d='M51.325 4.7h1.86v10.45h3.473v1.646h-5.333zm7.12 4.542h1.843v7.553h-1.843zm.905-1.415a1.16 1.16 0 0 1-.856-.346 1.17 1.17 0 0 1-.346-.856 1.05 1.05 0 0 1 .346-.79q.346-.329.856-.329.494 0 .839.33a1.05 1.05 0 0 1 .345.79 1.16 1.16 0 0 1-.345.855q-.33.346-.84.346zm7.875 9.133a3.17 3.17 0 0 1-1.662-.444q-.723-.46-1.004-1.053l-.033 1.332h-1.71V4.701h1.743v4.657l-.082 1.283q.279-.658 1.086-1.119a3.5 3.5 0 0 1 1.778-.477q1.119 0 1.942.51a3.24 3.24 0 0 1 1.283 1.4q.445.888.444 2.072 0 1.201-.526 2.09a3.5 3.5 0 0 1-1.382 1.366 3.8 3.8 0 0 1-1.876.477zm-.296-1.481q1.069 0 1.645-.675.577-.69.577-1.778 0-1.102-.577-1.776-.56-.691-1.645-.692a2.12 2.12 0 0 0-1.58.659q-.642.641-.642 1.694v.115q0 .71.296 1.267a2.4 2.4 0 0 0 .807.872 2.1 2.1 0 0 0 1.119.313zm5.927-6.237h1.777v1.481q.263-.757.856-1.217a2.14 2.14 0 0 1 1.349-.46q.527 0 .724.098l-.247 1.794q-.149-.099-.642-.099-.774 0-1.416.494-.626.493-.626 1.58v3.883h-1.777V9.242zm9.534 7.718q-1.35 0-2.255-.526-.904-.543-1.332-1.432a4.6 4.6 0 0 1-.428-1.975q0-1.2.493-2.106a3.46 3.46 0 0 1 1.4-1.382q.889-.495 2.007-.494 1.744 0 2.584.97.855.956.856 2.7 0 .444-.05.92h-5.43q.18 1.005.708 1.45.542.443 1.497.443.79 0 1.3-.131a4 4 0 0 0 .938-.362l.542 1.267q-.411.263-1.119.46-.708.198-1.711.197zm1.596-4.558q.016-1.02-.444-1.432-.46-.428-1.316-.428-1.728 0-1.991 1.86z'/%3E%3Cpath d='M5.074 15.948a.484.657 0 0 0-.486.659v1.84a.484.657 0 0 0 .486.659h4.101a.484.657 0 0 0 .486-.659v-1.84a.484.657 0 0 0-.486-.659zm3.56 1.16H5.617v.838h3.017z' style='fill:%23fff;fill-rule:evenodd;stroke-width:1.03600001'/%3E%3Cg style='stroke-width:1.12603545'%3E%3Cpath d='M-9.408-1.416c-3.833-.025-7.056 2.912-7.08 6.615-.02 3.08 1.653 4.832 3.107 6.268.903.892 1.721 1.74 2.32 2.902l-.525-.004c-.543-.003-.992.304-1.24.639a1.87 1.87 0 0 0-.362 1.121l-.011 1.877c-.003.402.104.787.347 1.125.244.338.688.653 1.23.656l4.142.028c.542.003.99-.306 1.238-.641a1.87 1.87 0 0 0 .363-1.121l.012-1.875a1.87 1.87 0 0 0-.348-1.127c-.243-.338-.688-.653-1.23-.656l-.518-.004c.597-1.145 1.425-1.983 2.348-2.87 1.473-1.414 3.18-3.149 3.2-6.226-.016-3.59-2.923-6.684-6.993-6.707m-.006 1.1v.002c3.274.02 5.92 2.532 5.9 5.6-.017 2.706-1.39 4.026-2.863 5.44-1.034.994-2.118 2.033-2.814 3.633-.018.041-.052.055-.075.065q-.013.004-.02.01a.34.34 0 0 1-.226.084.34.34 0 0 1-.224-.086l-.092-.077c-.699-1.615-1.768-2.669-2.781-3.67-1.454-1.435-2.797-2.762-2.78-5.478.02-3.067 2.7-5.545 5.975-5.523m-.02 2.826c-1.62-.01-2.944 1.315-2.955 2.96-.01 1.646 1.295 2.988 2.916 2.999h.002c1.621.01 2.943-1.316 2.953-2.961.011-1.646-1.294-2.988-2.916-2.998m-.005 1.1c1.017.006 1.829.83 1.822 1.89s-.83 1.874-1.848 1.867c-1.018-.006-1.829-.83-1.822-1.89s.83-1.874 1.848-1.868m-2.155 11.857 4.14.025c.271.002.49.305.487.676l-.013 1.875c-.003.37-.224.67-.495.668l-4.14-.025c-.27-.002-.487-.306-.485-.676l.012-1.875c.003-.37.224-.67.494-.668' style='color:%23000;font-style:normal;font-variant:normal;font-weight:400;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:%23000;letter-spacing:normal;word-spacing:normal;text-transform:none;writing-mode:lr-tb;direction:ltr;text-orientation:mixed;dominant-baseline:auto;baseline-shift:baseline;text-anchor:start;white-space:normal;shape-padding:0;clip-rule:evenodd;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:%23000;solid-opacity:1;vector-effect:none;fill:%23000;fill-opacity:.4;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-9.415-.316C-12.69-.338-15.37 2.14-15.39 5.207c-.017 2.716 1.326 4.041 2.78 5.477 1.013 1 2.081 2.055 2.78 3.67l.092.076a.34.34 0 0 0 .225.086.34.34 0 0 0 .227-.083l.019-.01c.022-.009.057-.024.074-.064.697-1.6 1.78-2.64 2.814-3.634 1.473-1.414 2.847-2.733 2.864-5.44.02-3.067-2.627-5.58-5.901-5.601m-.057 8.784c1.621.011 2.944-1.315 2.955-2.96.01-1.646-1.295-2.988-2.916-2.999-1.622-.01-2.945 1.315-2.955 2.96s1.295 2.989 2.916 3' style='clip-rule:evenodd;fill:%23e1e3e9;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3Cpath d='M-11.594 15.465c-.27-.002-.492.297-.494.668l-.012 1.876c-.003.371.214.673.485.675l4.14.027c.271.002.492-.298.495-.668l.012-1.877c.003-.37-.215-.672-.485-.674z' style='clip-rule:evenodd;fill:%23fff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.47727823;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:.4' transform='translate(15.553 2.85)scale(.88807)'/%3E%3C/g%3E%3C/svg%3E")}}.maplibregl-ctrl.maplibregl-ctrl-attrib{background-color:hsla(0,0%,100%,.5);margin:0;padding:0 5px}@media screen{.maplibregl-ctrl-attrib.maplibregl-compact{background-color:#fff;border-radius:12px;box-sizing:content-box;color:#000;margin:10px;min-height:20px;padding:2px 24px 2px 0;position:relative}.maplibregl-ctrl-attrib.maplibregl-compact-show{padding:2px 28px 2px 8px;visibility:visible}.maplibregl-ctrl-bottom-left>.maplibregl-ctrl-attrib.maplibregl-compact-show,.maplibregl-ctrl-top-left>.maplibregl-ctrl-attrib.maplibregl-compact-show{border-radius:12px;padding:2px 8px 2px 28px}.maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-inner{display:none}.maplibregl-ctrl-attrib-button{background-color:hsla(0,0%,100%,.5);background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E");border:0;border-radius:12px;box-sizing:border-box;cursor:pointer;display:none;height:24px;outline:none;position:absolute;right:0;top:0;width:24px}.maplibregl-ctrl-attrib summary.maplibregl-ctrl-attrib-button{-webkit-appearance:none;-moz-appearance:none;appearance:none;list-style:none}.maplibregl-ctrl-attrib summary.maplibregl-ctrl-attrib-button::-webkit-details-marker{display:none}.maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib-button,.maplibregl-ctrl-top-left .maplibregl-ctrl-attrib-button{left:0}.maplibregl-ctrl-attrib.maplibregl-compact .maplibregl-ctrl-attrib-button,.maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-inner{display:block}.maplibregl-ctrl-attrib.maplibregl-compact-show .maplibregl-ctrl-attrib-button{background-color:rgb(0 0 0/5%)}.maplibregl-ctrl-bottom-right>.maplibregl-ctrl-attrib.maplibregl-compact:after{bottom:0;right:0}.maplibregl-ctrl-top-right>.maplibregl-ctrl-attrib.maplibregl-compact:after{right:0;top:0}.maplibregl-ctrl-top-left>.maplibregl-ctrl-attrib.maplibregl-compact:after{left:0;top:0}.maplibregl-ctrl-bottom-left>.maplibregl-ctrl-attrib.maplibregl-compact:after{bottom:0;left:0}}@media screen and (forced-colors:active){.maplibregl-ctrl-attrib.maplibregl-compact:after{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='%23fff' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E")}}@media screen and (forced-colors:active) and (prefers-color-scheme:light){.maplibregl-ctrl-attrib.maplibregl-compact:after{background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill-rule='evenodd' viewBox='0 0 20 20'%3E%3Cpath d='M4 10a6 6 0 1 0 12 0 6 6 0 1 0-12 0m5-3a1 1 0 1 0 2 0 1 1 0 1 0-2 0m0 3a1 1 0 1 1 2 0v3a1 1 0 1 1-2 0'/%3E%3C/svg%3E")}}.maplibregl-ctrl-attrib a{color:rgba(0,0,0,.75);text-decoration:none}.maplibregl-ctrl-attrib a:hover{color:inherit;text-decoration:underline}.maplibregl-attrib-empty{display:none}.maplibregl-ctrl-scale{background-color:hsla(0,0%,100%,.75);border:2px solid #333;border-top:#333;box-sizing:border-box;color:#333;font-size:10px;padding:0 5px}.maplibregl-popup{display:flex;left:0;pointer-events:none;position:absolute;top:0;will-change:transform}.maplibregl-popup-anchor-top,.maplibregl-popup-anchor-top-left,.maplibregl-popup-anchor-top-right{flex-direction:column}.maplibregl-popup-anchor-bottom,.maplibregl-popup-anchor-bottom-left,.maplibregl-popup-anchor-bottom-right{flex-direction:column-reverse}.maplibregl-popup-anchor-left{flex-direction:row}.maplibregl-popup-anchor-right{flex-direction:row-reverse}.maplibregl-popup-tip{border:10px solid transparent;height:0;width:0;z-index:1}.maplibregl-popup-anchor-top .maplibregl-popup-tip{align-self:center;border-bottom-color:#fff;border-top:none}.maplibregl-popup-anchor-top-left .maplibregl-popup-tip{align-self:flex-start;border-bottom-color:#fff;border-left:none;border-top:none}.maplibregl-popup-anchor-top-right .maplibregl-popup-tip{align-self:flex-end;border-bottom-color:#fff;border-right:none;border-top:none}.maplibregl-popup-anchor-bottom .maplibregl-popup-tip{align-self:center;border-bottom:none;border-top-color:#fff}.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip{align-self:flex-start;border-bottom:none;border-left:none;border-top-color:#fff}.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip{align-self:flex-end;border-bottom:none;border-right:none;border-top-color:#fff}.maplibregl-popup-anchor-left .maplibregl-popup-tip{align-self:center;border-left:none;border-right-color:#fff}.maplibregl-popup-anchor-right .maplibregl-popup-tip{align-self:center;border-left-color:#fff;border-right:none}.maplibregl-popup-close-button{background-color:transparent;border:0;border-radius:0 3px 0 0;cursor:pointer;position:absolute;right:0;top:0}.maplibregl-popup-close-button:hover{background-color:rgb(0 0 0/5%)}.maplibregl-popup-content{background:#fff;border-radius:3px;box-shadow:0 1px 2px rgba(0,0,0,.1);padding:15px 10px;pointer-events:auto;position:relative}.maplibregl-popup-anchor-top-left .maplibregl-popup-content{border-top-left-radius:0}.maplibregl-popup-anchor-top-right .maplibregl-popup-content{border-top-right-radius:0}.maplibregl-popup-anchor-bottom-left .maplibregl-popup-content{border-bottom-left-radius:0}.maplibregl-popup-anchor-bottom-right .maplibregl-popup-content{border-bottom-right-radius:0}.maplibregl-popup-track-pointer{display:none}.maplibregl-popup-track-pointer *{pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.maplibregl-map:hover .maplibregl-popup-track-pointer{display:flex}.maplibregl-map:active .maplibregl-popup-track-pointer{display:none}.maplibregl-marker{left:0;position:absolute;top:0;transition:opacity .2s;will-change:transform}.maplibregl-user-location-dot,.maplibregl-user-location-dot:before{background-color:#1da1f2;border-radius:50%;height:15px;width:15px}.maplibregl-user-location-dot:before{animation:maplibregl-user-location-dot-pulse 2s infinite;content:"";position:absolute}.maplibregl-user-location-dot:after{border:2px solid #fff;border-radius:50%;box-shadow:0 0 3px rgba(0,0,0,.35);box-sizing:border-box;content:"";height:19px;left:-2px;position:absolute;top:-2px;width:19px}@keyframes maplibregl-user-location-dot-pulse{0%{opacity:1;transform:scale(1)}70%{opacity:0;transform:scale(3)}to{opacity:0;transform:scale(1)}}.maplibregl-user-location-dot-stale{background-color:#aaa}.maplibregl-user-location-dot-stale:after{display:none}.maplibregl-user-location-accuracy-circle{background-color:#1da1f233;border-radius:100%;height:1px;width:1px}.maplibregl-crosshair,.maplibregl-crosshair .maplibregl-interactive,.maplibregl-crosshair .maplibregl-interactive:active{cursor:crosshair}.maplibregl-boxzoom{background:#fff;border:2px dotted #202020;height:0;left:0;opacity:.5;position:absolute;top:0;width:0}.maplibregl-cooperative-gesture-screen{align-items:center;background:rgba(0,0,0,.4);color:#fff;display:flex;font-size:1.4em;inset:0;justify-content:center;line-height:1.2;opacity:0;padding:1rem;pointer-events:none;position:absolute;transition:opacity 1s ease 1s;z-index:99999}.maplibregl-cooperative-gesture-screen.maplibregl-show{opacity:1;transition:opacity .05s}.maplibregl-cooperative-gesture-screen .maplibregl-mobile-message{display:none}@media (hover:none),(width <= 480px){.maplibregl-cooperative-gesture-screen .maplibregl-desktop-message{display:none}.maplibregl-cooperative-gesture-screen .maplibregl-mobile-message{display:block}}.maplibregl-pseudo-fullscreen{height:100%!important;left:0!important;position:fixed!important;top:0!important;width:100%!important;z-index:99999}</style>
 <style>
-/* Layout: an incident-map workstation. Ranked fire roster on the left, the map owns the rest of the screen, readouts and time sit on the map. */
+/* Layout: the Redstone GIS redrock palette on a map workstation. White rounded cards float over the map; the fire list sits in a shell-colored side panel on desktop and under the map on a phone. */
 :root{
-  --bg:#e7ecea; --panel:#f6f8f6; --panel2:#e0e6e3; --ink:#18231f; --ink2:#46554f; --ink3:#66756e; --rule:#c9d2cd;
-  --sea:#d3dde0; --land:#eef1ec; --state:#8d9a93; --county:#d8ddd6;
-  --fire:#A80000; --fireline:#A80000; --pending:#E8BEFF; --pendline:#E871FF; --burned:#FF45BE;--burnline:#8745BE; --accent:#0f5f5a; --cost:#c98a00; --costline:#8a5a00;
-  --hud:rgba(246,248,246,.93);
-  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif; --body:Barlow,"Segoe UI",Arial,sans-serif; --mono:"IBM Plex Mono",Consolas,monospace;
+  --redstone:#A61C00; --blush:#E6B8AF; --oxide:#6B1200; --basalt:#2A1410; --shell:#FBF1EE; --white:#fff;
+  --bg:var(--shell); --panel:#fff; --panel2:#F7E6E1; --ink:var(--basalt); --ink2:#5E4741; --ink3:#86706A; --rule:#EBD5CE;
+  --sea:#DCE5EA; --land:#F4EEEA; --state:#9C8B85; --county:#E4D8D3;
+  --fire:#A61C00; --fireline:#6B1200; --hot:#F0380F; --accent:#A61C00; --cost:#C98A00; --costline:#8A5A00;
+  --hud:rgba(255,255,255,.95); --shadow:0 6px 24px rgba(42,20,16,.16),0 1px 3px rgba(42,20,16,.12);
+  --r:16px; --r-sm:10px; --pill:999px;
+  --display:Oswald,"Arial Narrow",Arial,sans-serif; --body:"Public Sans",Arial,Helvetica,sans-serif; --mono:Oswald,"Arial Narrow",Arial,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#1b2422; --panel:#212c29; --panel2:#2c3935; --ink:#eef3f0; --ink2:#bccac4; --ink3:#92a39b; --rule:#3a4843;
-  --sea:#17201f; --land:#27322f; --state:#6f7f78; --county:#34413d;
-  --fire:#A80000; --fireline:#A80000; --pending:#E8BEFF; --pendline:#E871FF; --burned:#FF45BE;--burnline:#8745BE; --accent:#6fd3c9; --cost:#f2c14e; --costline:#f2c14e;
-  --hud:rgba(33,44,41,.93); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#1b2422; --panel:#212c29; --panel2:#2c3935; --ink:#eef3f0; --ink2:#bccac4; --ink3:#92a39b; --rule:#3a4843;
-  --sea:#17201f; --land:#27322f; --state:#6f7f78; --county:#34413d;
-  --fire:#A80000; --fireline:#A80000; --pending:#E8BEFF; --pendline:#E871FF; --burned:#FF45BE;--burnline:#8745BE; --accent:#6fd3c9; --cost:#f2c14e; --costline:#f2c14e;
-  --hud:rgba(33,44,41,.93); color-scheme:dark}
 html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font:15px/1.4 var(--body);overflow:hidden}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--body);overflow:hidden}
 *{box-sizing:border-box}
 button,select,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.app{height:100%;display:grid;grid-template-columns:372px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
-header{grid-column:1/-1;display:flex;gap:10px 28px;align-items:baseline;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--rule);background:var(--panel)}
-h1{font:700 27px/1 var(--display);letter-spacing:.01em;margin:0;text-transform:uppercase}
-header p{margin:0;color:var(--ink2);flex:1 1 420px;min-width:0}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:3px solid var(--redstone);outline-offset:2px}
+.app{height:100%;display:grid;grid-template-columns:392px minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+header{grid-column:1/-1;display:flex;gap:8px 24px;align-items:center;flex-wrap:wrap;padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--white);border-bottom:4px solid var(--redstone)}
+.brand{display:flex;align-items:center;flex:none}
+.brand img{display:block;height:36px;width:auto}
+h1{font:700 30px/1 var(--display);letter-spacing:.01em;margin:0;text-transform:uppercase;color:var(--redstone)}
+header p{margin:0;color:var(--ink2);flex:1 1 420px;min-width:0;font-size:15px}
 header b{color:var(--ink);font-weight:600}
-aside{min-height:0;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--rule)}
-.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 8px 16px;border-bottom:1px solid var(--rule)}
-.controls label{display:grid;gap:2px;font:600 11px/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);min-width:0}
-.controls input,.controls select{background:var(--bg);border:1px solid var(--rule);border-radius:3px;padding:5px 7px;font:400 14px var(--body);text-transform:none;letter-spacing:0;width:100%;min-width:0}
-.allbtn{grid-column:1/-1;background:none;border:1px solid var(--rule);border-radius:3px;padding:5px 8px;font-weight:600;cursor:pointer;color:var(--accent)}
+aside{min-height:0;display:flex;flex-direction:column;background:var(--shell);border-right:1px solid var(--rule)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 12px 16px}
+.controls label{display:grid;gap:4px;font:500 12px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);min-width:0}
+.controls input,.controls select{background:var(--white);border:1px solid var(--rule);border-radius:var(--r-sm);padding:9px 11px;font:400 15px var(--body);text-transform:none;letter-spacing:0;width:100%;min-width:0;min-height:42px}
+.allbtn{grid-column:1/-1;background:var(--redstone);color:var(--white);border:0;border-radius:var(--pill);padding:10px 16px;min-height:44px;font:500 16px var(--display);letter-spacing:.03em;cursor:pointer}
+.allbtn:hover{background:var(--oxide)}
+.allbtn[aria-pressed="true"]{background:var(--basalt)}
 .wide{grid-column:1/-1}
-.cz{grid-column:2/-1;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hdr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;padding:6px 12px 6px 16px;font:600 11px/1.3 var(--body);color:var(--ink3);letter-spacing:.03em;background:var(--panel2);border-bottom:1px solid var(--rule)}
+#roster{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:0 8px 8px;display:flex;flex-direction:column;gap:4px}
+.row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:0 8px;width:100%;text-align:left;background:var(--white);border:1px solid transparent;border-radius:var(--r-sm);padding:9px 12px 9px 10px;cursor:pointer}
+.row:hover{border-color:var(--blush)}
+.row[aria-current="true"]{background:var(--panel2);border-color:var(--redstone);box-shadow:inset 4px 0 0 var(--redstone)}
+.rk{font:400 13px var(--display);color:var(--ink3);padding-top:4px;font-variant-numeric:tabular-nums}
+.nm{font:600 19px/1.15 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm small{font:400 12.5px var(--body);color:var(--ink3);margin-left:5px}
+.val{font:500 17px/1.2 var(--display);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--costline)}
+.sub{grid-column:2/-1;display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--ink3)}
+.sub span:last-child{font:400 13px var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
+.cz{grid-column:2/-1;font-size:13px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dz{grid-column:2/-1;font-size:13px;font-weight:600;color:var(--redstone);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;padding:4px 12px 2px;font:500 11.5px/1.3 var(--display);color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
 .hdr span:nth-child(even){text-align:right}
-.back{width:100%;text-align:left;background:var(--panel2);border:0;padding:8px 12px 8px 16px;font-weight:600;color:var(--accent);cursor:pointer}
+.back{width:100%;text-align:left;background:none;border:1px solid var(--rule);border-radius:var(--pill);padding:9px 16px;min-height:42px;font:500 15px var(--display);color:var(--redstone);cursor:pointer}
+.empty{padding:12px 16px;color:var(--ink3)}
+.note{padding:10px 14px 10px 16px;border-top:1px solid var(--rule);font-size:13.5px;background:var(--white)}
+.note summary{cursor:pointer;font:500 15px var(--display);color:var(--redstone);padding-block:4px}
+.note ul{margin:6px 0 2px;padding-left:18px;color:var(--ink2);max-height:34vh;overflow:auto}
+.note li{margin-bottom:6px}
+main{position:relative;min-height:0;min-width:0;background:var(--sea)}
+#map{position:absolute;inset:0}
 #nat{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--sea)}
 #nat .s{fill:var(--land);stroke:var(--state);stroke-width:.8;cursor:pointer}
 #nat .s:hover{fill:var(--panel2)}
-#nat .s.on{fill:var(--panel);stroke:var(--ink2);stroke-width:1.6}
+#nat .s.on{fill:var(--white);stroke:var(--ink2);stroke-width:1.6}
 #nat .s.off{cursor:pointer;opacity:.55}
 #nat .co{fill:none;stroke:var(--county);stroke-width:.6;pointer-events:none}
-#nat circle{fill:var(--fire);fill-opacity:.55;stroke:var(--fireline);stroke-width:1;cursor:pointer}
-#nat circle:hover{fill-opacity:.85}
-#nat circle.nr{fill:none;stroke-dasharray:2 2}
-#pdf{font-weight:600;background:var(--ink);color:var(--panel);border:0;border-radius:4px;padding:6px 10px;cursor:pointer}
-#pdf:disabled{opacity:.6;cursor:progress}
-#legBtn{background:var(--hud);border:1px solid var(--rule);border-radius:4px;padding:5px 10px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;gap:10px}
-.key{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.key span{display:grid;justify-items:center;gap:2px;font:500 11.5px var(--mono)}
-.key.open i{background:none!important;border-color:var(--ink2)!important}
-.key i{display:block;border-radius:50%;background:color-mix(in srgb,var(--fire) 55%,transparent);border:1px solid var(--fireline)}
-.allbtn[aria-pressed="true"]{background:var(--panel2)}
-#roster{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:0}
-#roster li{border-bottom:1px solid var(--rule)}
-.row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:0 8px;width:100%;text-align:left;background:none;border:0;padding:7px 12px 7px 16px;cursor:pointer}
-.row:hover{background:var(--panel2)}
-.row[aria-current="true"]{background:var(--panel2);box-shadow:inset 3px 0 0 var(--fire)}
-.rk{font:500 12px var(--mono);color:var(--ink3);padding-top:3px}
-.nm{font:600 18px/1.15 var(--display);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nm small{font:500 12px var(--body);color:var(--ink3);margin-left:4px}
-.val{font:500 14px var(--mono);text-align:right;white-space:nowrap}
-.sub{grid-column:2/-1;display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--ink3)}
-.sub span:last-child{font-family:var(--mono);font-size:12px;white-space:nowrap}
-.note{padding:8px 12px 8px 16px;border-top:1px solid var(--rule);font-size:13px}
-.note summary{cursor:pointer;font-weight:600;color:var(--accent)}
-.note ul{margin:6px 0 2px;padding-left:18px;color:var(--ink2);max-height:32vh;overflow:auto}
-.note li{margin-bottom:5px}
-main{position:relative;min-height:0;min-width:0;background:var(--sea)}
-#map{position:absolute;inset:0}
-.hud{position:absolute;background:var(--hud);border:1px solid var(--rule);border-radius:4px}
-#title{top:10px;left:10px;padding:8px 12px;max-width:min(430px,calc(100% - 20px))}
-#title h2{margin:0;font:700 30px/1 var(--display);text-transform:uppercase;letter-spacing:.01em}
-#title .meta{color:var(--ink2);font-size:13.5px;margin-top:3px}
-#title .warn{color:var(--ink2);font-size:13px;margin-top:4px;border-top:1px solid var(--rule);padding-top:4px}
-#rail{z-index:3;position:absolute;top:10px;right:10px;display:grid;gap:6px;justify-items:stretch;width:262px;max-height:calc(100% - 190px);overflow:auto}
+#nat circle{fill:var(--cost);fill-opacity:.5;stroke:var(--costline);stroke-width:.8;cursor:pointer}
+#nat[data-mode="sd"] circle{fill:var(--redstone);stroke:var(--oxide)}
+#nat[data-mode="dth"] circle{fill:var(--basalt);stroke:#000;fill-opacity:.62}
+#nat[data-mode="inj"] circle{fill:#D9601A;stroke:#8A3A08}
+#nat circle:hover{fill-opacity:.9}
+#nat circle.nr{fill:none;stroke:var(--ink3);stroke-dasharray:1.5 1.5;stroke-width:.7}
+.hud{position:absolute;background:var(--hud);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#title{top:14px;left:14px;padding:12px 16px;max-width:min(480px,calc(100% - 310px))}
+.thead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#title h2{margin:0;font:700 32px/1.02 var(--display);text-transform:uppercase;letter-spacing:.01em;min-width:0;overflow-wrap:anywhere}
+.fnav{display:flex;gap:6px;flex:none}
+.fnav button{width:38px;height:38px;border-radius:50%;border:1px solid var(--rule);background:var(--white);cursor:pointer;font:500 20px/1 var(--display);color:var(--redstone);display:grid;place-items:center;padding:0 0 3px}
+.fnav button:hover{background:var(--panel2)}
+.fnav button:disabled{opacity:.35;cursor:default}
+#title .meta{color:var(--ink2);font-size:14px;margin-top:4px;overflow-wrap:anywhere}
+#title .warn{color:var(--ink2);font-size:13.5px;margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
+#fdmg a{color:var(--redstone);text-underline-offset:2px}
+#fdmg b{color:var(--ink)}
+#rail{z-index:3;position:absolute;top:14px;right:14px;display:grid;gap:8px;justify-items:stretch;width:272px;max-height:calc(100% - 216px);overflow:auto;padding:0 0 6px}
 #rail .hud{position:static}
-#layers{padding:7px 10px;display:grid;gap:6px;font-size:13.5px}
-.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--rule);border-radius:3px;overflow:hidden;margin:0;padding:0}
+#layers{padding:10px 12px;display:grid;gap:8px;font-size:14px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border:1px solid var(--rule);border-radius:var(--pill);background:var(--shell);margin:0;padding:3px}
 .seg legend{position:absolute;width:1px;height:1px;overflow:hidden}
-.seg label{text-align:center;padding:5px 2px;cursor:pointer;font-weight:500}
+.seg label{text-align:center;padding:6px 2px;cursor:pointer;font:500 14.5px var(--display);letter-spacing:.02em;border-radius:var(--pill)}
 .seg input{position:absolute;opacity:0}
-.seg input:checked+span{font-weight:600}
-.seg label:has(input:checked){background:var(--ink);color:var(--panel)}
-.seg label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px}
+.seg label:has(input:checked){background:var(--redstone);color:var(--white)}
+.seg label:has(input:focus-visible){outline:3px solid var(--redstone);outline-offset:2px}
+.seg label:has(input:disabled){opacity:.5;cursor:default}
+.tog{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500;min-height:26px}
+.tog input{width:17px;height:17px;accent-color:var(--redstone);margin:0;flex:none}
 .tog:has(input:disabled){opacity:.5;cursor:default}
-.tog{display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:500}
+.togs{display:flex;gap:4px 14px;flex-wrap:wrap}
+#lstat,#hint3d{font-size:12.5px;line-height:1.35;color:var(--ink3)}
+.railbtn,#pdf{font:500 15.5px var(--display);letter-spacing:.03em;background:var(--basalt);color:var(--white);border:0;border-radius:var(--pill);padding:9px 14px;min-height:42px;cursor:pointer;box-shadow:var(--shadow)}
+#pdf:hover{background:var(--oxide)}
+#pdf:disabled{opacity:.6;cursor:progress}
+#legBtn{background:var(--hud);border:1px solid var(--rule);border-radius:var(--pill);padding:9px 16px;min-height:42px;font:500 15.5px var(--display);letter-spacing:.03em;cursor:pointer;display:flex;justify-content:space-between;gap:10px;box-shadow:var(--shadow)}
+#legArrow{color:var(--redstone)}
+#legend{padding:10px 12px;font-size:13.5px;display:grid;gap:5px;max-height:34vh;overflow:auto}
+#legend div{display:flex;align-items:center;gap:8px}
+.lh{font:500 13px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-top:4px;border-top:1px solid var(--rule);padding-top:7px}
+.sw{width:18px;height:13px;border-radius:4px;flex:none;border:1.5px solid}
 .shields{gap:3px 11px;flex-wrap:wrap}.shields span{display:inline-flex;align-items:center;gap:4px}
-.togs{display:flex;gap:4px 12px;flex-wrap:wrap}
-#lstat{font-size:12.5px;color:var(--ink3)}
-#legend{padding:7px 10px;font-size:13px;display:grid;gap:4px}
-#legend table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:3px;font-variant-numeric:tabular-nums}
-#legend th{font:600 11px var(--body);color:var(--ink3);text-align:right;padding:2px 0 2px 6px}
-#legend th:first-child,#legend td:first-child{text-align:left;padding-left:0}
-#legend td{text-align:right;padding:1.5px 0 1.5px 6px;font-family:var(--mono);font-size:12px;white-space:nowrap}
-#legend td:first-child{font-family:var(--body);font-size:12.5px;white-space:normal}
-#legend td .sw{display:inline-block;vertical-align:-1px;margin-right:5px;width:12px;height:10px}
-.lh{font-weight:600;font-size:12.5px;margin-top:4px;border-top:1px solid var(--rule);padding-top:5px}
-#legend div{display:flex;align-items:center;gap:7px}
-.sw{width:17px;height:12px;border-radius:2px;flex:none;border:1.5px solid}
-#deck{left:10px;right:10px;bottom:10px;padding:8px 12px 7px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 16px}
-.stats{grid-column:1/-1;display:grid;grid-template-columns:150px repeat(3,minmax(0,1fr));gap:4px 16px}
-.stat .k{font:600 11.5px/1.2 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--ink2)}
-.stat .v{font:600 33px/1.05 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
-.stat .v small{font:500 15px var(--display);color:var(--ink2);margin-left:3px}
-.stat .x{font-size:12.5px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#play{width:40px;height:40px;border-radius:50%;border:0;background:var(--ink);color:var(--panel);cursor:pointer;display:grid;place-items:center}
-#play svg{width:18px;height:18px;fill:currentColor}
-#tl{position:relative;min-width:0;height:72px;cursor:pointer;touch-action:none}
-#tl svg{display:block;width:100%;height:100%;overflow:visible}
-#tl:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-#tl input{position:absolute;opacity:0;width:100%;height:100%;inset:0;margin:0;pointer-events:none}
-#tip{position:absolute;bottom:100%;margin-bottom:4px;transform:translateX(-50%);background:var(--ink);color:var(--panel);font:500 12px var(--mono);padding:3px 6px;border-radius:3px;white-space:nowrap;pointer-events:none}
-.speed{background:none;border:1px solid var(--rule);border-radius:3px;font:500 12px var(--mono);padding:1px 6px;cursor:pointer}
-.ctl{display:flex;flex-direction:column;align-items:center;gap:3px}
-[hidden]{display:none!important}
-.maplibregl-ctrl-bottom-right{bottom:176px}
-.maplibregl-popup-content{background:var(--panel);color:var(--ink);font:13.5px var(--body);padding:6px 9px}
-.maplibregl-popup-tip{display:none}
-@media (max-width:820px){
-  body{overflow:auto}html,body{height:auto}
-  .app{display:flex;flex-direction:column;height:auto}
-  header p{flex-basis:100%}
-  main{order:1;height:auto;min-height:0;display:flex;flex-direction:column}
-  #map{position:relative;height:56svh;min-height:330px}
-  #nat{bottom:auto;height:56svh;min-height:330px}
-  aside{order:2;border-right:0}
-  #roster{max-height:60vh}
-  #title{max-width:calc(100% - 20px);padding:6px 9px}#title h2{font-size:24px}
-  #rail{position:static;width:auto;max-height:none;display:block}#rail .hud{border-width:1px 0 0;border-radius:0}#layers{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}#legend{position:static;border-width:1px 0 0;border-radius:0;grid-template-columns:1fr 1fr;font-size:12.5px;padding:7px max(16px,env(safe-area-inset-right,0px)) 7px max(16px,env(safe-area-inset-left,0px))}
-  #deck{position:static;border-width:1px 0 0;border-radius:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--panel)}
-  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .stat .v{font-size:27px}
-  .maplibregl-ctrl-bottom-right{bottom:0}
-}
-@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
-
+.key{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}.key span{display:grid;justify-items:center;gap:2px;font:400 12.5px var(--display)}
+.key i{display:block;border-radius:50%;background:color-mix(in srgb,var(--cost) 55%,transparent);border:1px solid var(--costline)}
+.key.open i{background:none!important;border-color:var(--ink2)!important}
+#deck{left:14px;right:14px;bottom:14px;padding:12px 16px 10px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px}
+.stats{grid-column:1/-1;display:grid;grid-template-columns:150px repeat(3,minmax(0,1fr));gap:6px 18px}
+.stat{min-width:0}
+.stat .k{font:500 12px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.stat .v{font:600 34px/1.08 var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .v small{font:400 15px var(--display);color:var(--ink2);margin-left:4px}
+.stat .x{font-size:13px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stat.hero .v{color:var(--costline)}
 .stat.hero .k{color:var(--ink)}
-#title{max-width:min(470px,calc(100% - 290px))}
-#title .meta{overflow-wrap:anywhere}
-#fdmg a{color:var(--accent);text-underline-offset:2px}
-#hint3d{font-size:12px;line-height:1.35;color:var(--ink3);margin-top:6px;max-width:230px}
-#legend{max-height:32vh;overflow:auto}
-#fdmg b{color:var(--ink)}
-#nat circle{fill:var(--cost);fill-opacity:.5;stroke:var(--costline);stroke-width:.8}
-#nat circle.nr{fill:none;stroke:var(--ink3);stroke-dasharray:1.5 1.5;stroke-width:.7}
-.key i{background:color-mix(in srgb,var(--cost) 55%,transparent);border:1px solid var(--costline)}
+#toll{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--rule);padding-top:9px}
+.chip{display:inline-flex;align-items:baseline;gap:7px;background:var(--panel2);border-radius:var(--pill);padding:5px 13px;font-size:13.5px;color:var(--ink2)}
+.chip b{font:600 19px/1 var(--display);color:var(--redstone);font-variant-numeric:tabular-nums}
+#toll small{flex:1 1 240px;font-size:12.5px;color:var(--ink3);min-width:0}
+#play{width:46px;height:46px;border-radius:50%;border:0;background:var(--redstone);color:var(--white);cursor:pointer;display:grid;place-items:center}
+#play:hover{background:var(--oxide)}
+#play svg{width:19px;height:19px;fill:currentColor}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:4px}
+.speed{background:var(--white);border:1px solid var(--rule);border-radius:var(--pill);font:500 13px var(--display);padding:2px 10px;cursor:pointer}
+#tl{position:relative;min-width:0;height:72px;cursor:pointer;touch-action:none}
+#tl svg{display:block;width:100%;height:100%;overflow:visible}
+#tl:has(input:focus-visible){outline:3px solid var(--redstone);outline-offset:2px;border-radius:6px}
+#tl input{position:absolute;opacity:0;width:100%;height:100%;inset:0;margin:0;pointer-events:none}
+#tip{position:absolute;bottom:100%;margin-bottom:4px;transform:translateX(-50%);background:var(--basalt);color:var(--white);font:400 13px var(--display);padding:4px 10px;border-radius:var(--pill);white-space:nowrap;pointer-events:none}
+[hidden]{display:none!important}
+.maplibregl-ctrl-bottom-right{bottom:200px;right:6px}
+.maplibregl-ctrl-group{border-radius:14px!important;overflow:hidden;box-shadow:var(--shadow)!important}
+.maplibregl-ctrl-scale{border-radius:0 0 6px 6px;font:11px var(--body)}
 .maplibregl-ctrl-attrib{font:11px var(--body)}
-@media (max-width:820px){#title{max-width:calc(100% - 20px);position:static;border-width:0 0 1px;border-radius:0;background:var(--panel)}main{flex-direction:column}#title{order:-1}}
+.maplibregl-cooperative-gesture-screen{font:500 17px var(--display)}
+@media (max-width:820px){
+  html,body{height:auto}
+  body{overflow:auto}
+  .app{display:flex;flex-direction:column;height:auto}
+  header{padding-block:10px;gap:6px 14px}
+  .brand img{height:28px}
+  h1{font-size:24px}
+  header p{flex-basis:100%;font-size:14px}
+  main{order:1;height:auto;min-height:0;display:flex;flex-direction:column;background:var(--shell);gap:10px;padding-block:10px}
+  .hud{position:static;-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--white);box-shadow:none}
+  main>.hud,#rail{margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px))}
+  #title{order:-1;max-width:none;padding:12px 14px}
+  #title h2{font-size:27px}
+  #map,#nat{position:relative;inset:auto;height:58svh;min-height:340px;max-height:640px;width:100%}
+  #deck{padding:12px 14px 10px;order:1}
+  #rail{order:2}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+  .stat .v{font-size:29px}
+  #rail{position:static;width:auto;max-height:none;overflow:visible;display:grid;gap:8px;padding:0}
+  #legend{max-height:none;grid-template-columns:1fr 1fr}
+  #legend .lh,#legend .key,#legend .shields{grid-column:1/-1}
+  .seg label{padding:10px 2px;font-size:16px}
+  .tog{min-height:38px;font-size:15px}
+  .togs{gap:2px 18px}
+  .railbtn,#pdf,#legBtn{min-height:46px;box-shadow:none}
+  aside{order:2;border-right:0;border-top:1px solid var(--rule)}
+  .controls{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+  #roster{max-height:70vh;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+  .row{padding:11px 12px 11px 10px}
+  .note{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .maplibregl-ctrl-bottom-right{bottom:0;right:0}
+}
+@media (max-width:380px){.stat .v{font-size:25px}.controls{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
 <div class="app">
-<header><h1>The Cost of Fire, 2026</h1><p id="lede"></p></header>
+<header><a class="brand" href="/" aria-label="Redstone GIS home"><img src="/assets/redstone-gis-logo.svg" alt="Redstone GIS" width="152" height="36" onerror="this.parentNode.remove()"></a><h1>The Cost of Fire, 2026</h1><p id="lede"></p></header>
 <aside>
   <div class="controls">
     <label for="q">Find a fire<input id="q" type="search" placeholder="Name, county or state" autocomplete="off"></label>
     <label for="sort">Rank by<select id="sort">
-      <option value="cost">Estimated cost</option><option value="ac">Fire acres</option><option value="cpa">Cost per acre</option><option value="pers">Peak personnel</option><option value="disc">Discovery date</option>
+      <option value="cost">Estimated cost</option><option value="ac">Fire acres</option><option value="cpa">Cost per acre</option><option value="sd">Structures destroyed</option><option value="dth">Deaths</option><option value="pers">Peak personnel</option><option value="disc">Discovery date</option>
     </select></label>
     <button class="allbtn" id="all" type="button" aria-pressed="false">Show all fires on the U.S. map</button>
-    <label for="sizeBy" class="wide" id="sizeWrap" hidden>Symbolize circles by<select id="sizeBy"><option value="cost" selected>Estimated cost</option><option value="cause">Ignition cause (color), cost (size)</option><option value="ac">Fire acres</option><option value="pers">Peak personnel</option><option value="cnt">Fires (equal size)</option></select></label>
+    <label for="sizeBy" class="wide" id="sizeWrap" hidden>Symbolize circles by<select id="sizeBy"><option value="cost" selected>Estimated cost</option><option value="cause">Ignition cause (color), cost (size)</option><option value="sd">Structures destroyed</option><option value="dth">Deaths</option><option value="inj">Injuries</option><option value="ac">Fire acres</option><option value="pers">Peak personnel</option><option value="cnt">Fires (equal size)</option></select></label>
   </div>
   <ol id="roster"></ol>
   <details class="note"><summary>How these numbers were made</summary><ul>
@@ -188,20 +207,21 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
     <li><b>Fires not mapped:</b> 749 fires have no perimeter on record. They appear in the lists, totals and U.S. map, with a map of the reported location only.</li>
     <li><b>Fire start:</b> the point of origin on the WFIGS incident record. A few points sit outside the first mapped perimeter, since both are reported separately.</li>
     <li><b>Ignition cause:</b> the FireCause field in WFIGS (Human, Natural or Undetermined), with the general and specific cause where an investigator entered one.</li>
-    <li><b>Damage:</b> WFIGS does not carry structure or injury counts. Fatalities come from the WFIGS perimeter records. Structure losses were looked up in public reports for the 25 costliest fires only, and each figure links to its source. A fire with no damage line may still have had losses.</li>
+    <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
     <li><b>Personnel:</b> the largest number of people assigned at any report.</li>
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
+    <li><b>Opening view:</b> the page opens in 3D on imagery and slowly circles the fire. Touching or dragging the map stops the rotation; the Rotate view switch starts it again.</li>
     <li><b>3D terrain:</b> drapes the map over elevation from the Mapzen terrain tiles hosted by Amazon Web Services, with heights exaggerated 1.4 times so relief reads at fire scale. The PDF map is always flat and north-up.</li>
     <li><b>Base maps:</b> shaded relief and imagery load from USGS The National Map when you open a fire. Imagery is the USGS orthoimagery base map, which is built from NAIP aerial photography at close zooms. It mostly predates these fires, and detail softens past its closest level.</li>
     <li><b>Land ownership:</b> BLM Surface Management Agency, drawn from BLM's map tiles. Tribal and Alaska Native lands are grouped with other federal lands. Private and unknown land is left clear.</li>
     <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable.</li>
-    <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Map labels use Barlow.</li>
+    <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
   </ul></details>
 </aside>
 <main>
   <div id="map" role="application" aria-label="Map of the fire perimeter over time"></div>
-  <svg id="nat" role="img" aria-label="Equal area map of fires by state, sized by cost" hidden></svg>
-  <div class="hud" id="title"><h2 id="fname"></h2><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
+  <svg id="nat" role="img" aria-label="Equal area map of fires by state" hidden></svg>
+  <div class="hud" id="title"><div class="thead"><h2 id="fname"></h2><div class="fnav" id="fnav"><button id="prev" type="button" aria-label="Previous fire by cost">&#8249;</button><button id="next" type="button" aria-label="Next fire by cost">&#8250;</button></div></div><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
   <div id="rail"><div class="hud" id="layers">
     <fieldset class="seg"><legend>Base map</legend>
       <label><input type="radio" name="base" value="plain"><span>Plain</span></label>
@@ -209,13 +229,14 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
       <label><input type="radio" name="base" value="imagery"><span>Imagery</span></label>
     </fieldset>
     <label class="tog"><input type="checkbox" id="own"><span>Land ownership</span></label>
-    <label class="tog"><input type="checkbox" id="t3d"><span>3D terrain</span></label>
+    <div class="togs"><label class="tog"><input type="checkbox" id="t3d"><span>3D terrain</span></label><label class="tog"><input type="checkbox" id="tOrb"><span>Rotate view</span></label></div>
     <div class="togs"><label class="tog"><input type="checkbox" id="tRoad" checked><span>Roads</span></label><label class="tog"><input type="checkbox" id="tRiver" checked><span>Rivers</span></label><label class="tog"><input type="checkbox" id="tCounty" checked><span>Counties</span></label></div>
-    <div id="hint3d" hidden>Right-drag or Ctrl-drag to tilt and turn; two fingers on a touch screen.</div>
+    <div id="hint3d" hidden>Right-drag or Ctrl-drag to tilt and turn. On a phone, use two fingers to move, tilt and turn the map.</div>
     <div id="lstat" hidden></div>
   </div><button id="pdf" class="railbtn" type="button">Download PDF map</button><button id="legBtn" type="button" aria-expanded="false" aria-controls="legend"><span>Legend</span><span id="legArrow">Show</span></button><div class="hud" id="legend" aria-label="Map legend" hidden></div></div>
   <div class="hud" id="deck">
     <div class="stats" id="stats"></div>
+    <div id="toll" hidden></div>
     <div class="ctl" id="ctl"><button id="play" type="button" aria-label="Play"></button><button class="speed" id="speed" type="button" aria-label="Playback speed">1×</button></div>
     <div id="tl"><svg id="chart" role="img" aria-label="Estimated cost to date and acres burned over time"></svg><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="Move through the fire's updates"><div id="tip" hidden></div></div>
   </div>
@@ -227,7 +248,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112b';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112c';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -247,10 +268,20 @@ let basemap=LIVE?'relief':'plain', ownOn=false, tileErr=0;
 let fires=[], cache=new Map(), cur=null, step=0, playing=false, timer=null, speed=1, shown={a:0,b:0}, national=false;
 try{ fires=await (await fetch('fires.json?v='+V)).json(); }catch(e){ $('#lede').textContent='The fire list did not load. Reload the page to try again.'; return; }
 fires.forEach((f,i)=>{f.rank=i+1;f.name=title(f.name);f.cost=f.cost||0;f.cpa=f.cost&&f.ac>=1?f.cost/f.ac:null});
-const statsFor=l=>({n:l.length,ac:l.reduce((a,f)=>a+f.ac,0),cost:l.reduce((a,f)=>a+f.cost,0),nc:l.filter(f=>f.cost).length,pers:l.reduce((a,f)=>a+(f.pers||0),0)});
-const totals=statsFor(fires);
+const sum=(l,k)=>l.reduce((a,f)=>a+(f[k]||0),0);
+const statsFor=l=>({n:l.length,ac:sum(l,'ac'),cost:sum(l,'cost'),nc:l.filter(f=>f.cost).length,pers:sum(l,'pers'),sd:sum(l,'sd'),sm:sum(l,'sm'),dth:sum(l,'dth'),inj:sum(l,'inj'),nsd:l.filter(f=>f.sd||f.sm).length,plus:l.some(f=>f.sdp)});
+let totals=statsFor(fires);
 $('#lede').innerHTML=`<b>${num(totals.n)} wildfires</b> in 2026 reported a firefighting cost or burned 500 acres or more. Together they cost an estimated <b>${money(totals.cost)}</b> to fight and burned <b>${(totals.ac/1e6).toFixed(1)} million acres</b>, January 1 to November 3.`;
 try{DMG=await (await fetch('damage.json?v='+V)).json()}catch(e){}
+/* toll per fire: structures and injuries from public reports, deaths as the larger of WFIGS and those reports */
+fires.forEach(f=>{const g=DMG[f.id]||{};f.sd=g.d||0;f.sdp=g.p?1:0;f.sm=g.m||0;f.dth=Math.max(f.fat||0,g.k||0);f.inj=g.i||0});
+totals=statsFor(fires);
+const plural=(n,w,ws)=>num(n)+' '+(n===1?w:ws||w+'s');
+const tollShort=f=>[f.sd?`${num(f.sd)}${f.sdp?'+':''} structures destroyed`.replace(/^1 structures/,'1 structure'):'',f.sm?`${num(f.sm)} damaged`:'',f.dth?plural(f.dth,'death'):'',f.inj?plural(f.inj,'injury','injuries'):''].filter(Boolean).join(' · ');
+function tollHTML(t,scope){
+  const chip=(v,l)=>`<span class="chip"><b>${v}</b>${l}</span>`;
+  return chip(num(t.sd)+(t.plus?'+':''),'structures destroyed')+chip(num(t.sm),'damaged')+chip(num(t.dth),t.dth===1?'death':'deaths')+chip(num(t.inj),t.inj===1?'injury':'injuries')
+   +`<small>${t.nsd?`Structure counts come from public reports for ${plural(t.nsd,'fire')} ${scope}`:`No structure losses were found in public reports ${scope}`}. These totals are incomplete.</small>`}
 
 /* ---- map ---- */
 const base=await (await fetch('base.json')).json();
@@ -279,7 +310,7 @@ maplibregl.addProtocol('own',async(p,ac)=>{
   const blob=await new Promise(ok=>c.toBlob(ok,'image/png'));return{data:await blob.arrayBuffer()};
 });
 
-const map=new maplibregl.Map({container:'map',attributionControl:false,maxPitch:78,maxZoom:17,
+const map=new maplibregl.Map({container:'map',attributionControl:false,maxPitch:78,maxZoom:17,cooperativeGestures:matchMedia('(max-width:820px)').matches,
   style:{version:8,glyphs:'glyph://{fontstack}/{range}',sources:{},layers:[{id:'bg',type:'background',paint:{'background-color':css('--sea')}}]},
   bounds:[[-125,24],[-66,50]],fitBoundsOptions:{padding:40}});
 /* the map stays flat and north-up until 3D is switched on */
@@ -306,10 +337,11 @@ const L=[
  {id:'co',type:'line',source:'co',minzoom:5,layout:{visibility:'none'},paint:{'line-width':.6}},
  {id:'st',type:'line',source:'st',paint:{'line-width':['interpolate',['linear'],['zoom'],5,1,10,2.4]}},
  {id:'ctxLake',type:'fill',source:'ctx',filter:['==',['get','k'],'lake'],paint:{'fill-color':'#73DFFF'}},{id:'ctxLakeL',type:'line',source:'ctx',filter:['==',['get','k'],'lake'],paint:{'line-width':1}},
- {id:'per',type:'fill',source:'per',filter:['==',['get','g'],-9],paint:{'fill-opacity':.16}},
- {id:'perl',type:'line',source:'per',filter:['==',['get','g'],-9],layout:{'line-join':'round'},paint:{'line-width':1.4}},
- {id:'actg',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':11,'line-blur':8,'line-opacity':.5}},
- {id:'actl',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':2.6}},
+ {id:'per',type:'fill',source:'per',filter:['==',['get','g'],-9],paint:{'fill-opacity':.35}},
+ {id:'perc',type:'line',source:'per',filter:['==',['get','g'],-9],layout:{'line-join':'round'},paint:{'line-width':4.6,'line-color':'#fff','line-opacity':.55}},
+ {id:'perl',type:'line',source:'per',filter:['==',['get','g'],-9],layout:{'line-join':'round'},paint:{'line-width':2.4,'line-color':'#6B1200'}},
+ {id:'actg',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':12,'line-blur':8,'line-opacity':.6}},
+ {id:'actl',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':3}},
  {id:'ctxCounty',type:'line',source:'ctx',filter:['==',['get','k'],'county'],paint:{'line-width':1.4,'line-dasharray':[5,2.5]}},
  {id:'ctxRiver',type:'line',source:'ctx',filter:['==',['get','k'],'river'],layout:{'line-cap':'round'},paint:{'line-width':['interpolate',['linear'],['get','o'],3,1.2,6,2.4,8,3.2]}},
  {id:'ctxRoadC',type:'line',source:'ctx',filter:['==',['get','k'],'road'],layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':['match',['get','c'],0,5,1,4,2,3.2,0]}},
@@ -335,7 +367,7 @@ addIcons();
 L.forEach(l=>map.addLayer(l));
 map.on('error',e=>{if(e&&['relief','imagery','own','dem'].includes(e.sourceId)&&++tileErr===6&&!national){const st=$('#lstat');st.hidden=false;st.textContent='Some map tiles did not load. The outside map service may be busy; try again shortly.'}});
 
-let legOpen=false,lastLeg='',riverCol='#1f6fb2',perCol='#3d2f29',legT=0;
+let legOpen=false,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
 /* legend entries are fixed per fire: what the fire has, what was found around it when it opened, and which layers are switched on */
 function seen(){
   const v=new Set(['pt']),k=(cur&&cur.kinds)||new Set(),on=id=>$('#'+id).checked;
@@ -352,8 +384,8 @@ function legend(){
      sh=(k,lab,svg)=>v.has(k)?`<span>${svg}${lab}</span>`:'',
      shields=sh('road0','Interstate','<svg width="16" height="16" viewBox="0 0 44 44" aria-hidden="true"><path d="M3 7Q11 1 22 6Q33 1 41 7Q43 27 22 42Q1 27 3 7Z" fill="#14418f"/><path d="M3 7Q11 1 22 6Q33 1 41 7L42 15H2Z" fill="#c8202d"/></svg>')+sh('road1','U.S.','<svg width="16" height="16" viewBox="0 0 44 44" aria-hidden="true"><path d="M3 7Q11 1 22 6Q33 1 41 7Q43 27 22 42Q1 27 3 7Z" fill="#fff" stroke="#111" stroke-width="3"/></svg>')+sh('road2','State','<svg width="18" height="14" viewBox="0 0 44 36" aria-hidden="true"><ellipse cx="22" cy="18" rx="19" ry="15" fill="#fff" stroke="#111" stroke-width="3"/></svg>');
     const own=!ownOn?'':`<div class="lh">Land ownership</div>${OWN.map((n,i)=>`<div><span class="sw" style="background:${OC[i]}99;border-color:${OC[i]}"></span>${n}</div>`).join('')}`;
-    h=row('per',`<div><span class="sw" style="background:color-mix(in srgb,${c('--fire')} 34%,transparent);border-color:${perCol}"></span>Fire perimeter</div>`)
-     +row('actl',`<div><span class="sw" style="height:0;border:0;border-top:3px solid ${c('--fireline')}"></span>Active fire edge</div>`)
+    h=row('per',`<div><span class="sw" style="background:color-mix(in srgb,${c('--fire')} 35%,transparent);border-color:${perCol}"></span>Fire perimeter</div>`)
+     +row('actl',`<div><span class="sw" style="height:0;border:0;border-top:3px solid ${c('--hot')}"></span>Active fire edge</div>`)
      +row('pt',`<div><svg width="17" height="17" viewBox="-24 -24 48 48" aria-hidden="true"><circle r="22" fill="#fff" stroke="#1b1f1d" stroke-width="3"/><path transform="scale(.72)" fill="#d9361a" d="M1 -22C4 -12 15 -8 15 5C15 15 8 21 0 21C-8 21 -15 15 -15 5C-15 -3 -9 -7 -7 -14C-4 -11 -3 -8 -3 -5C0 -9 2 -15 1 -22Z"/></svg>${cur&&cur.meta.po?'Fire start location':'Reported fire location'}</div>`)
      +(shields?`<div class="shields">${shields}</div>`:'')
      +row('road3',`<div><span class="sw" style="height:0;border:0;border-top:1px solid #8b948f"></span>County road</div>`)
@@ -370,11 +402,11 @@ function paint(){
   map.setPaintProperty('bg','background-color',c('--sea'));
   map.setPaintProperty('land','fill-color',c('--land'));
   map.setPaintProperty('co','line-color',c('--county'));
-  map.setPaintProperty('per','fill-color',c('--fire'));map.setPaintProperty('actg','line-color',c('--fire'));
-  map.setPaintProperty('actl','line-color',c('--fireline'));
+  map.setPaintProperty('per','fill-color',c('--fire'));map.setPaintProperty('actg','line-color',c('--hot'));
+  map.setPaintProperty('actl','line-color',c('--hot'));
   const th=document.documentElement.dataset.theme,sat=basemap==='imagery'&&!national,dk=sat||(basemap==='plain'&&(th==='dark'||(th!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches)));
   map.setPaintProperty('st','line-color',sat?'#ffffff':basemap==='relief'?'#4c5a54':c('--state'));
-  const tx=dk?'#fff':'#17211d',ha=dk?'rgba(10,16,14,.92)':'rgba(255,255,255,.95)',riv=sat?'#8fd3ff':dk?'#7fc4f2':'#1f6fb2',riT=sat?'#d5f0ff':dk?'#a8dcff':'#0f5a99';riverCol=riv;perCol=dk?'#f3ece6':'#3d2f29';map.setPaintProperty('perl','line-color',perCol);map.setPaintProperty('ctxLakeL','line-color',riv);
+  const tx=dk?'#fff':'#17211d',ha=dk?'rgba(10,16,14,.92)':'rgba(255,255,255,.95)',riv=sat?'#8fd3ff':dk?'#7fc4f2':'#1f6fb2',riT=sat?'#d5f0ff':dk?'#a8dcff':'#0f5a99';riverCol=riv;map.setPaintProperty('ctxLakeL','line-color',riv);
   map.setPaintProperty('ctxRiver','line-color',riv);map.setPaintProperty('ctxCounty','line-color',sat?'#fff':dk?'#c5d2cc':'#39443f');
   map.setPaintProperty('ctxRoadC','line-color',sat||dk?'#101513':'#2a322f');
   map.setPaintProperty('ctxRiverL','text-color',riT);map.setPaintProperty('ctxRiverL','text-halo-color',ha);map.setPaintProperty('ctxRiverL','text-halo-width',1.2);
@@ -401,21 +433,31 @@ $('#legBtn').addEventListener('click',()=>{legOpen=!legOpen;legend()});
 /* ---- 3D: the map draped over terrain, tilted, free to turn ---- */
 let is3d=false;const compass=new maplibregl.NavigationControl({showZoom:false,visualizePitch:true});
 function set3d(on,quick){
-  is3d=on;$('#t3d').checked=on;$('#hint3d').hidden=!on;
+  is3d=on;$('#t3d').checked=on;$('#hint3d').hidden=!on;$('#tOrb').disabled=!on||reduced;
   if(on){
     if(!map.getSource('dem'))map.addSource('dem',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13});
     map.setTerrain({source:'dem',exaggeration:1.4});
     try{map.setSky({'sky-color':'#7fb0e6','horizon-color':'#e4edf3','fog-color':'#e4edf3','sky-horizon-blend':.7,'horizon-fog-blend':.7,'fog-ground-blend':.4})}catch(e){}
     flat(false);map.addControl(compass,'bottom-right');
-    if(basemap==='plain'){basemap='imagery';document.querySelector('input[name=base][value=imagery]').checked=true;applyLayers()}
-    map.easeTo({pitch:62,bearing:quick?0:-18,duration:quick||reduced?0:1200});
+    if(basemap==='plain'||!once3d){once3d=true;basemap='imagery';document.querySelector('input[name=base][value=imagery]').checked=true;applyLayers()}
+    map.easeTo({pitch:60,bearing:quick?0:map.getBearing()-18,duration:quick||reduced?0:1400});
   }else{
-    flat(true);try{map.removeControl(compass)}catch(e){}
+    orbitOn(false);flat(true);try{map.removeControl(compass)}catch(e){}
     const done=()=>{if(!is3d)map.setTerrain(null)};
     if(quick||reduced){map.jumpTo({pitch:0,bearing:0});done()}else{map.once('moveend',done);map.easeTo({pitch:0,bearing:0,duration:700})}
   }
 }
 $('#t3d').addEventListener('change',e=>set3d(e.target.checked));
+/* slow turn around the fire; any touch of the map hands control back */
+let orbit=0,once3d=false;
+function orbitOn(on){
+  cancelAnimationFrame(orbit);orbit=0;on=!!on&&is3d&&!reduced&&!national;$('#tOrb').checked=on;if(!on)return;
+  let last=performance.now();
+  const turn=t=>{if(!orbit)return;const dt=Math.min(120,t-last);last=t;if(!(map.isEasing&&map.isEasing()))map.setBearing(map.getBearing()+dt*.0032);orbit=requestAnimationFrame(turn)};
+  orbit=requestAnimationFrame(turn)}
+$('#tOrb').disabled=true;
+$('#tOrb').addEventListener('change',e=>orbitOn(e.target.checked));
+['mousedown','touchstart','wheel'].forEach(ev=>map.getCanvasContainer().addEventListener(ev,()=>orbit&&orbitOn(false),{passive:true}));
 
 /* ---- roads, rivers, lakes, counties: asked for from Census and USGS when a fire opens ---- */
 const TIGER='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/',NHD='https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer/';
@@ -462,7 +504,7 @@ Object.keys(CTX).forEach(t=>$('#'+t).addEventListener('change',()=>{ctxVis();leg
 const roster=$('#roster');
 const causeShort=f=>[f.c1,f.c2].filter((v,i,a)=>v&&a.indexOf(v)===i).join(', ')||'Not reported';
 const causeLong=f=>[f.c1,f.c2,f.c3].filter((v,i,a)=>v&&a.indexOf(v)===i).join(' · ')||'Not reported';
-const SORTV={cost:f=>money(f.cost)||'cost n/r',ac:f=>num(f.ac)+' ac',cpa:f=>perAc(f.cpa)||'n/a',pers:f=>f.pers?num(f.pers)+' people':'n/r',disc:f=>money(f.cost)||'cost n/r'};
+const SORTV={cost:f=>money(f.cost)||'cost n/r',ac:f=>num(f.ac)+' ac',cpa:f=>perAc(f.cpa)||'n/a',pers:f=>f.pers?num(f.pers)+' people':'n/r',disc:f=>money(f.cost)||'cost n/r',sd:f=>f.sd?num(f.sd)+(f.sdp?'+':''):'none found',dth:f=>f.dth?plural(f.dth,'death'):'none'};
 function renderRoster(){
   const q=$('#q').value.trim().toLowerCase(),s=$('#sort').value;
   if(national&&!stateSel){stateRoster(q,s);return}
@@ -470,8 +512,8 @@ function renderRoster(){
   const more=list.length>400&&!q?list.length-400:0;
   roster.innerHTML=(more?list.slice(0,400):list).map(f=>`<li><button class="row" type="button" data-id="${f.id}" ${cur&&cur.meta.id===f.id&&!national?'aria-current="true"':''}>
     <span class="rk">${f.rank}</span><span class="nm">${esc(f.name)}<small>${esc(f.st)}</small></span><span class="val">${SORTV[s](f)}</span>
-    <span class="sub"><span>${num(f.ac)} ac · ${date(f.disc)}${f.f==null?' · not mapped':''}</span><span>${s==='cost'||s==='disc'?(perAc(f.cpa)||''):(money(f.cost)||'cost n/r')}</span></span><span class="cz">Cause: ${esc(causeShort(f))}</span></button></li>`).join('')||'<li style="padding:12px 16px;color:var(--ink3)">No fires match that search.</li>';
-  if(more)roster.insertAdjacentHTML('beforeend',`<li style="padding:10px 16px;color:var(--ink3)">${num(more)} more fires. Search by name, county or state to find them.</li>`);
+    <span class="sub"><span>${num(f.ac)} ac · ${date(f.disc)}${f.f==null?' · not mapped':''}</span><span>${s==='cost'||s==='disc'?(perAc(f.cpa)||''):(money(f.cost)||'cost n/r')}</span></span><span class="cz">Cause: ${esc(causeShort(f))}</span>${tollShort(f)?`<span class="dz">${tollShort(f)}</span>`:''}</button></li>`).join('')||'<li class="empty">No fires match that search.</li>';
+  if(more)roster.insertAdjacentHTML('beforeend',`<li class="empty">${num(more)} more fires. Search by name, county or state to find them.</li>`);
   if(stateSel)roster.insertAdjacentHTML('afterbegin','<li><button class="back" type="button" data-back="1">All states</button></li>');
 }
 roster.addEventListener('click',e=>{const b=e.target.closest('.row,.back');if(!b)return;if(b.dataset.back)showAll();else if(b.dataset.st)showAll(b.dataset.st);else go(b.dataset.id,true)});
@@ -497,7 +539,7 @@ function drawChart(){
   const amax=Math.max(...s.map(p=>p.a),1),cmax=Math.max(...s.map(p=>p.c||0),1),hasC=s.some(p=>p.c);
   X=t=>6+(W-12)*(t-t0)/(t1-t0);YA=v=>bot-(bot-top)*v/amax;YC=v=>bot-(bot-top)*(v||0)/cmax;
   const line=(k,Y)=>{let d=`M${X(t0)} ${Y(0)}`;s.forEach(p=>{d+=`H${X(p.t).toFixed(1)}V${Y(p[k]).toFixed(1)}`});return d+`H${X(t1).toFixed(1)}`};
-  const fd=line('a',YA),cd=line('c',YC),c=n=>css(n),mono='IBM Plex Mono,monospace',nar=W<470;
+  const fd=line('a',YA),cd=line('c',YC),c=n=>css(n),mono='Oswald,Arial Narrow,sans-serif',nar=W<470;
   el.setAttribute('viewBox',`0 0 ${W} ${H}`);
   el.innerHTML=`<line x1="6" x2="${W-6}" y1="${bot}" y2="${bot}" stroke="${c('--rule')}"/>
    <path d="${fd}V${bot}H${X(t0)}Z" fill="${c('--fire')}" opacity=".13"/>${hasC?`<path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--cost')}" opacity=".2"/>`:''}
@@ -505,8 +547,8 @@ function drawChart(){
    ${s.map(p=>`<line x1="${X(p.t).toFixed(1)}" x2="${X(p.t).toFixed(1)}" y1="${bot}" y2="${bot+4}" stroke="${c('--ink3')}"/>`).join('')}
    <text x="6" y="${H-2}" font-size="12" fill="${c('--ink3')}" font-family="${mono}">${date(t0)}</text>
    <text x="${W-6}" y="${H-2}" font-size="12" text-anchor="end" fill="${c('--ink3')}" font-family="${mono}">${date(s[s.length-1].t)}</text>
-   <rect x="6" y="3" width="14" height="4" fill="${c('--costline')}"/><text x="24" y="10" font-size="12" fill="${c('--ink2')}" font-family="Barlow,sans-serif">${hasC?(nar?`Cost to ${money(cmax)}`:`Cost to date, $0 to ${money(cmax)}`):'Cost not reported'}</text>
-   <rect x="${W-(nar?112:176)}" y="3" width="14" height="4" fill="${c('--fireline')}"/><text x="${W-6}" y="10" font-size="12" text-anchor="end" fill="${c('--ink2')}" font-family="Barlow,sans-serif">${nar?`to ${num(amax)} ac`:`Acres, 0 to ${num(amax)}`}</text>
+   <rect x="6" y="3" width="14" height="4" fill="${c('--costline')}"/><text x="24" y="10" font-size="12" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${hasC?(nar?`Cost to ${money(cmax)}`:`Cost to date, $0 to ${money(cmax)}`):'Cost not reported'}</text>
+   <rect x="${W-(nar?112:176)}" y="3" width="14" height="4" fill="${c('--fireline')}"/><text x="${W-6}" y="10" font-size="12" text-anchor="end" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${nar?`to ${num(amax)} ac`:`Acres, 0 to ${num(amax)}`}</text>
    <line id="head" y1="${top-3}" y2="${bot+4}" stroke="${c('--ink')}" stroke-width="2"/><circle id="dotA" r="4.5" fill="${c('--fireline')}" stroke="${c('--panel')}" stroke-width="2"/><circle id="dot" r="4.5" fill="${c('--costline')}" stroke="${c('--panel')}" stroke-width="2"/>`;
   head();
 }
@@ -526,7 +568,7 @@ $('#play').addEventListener('click',()=>playing?stop():start());
 
 function setStep(i){
   step=i;const s=cur.steps[i],m=cur.meta;
-  ['per','perl'].forEach(l=>map.setFilter(l,['==',['get','g'],s.g]));
+  ['per','perc','perl'].forEach(l=>map.setFilter(l,['==',['get','g'],s.g]));
   /* the red edge marks only where the perimeter moved since the step before */
   const grew=i>0&&s.g>=0&&s.g!==cur.steps[i-1].g;['actg','actl'].forEach(l=>map.setFilter(l,['==',['get','g'],grew?s.g:-9]));
   $('#scrub').value=i;head();
@@ -542,7 +584,7 @@ function setStep(i){
 function addScript(src){return new Promise((ok,no)=>{if(window.jspdf)return ok();const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=no;document.head.append(t)})}
 async function makePDF(){
   const btn=$('#pdf'),d=cur,m=d.meta,s=d.steps[step];btn.disabled=true;btn.textContent='Preparing PDF…';stop();
-  const was3d=is3d;if(was3d)set3d(false,true);
+  const was3d=is3d,wasOrb=!!orbit;orbitOn(false);if(was3d)set3d(false,true);const pad0=map.getPadding();map.setPadding({top:0,bottom:0,left:0,right:0});
   const cam={center:map.getCenter(),zoom:map.getZoom()},minZ=map.getMinZoom(),pr=map.getPixelRatio();
   try{
     await addScript('https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js');
@@ -567,15 +609,15 @@ async function makePDF(){
     cols.forEach(([k,v],i)=>{const x=L+i*W/4;txt(k,x,y,6.8,'bold','#46554f');txt(v,x,y+16,14.5,'bold',i===2?'#8a5a00':null)});
     if(s.pc!=null)txt(`${Math.round(s.pc)}% contained`,L+W/4,y+26,8,'normal','#66756e');if(m.fin)txt(`Final estimate ${money(m.fin)}`,L+W/2,y+26,8,'normal','#66756e');if(m.pers)txt(`Peak of ${num(m.pers)} personnel`,L+.75*W,y+26,8,'normal','#66756e');
     y+=36;const st=d.steps,t0=st[0].t,t1=Math.max(st[st.length-1].t,t0+DAY),ch=52,am=Math.max(...st.map(p=>p.a),1),cm=Math.max(...st.map(p=>p.c||0),1),px=t=>L+W*(t-t0)/(t1-t0),py=(v,mxv)=>y+11+ch-ch*(v||0)/mxv;
-    const key=(x,c,l)=>{P.setFillColor(...hx(c));P.rect(x,y+2,12,3,'F');txt(l,x+15,y+6,8,'normal','#46554f')};key(L,'#9a6700',`Cost to date, $0 to ${money(cm)||'$0'}`);key(L+W-150,'#A80000',`Acres, 0 to ${num(am)}`);
+    const key=(x,c,l)=>{P.setFillColor(...hx(c));P.rect(x,y+2,12,3,'F');txt(l,x+15,y+6,8,'normal','#46554f')};key(L,'#9a6700',`Cost to date, $0 to ${money(cm)||'$0'}`);key(L+W-150,'#6B1200',`Acres, 0 to ${num(am)}`);
     P.setDrawColor(...hx('#c9d2cd'));P.setLineWidth(.5);P.line(L,py(0,1),L+W,py(0,1));
-    const trace=(k,c,mxv)=>{P.setDrawColor(...hx(c));P.setLineWidth(1.3);let x=px(t0),v=py(0,1);st.forEach(p=>{const nx=px(p.t),nv=py(p[k],mxv);P.line(x,v,nx,v);P.line(nx,v,nx,nv);x=nx;v=nv})};trace('a','#A80000',am);trace('c','#9a6700',cm);
+    const trace=(k,c,mxv)=>{P.setDrawColor(...hx(c));P.setLineWidth(1.3);let x=px(t0),v=py(0,1);st.forEach(p=>{const nx=px(p.t),nv=py(p[k],mxv);P.line(x,v,nx,v);P.line(nx,v,nx,nv);x=nx;v=nv})};trace('a','#6B1200',am);trace('c','#9a6700',cm);
     P.setDrawColor(...hx('#18231f'));P.setLineWidth(.8);P.line(px(s.t),y+9,px(s.t),py(0,1)+3);
     txt(date(t0),L,py(0,1)+10,7.5,'normal','#66756e');txt(date(st[st.length-1].t),L+W,py(0,1)+10,7.5,'normal','#66756e',{align:'right'});
-    y=py(0,1)+22;const rows=[['per','Fire perimeter','#DC9A9A','#3d2f29'],['actl','Active fire edge','#A80000','#A80000'],['pt',m.po?'Fire start location':'Reported fire location','#ffffff','#d9361a'],['road0','Interstate','#ffd84d','#2a322f'],['road1','U.S. highway','#ffe9a0','#2a322f'],['road2','State highway','#ffffff','#2a322f'],['road3','County road','#8b948f','#8b948f'],['ctxRiver','Major river','#1f6fb2','#1f6fb2'],['ctxLake','Lake or reservoir','#73DFFF','#1f6fb2'],['ctxCounty','County line','#ffffff','#39443f']].filter(r=>vis.has(r[0]));
+    y=py(0,1)+22;const rows=[['per','Fire perimeter','#E0AFA6','#6B1200'],['actl','Active fire edge','#F0380F','#F0380F'],['pt',m.po?'Fire start location':'Reported fire location','#ffffff','#d9361a'],['road0','Interstate','#ffd84d','#2a322f'],['road1','U.S. highway','#ffe9a0','#2a322f'],['road2','State highway','#ffffff','#2a322f'],['road3','County road','#8b948f','#8b948f'],['ctxRiver','Major river','#1f6fb2','#1f6fb2'],['ctxLake','Lake or reservoir','#73DFFF','#1f6fb2'],['ctxCounty','County line','#ffffff','#39443f']].filter(r=>vis.has(r[0]));
     if(ownOn)OWN.forEach((n,i)=>rows.push(['',n,OC[i],OC[i]]));
     txt('LEGEND',L,y,7,'bold','#46554f');rows.forEach((r,i)=>{const cx=L+(i%3)*180,ry=y+6+Math.floor(i/3)*11;P.setFillColor(...hx(r[2]));P.setDrawColor(...hx(r[3]));P.setLineWidth(.7);P.rect(cx,ry,10,7,'FD');txt(r[1],cx+13,ry+6.3,7.5)});
-    const dm=dmgText(m);if(dm){P.setFont('helvetica','normal');P.setFontSize(8);P.setTextColor(...hx('#18231f'));P.text(P.splitTextToSize('Damage: '+dm,W),L,y+18+Math.ceil(rows.length/3)*11)}
+    const dm=dmgText(m);if(dm){P.setFont('helvetica','normal');P.setFontSize(8);P.setTextColor(...hx('#18231f'));P.text(P.splitTextToSize('Losses: '+dm,W),L,y+18+Math.ceil(rows.length/3)*11)}
     P.setDrawColor(...hx('#c9d2cd'));P.setLineWidth(.5);P.line(L,738,L+W,738);
     P.setFont('helvetica','normal');P.setFontSize(6.6);P.setTextColor(...hx('#66756e'));
     P.text(P.splitTextToSize(`Cost is the WFIGS estimated cost to date, the highest value reported so far at each date, ending with the latest report. It covers firefighting only, not property loss or recovery. Perimeters are dated by WFIGS record modified date. Sources: NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026; USGS The National Map; BLM Surface Management Agency; Census TIGERweb; USGS NHD. Created ${new Date().toLocaleDateString('en-US')}.`,W),L,746);
@@ -584,7 +626,7 @@ async function makePDF(){
     if(dl){try{await dl.save({filename:name,data:blob})}catch(e){if(e&&e.code!=='declined')throw e}}else P.save(name);
     btn.textContent='Download PDF map';
   }catch(e){console.error(e);btn.textContent='PDF failed. Try again.'}
-  map.setPixelRatio(pr);map.jumpTo(cam);map.setMinZoom(minZ);btn.disabled=false;if(was3d)set3d(true,true);
+  map.setPixelRatio(pr);map.jumpTo(cam);map.setPadding(pad0);map.jumpTo(cam);map.setMinZoom(minZ);btn.disabled=false;if(was3d)set3d(true,true);if(wasOrb)orbitOn(true);
 }
 $('#pdf').addEventListener('click',makePDF);
 
@@ -601,14 +643,14 @@ async function load(m){
   else{if(!bundles.has(m.f)){const r=await fetch(`data/b${m.f}.json?v=${V}`);if(!r.ok)throw new Error('load');if(bundles.size>5)bundles.delete(bundles.keys().next().value);bundles.set(m.f,await r.json())}d=bundles.get(m.f)[m.id];if(!d)throw new Error('load')}
   if(cache.size>40)cache.delete(cache.keys().next().value);cache.set(m.id,d);return d}
 const STATS=[{k:'Date',v:''},{k:'Fire size',v:''},{k:'Estimated cost to date',v:'',hero:1},{k:'Cost per acre',v:''}];
-function dmgText(m){const d=DMG[m.id];return [m.fat?`${m.fat} ${m.fat>1?'fatalities':'fatality'} recorded in WFIGS.`:'',d?d.t:''].filter(Boolean).join(' ')}
-async function go(id,auto){
+function dmgText(m){const d=DMG[m.id];return [d?d.t:'',m.fat&&!(d&&d.k)?`${m.fat} ${m.fat>1?'deaths':'death'} recorded in WFIGS.`:''].filter(Boolean).join(' ')}
+async function go(id,auto,instant){
   const meta=fires.find(f=>f.id===id);if(!meta)return;
   stop();let d;
   try{d=await load(meta)}catch(e){$('#fmeta').textContent='This fire did not load. Select it again to retry.';return}
   step=d.steps.length-1;national=false;stateSel=null;$('#nat').toggleAttribute('hidden',true);$('#map').style.visibility='';$('#sizeWrap').hidden=true;cur=d;cur.meta=meta;$('#all').setAttribute('aria-pressed','false');$('#all').textContent='Show all fires on the U.S. map';
   if(location.hash.slice(1)!==id)history.replaceState(null,'','#'+id);
-  ['per','perl','actg','actl','pt','st'].forEach(l=>map.setLayoutProperty(l,'visibility','visible'));
+  ['per','perc','perl','actg','actl','pt','st'].forEach(l=>map.setLayoutProperty(l,'visibility','visible'));
   map.getSource('per').setData({type:'FeatureCollection',features:d.per});
   map.getSource('act').setData({type:'FeatureCollection',features:(d.per[0]?[{type:'Feature',properties:{g:0},geometry:d.per[0].geometry}]:[]).concat(d.act||[])});
   map.getSource('pt').setData({type:'Feature',properties:{label:(meta.po?'Fire start\n':'Reported location\n')+date(meta.disc)},geometry:{type:'Point',coordinates:d.pt}});
@@ -616,7 +658,9 @@ async function go(id,auto){
   const narrow=innerWidth<=820;
   const bb=[Math.min(d.bbox[0],d.pt[0]),Math.min(d.bbox[1],d.pt[1]),Math.max(d.bbox[2],d.pt[0]),Math.max(d.bbox[3],d.pt[1])];
   curBB=bb;map.setMinZoom(0);const tok=++fitTok;map.once('moveend',()=>{if(tok===fitTok&&!national)map.setMinZoom(Math.max(0,map.getZoom()-1.5))});
-  map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:narrow?{top:80,bottom:70,left:40,right:40}:{top:120,bottom:225,left:60,right:60},duration:reduced?0:700,maxZoom:14});
+  /* the padding stays on the map, so the fire sits in the clear space between the cards and turning the view circles the fire */
+  map.setPadding(narrow?{top:20,bottom:20,left:14,right:14}:{top:110,bottom:215,left:40,right:40});
+  map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:narrow?16:24,duration:reduced||instant?0:700,maxZoom:14,bearing:map.getBearing()});
   ctxVis();loadCtx(d);
   $('#fname').textContent=meta.name;
   $('#fmeta').textContent=`Fire ${meta.rank} of ${num(fires.length)} by cost · ${[[meta.cnty,meta.st].filter(Boolean).join(', '),meta.desc].filter(Boolean).join(' · ')}`;
@@ -624,56 +668,58 @@ async function go(id,auto){
   const facts=[meta.own?`Started on ${/^[A-Z]{2,}/.test(meta.own)?meta.own:meta.own.toLowerCase()} land`:'',`Discovered ${date(meta.disc)}`,meta.cont?`Contained ${date(meta.cont)}`:'',meta.pers>=10?`Peak of ${num(meta.pers)} personnel`:''].filter(Boolean);
   $('#ffacts').textContent=facts.join(' · ');
   const dg=DMG[meta.id],fd=$('#fdmg'),dt=dmgText(meta);fd.hidden=!dt;
-  fd.innerHTML=dt?`<b>Damage:</b> ${esc(dt)}${dg&&dg.s?' '+dg.s.map(([l,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>`).join(', '):''}`:'';
+  fd.innerHTML=dt?`<b>Losses:</b> ${esc(dt)}${dg&&dg.s?' '+dg.s.map(([l,u])=>`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l)}</a>`).join(', '):''}`:'';
   const w=$('#fwarn'),one=!d.nomap&&meta.ng<2;
   w.hidden=!(d.nomap||one);w.textContent=d.nomap?'No mapped perimeter is on record for this fire, so the map shows only where it was reported.':one?'Only one mapped perimeter is on record, so this fire jumps from discovery to its final size.':'';
-  $('#ctl').hidden=false;$('#tl').hidden=false;$('#scrub').max=d.steps.length-1;
+  $('#ctl').hidden=false;$('#tl').hidden=false;$('#scrub').max=d.steps.length-1;$('#toll').hidden=true;$('#fnav').hidden=false;$('#prev').disabled=meta.rank<=1;$('#next').disabled=meta.rank>=fires.length;
   statsHTML(STATS);drawChart();applyLayers();shown={a:d.steps.at(-1).a,b:d.steps.at(-1).c||0};setStep(d.steps.length-1);renderRoster();
   const row=roster.querySelector(`[data-id="${id}"]`);if(row&&!auto)row.scrollIntoView({block:'nearest'});
   if(auto&&!reduced&&d.steps.length>2){setStep(0);setTimeout(()=>{if(cur===d)start()},750)}
 }
 function byState(){const m={};fires.forEach(f=>(m[f.st]=m[f.st]||[]).push(f));return Object.entries(m).map(([st,l])=>({st,...statsFor(l)}))}
 function stateRoster(q,s){
-  const k={ac:'ac',pers:'pers'}[s]||'cost';
-  const list=byState().map(r=>({...r,cpa:r.ac?r.cost/r.ac:0})).filter(r=>!q||((ST[r.st]||'')+' '+r.st).toLowerCase().includes(q)).sort((a,b)=>s==='cpa'?b.cpa-a.cpa:b[k]-a[k]);
-  roster.innerHTML=`<li class="hdr"><span>State</span><span>Estimated cost</span><span>Fires · fire acres</span><span>Cost per acre</span></li>`+list.map(r=>`<li><button class="row" type="button" data-st="${r.st}">
-   <span class="rk">${r.st}</span><span class="nm">${esc(ST[r.st]||r.st)}</span><span class="val">${money(r.cost)||'n/r'}</span>
-   <span class="sub"><span>${num(r.n)} fire${r.n>1?'s':''} · ${num(r.ac)} ac</span><span>${r.cost&&r.ac>=1?perAc(r.cpa):''}</span></span></button></li>`).join('')||'<li style="padding:12px 16px;color:var(--ink3)">No states match that search.</li>';
+  const k={ac:'ac',pers:'pers',sd:'sd',dth:'dth'}[s]||'cost';
+  const list=byState().map(r=>({...r,cpa:r.ac?r.cost/r.ac:0})).filter(r=>!q||((ST[r.st]||'')+' '+r.st).toLowerCase().includes(q)).sort((a,b)=>s==='cpa'?b.cpa-a.cpa:(b[k]-a[k])||(b.cost-a.cost));
+  const lead=r=>k==='sd'?(r.sd?num(r.sd)+(r.plus?'+':''):'none found'):k==='dth'?(r.dth?plural(r.dth,'death'):'none'):money(r.cost)||'n/r';
+  roster.innerHTML=`<li class="hdr"><span>State</span><span>${k==='sd'?'Structures destroyed':k==='dth'?'Deaths':'Estimated cost'}</span></li>`+list.map(r=>{const tl=tollShort({sd:r.sd,sdp:r.plus,sm:r.sm,dth:r.dth,inj:r.inj});return `<li><button class="row" type="button" data-st="${r.st}">
+   <span class="rk">${r.st}</span><span class="nm">${esc(ST[r.st]||r.st)}</span><span class="val">${lead(r)}</span>
+   <span class="sub"><span>${num(r.n)} fire${r.n>1?'s':''} · ${num(r.ac)} ac</span><span>${k==='cost'?(r.cost&&r.ac>=1?perAc(r.cpa):''):money(r.cost)||''}</span></span>${tl?`<span class="dz">${tl}</span>`:''}</button></li>`}).join('')||'<li class="empty">No states match that search.</li>';
 }
 const CAUSE={Human:'#c8321f',Natural:'#2e7fb8',Undetermined:'#9a8f80'};
-const SIZE={cause:'Estimated cost',cost:'Estimated cost',ac:'Fire acres',pers:'Peak personnel',cnt:'Fires'};
+const SIZE={cause:'Estimated cost',cost:'Estimated cost',ac:'Fire acres',pers:'Peak personnel',cnt:'Fires',sd:'Structures destroyed',dth:'Deaths',inj:'Injuries'},TOLL=k=>k==='sd'||k==='dth'||k==='inj';
 let natR=null;
 const measure=f=>sizeBy==='cnt'?1:f[sizeBy==='cause'?'cost':sizeBy]||0;
-const fmtM=v=>sizeBy==='cost'||sizeBy==='cause'?money(v):sizeBy==='pers'?num(v):num(v)+' ac';
+const fmtM=v=>sizeBy==='cost'||sizeBy==='cause'?money(v):sizeBy==='pers'||TOLL(sizeBy)?num(v):num(v)+' ac';
 function natKey(){
   if(sizeBy==='cnt'||!natR)return `<div>Each circle is one fire. Select a state or a circle.</div>`;
-  const m=natR.max,vals=[m,m/4,m/16].map(v=>{const p=10**Math.floor(Math.log10(v)),r=Math.round(v/p)*p;return r});
-  const hint=sizeBy==='cost'||sizeBy==='cause'?'<div>Small dashed circles report no cost.</div>':'';
+  const m=natR.max,vals=[...new Set([m,m/4,m/16].map(v=>{const p=10**Math.floor(Math.log10(v)),r=Math.round(v/p)*p;return TOLL(sizeBy)?Math.round(r):r}).filter(v=>v>=(TOLL(sizeBy)?1:0)))];
+  if(TOLL(sizeBy)&&!natR.any)return `<div>No ${SIZE[sizeBy].toLowerCase()} were found in reports for these fires.</div>`;
+  const hint=sizeBy==='cost'||sizeBy==='cause'?'<div>Small dashed circles report no cost.</div>':TOLL(sizeBy)?'<div>Only fires with a reported figure are drawn.</div>':'';
   const l=fires.filter(f=>!stateSel||f.st===stateSel),cz=sizeBy==='cause'?`<div class="lh" style="border:0;margin:0;padding:0">Ignition cause</div>${Object.entries(CAUSE).map(([k,c])=>{const g=l.filter(f=>f.c1===k);return `<div><span class="sw" style="background:${c};border-color:${c};border-radius:50%;width:13px;height:13px"></span>${k}: ${num(g.length)} fires, ${money(g.reduce((a,f)=>a+f.cost,0))||'$0'}</div>`}).join('')}`:'';
   return `${cz}<div class="lh" style="border:0;margin:0;padding:0">${SIZE[sizeBy]}</div><div class="key${sizeBy==='cause'?' open':''}">${vals.map(v=>{const d=2*natR.r(v);return `<span><i style="width:${d}px;height:${d}px"></i>${fmtM(v)}</span>`}).join('')}</div>${hint}`;
 }
 function drawNat(){
   const el=$('#nat'),box=el.getBoundingClientRect(),W=box.width||800,H=box.height||600,narrow=innerWidth<=820;
-  const ext=[[14,narrow?70:80],[W-14,H-(narrow?14:140)]];
+  const ext=[[14,narrow?14:96],[W-14,H-(narrow?14:200)]];
   const feat=stateSel&&STATES.features.find(f=>f.properties.name===ST[stateSel]);
   let proj;
   if(feat){const [[x0,y0],[x1,y1]]=d3.geoBounds(feat);proj=d3.geoConicEqualArea().parallels([y0+(y1-y0)/6,y1-(y1-y0)/6]).rotate([-(x0+x1)/2,0]).center([0,(y0+y1)/2]).fitExtent(ext,feat)}
   else proj=d3.geoAlbersUsa().fitExtent(ext,{type:'FeatureCollection',features:STATES.features.filter(f=>!/Puerto|Guam|Samoa|Virgin|Mariana/.test(f.properties.name))});
   const path=d3.geoPath(proj),list=fires.filter(f=>!stateSel||f.st===stateSel);
   const vals=list.map(measure),max=Math.max(...vals,1),rmax=narrow?(feat?26:17):(feat?40:32);
-  natR={max,r:v=>Math.max(2.2,Math.sqrt(v/max)*rmax)};
-  const dots=list.map(f=>{const p=proj([f.lon,f.lat]),v=measure(f);return p&&{f,p,v}}).filter(Boolean).sort((a,b)=>b.v-a.v);
+  natR={max,any:vals.some(v=>v>0),r:v=>Math.max(TOLL(sizeBy)?4:2.2,Math.sqrt(v/max)*rmax)};el.dataset.mode=sizeBy;
+  const dots=list.map(f=>{const p=proj([f.lon,f.lat]),v=measure(f);return p&&(!TOLL(sizeBy)||v>0)&&{f,p,v}}).filter(Boolean).sort((a,b)=>b.v-a.v);
   const nst=Object.fromEntries(Object.entries(ST).map(([k,v])=>[v,k])),money$=sizeBy==='cost'||sizeBy==='cause';
   el.setAttribute('viewBox',`0 0 ${W} ${H}`);
   el.innerHTML=STATES.features.map(f=>{const d=path(f);if(!d)return '';const a=nst[f.properties.name],on=feat===f;return `<path class="s${on?' on':feat?' off':''}" d="${d}" data-st="${a||''}"><title>${esc(f.properties.name)}</title></path>`}).join('')
    +(feat?`<path class="co" d="${path(base.co)||''}"/>`:'')
-   +dots.map(({f,p,v})=>{const nr=money$&&!f.cost,r=sizeBy==='cnt'?(feat?6:3.2):nr?2.2:natR.r(v);const co=sizeBy==='cause'&&!nr?` style="fill:${CAUSE[f.c1]||'#9a8f80'};fill-opacity:.7;stroke:#fff;stroke-width:.8"`:'';return `<circle${co} class="${nr?'nr':''}" data-id="${f.id}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(f.name)}, ${esc(f.st)}: ${money(f.cost)||'cost not reported'}, ${num(f.ac)} ac, cause: ${esc(f.c1||'not reported')}</title></circle>`}).join('');
+   +dots.map(({f,p,v})=>{const nr=money$&&!f.cost,r=sizeBy==='cnt'?(feat?6:3.2):nr?2.2:natR.r(v);const co=sizeBy==='cause'&&!nr?` style="fill:${CAUSE[f.c1]||'#9a8f80'};fill-opacity:.7;stroke:#fff;stroke-width:.8"`:'';return `<circle${co} class="${nr?'nr':''}" data-id="${f.id}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(f.name)}, ${esc(f.st)}: ${money(f.cost)||'cost not reported'}, ${num(f.ac)} ac, cause: ${esc(f.c1||'not reported')}${tollShort(f)?', '+tollShort(f):''}</title></circle>`}).join('');
   legend();
 }
 $('#nat').addEventListener('click',e=>{const t=e.target;if(t.dataset.id)go(t.dataset.id,true);else if(t.dataset.st&&fires.some(f=>f.st===t.dataset.st))showAll(t.dataset.st)});
-$('#sizeBy').addEventListener('change',e=>{sizeBy=e.target.value;if(sizeBy==='cause')legOpen=true;drawNat()});
+$('#sizeBy').addEventListener('change',e=>{sizeBy=e.target.value;if(sizeBy==='cause'||TOLL(sizeBy))legOpen=true;drawNat()});
 function showAll(st){
-  stop();national=true;stateSel=st||null;renderRoster();$('#all').setAttribute('aria-pressed','true');$('#all').textContent='Return to the costliest fire';
+  stop();orbitOn(false);national=true;stateSel=st||null;renderRoster();$('#fnav').hidden=true;$('#all').setAttribute('aria-pressed','true');$('#all').textContent='Return to the costliest fire';
   history.replaceState(null,'',st?'#state-'+st:'#all-fires');
   $('#map').style.visibility='hidden';$('#nat').toggleAttribute('hidden',false);$('#sizeWrap').hidden=false;
   const l=fires.filter(f=>!st||f.st===st),t=statsFor(l),top=[...l].sort((a,b)=>b.cost-a.cost)[0];
@@ -681,10 +727,14 @@ function showAll(st){
   ['#fwarn','#fcause','#fdmg'].forEach(s=>$(s).hidden=true);$('#ffacts').textContent=top&&top.cost?`Costliest: ${top.name}${st?'':', '+top.st}, ${money(top.cost)}`:'';
   $('#ctl').hidden=true;$('#tl').hidden=true;
   statsHTML([{k:'Fires',v:num(t.n),x:`${num(t.nc)} report a cost`},{k:'Fire acres',v:num(t.ac)+'<small>ac</small>'},{k:'Estimated cost',v:t.nc?money(t.cost):NR,hero:1,x:t.cost?`${(100*t.cost/totals.cost).toFixed(st?1:0)}% of the national total`:' '},{k:'Cost per acre',v:t.cost&&t.ac>=1?'$'+num(t.cost/t.ac)+'<small>per ac</small>':'n/a',x:'All cost over all acres'}]);
+  const tl=$('#toll');tl.hidden=false;tl.innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
   applyLayers();drawNat();
 }
-function route(){const h=location.hash.slice(1);if(h==='all-fires')showAll();else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)])showAll(h.slice(6));else go(fires.some(f=>f.id===h)?h:fires[0].id,false)}
+function route(){const h=location.hash.slice(1);if(h==='all-fires')showAll();else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)])showAll(h.slice(6));else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,false,first).then(()=>{if(first&&LIVE&&cur&&!national){set3d(true);orbitOn(true)}})}}
+let started=false;
 addEventListener('hashchange',route);
+$('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
+$('#next').addEventListener('click',()=>cur&&cur.meta.rank<fires.length&&go(fires[cur.meta.rank].id,false));
 addEventListener('resize',()=>{if(national)drawNat();else if(cur)drawChart()});
 if(!LIVE){document.querySelector('input[name=base][value=plain]').checked=true;document.querySelectorAll('#layers input').forEach(i=>i.disabled=true);$('#lstat').textContent='Preview: relief, imagery, ownership, roads, rivers and county lines load only on your website.'}
 renderRoster();$('#play').innerHTML=ICON.play;route();
