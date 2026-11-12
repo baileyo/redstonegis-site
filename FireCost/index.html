@@ -65,7 +65,13 @@ aside{min-height:0;display:flex;flex-direction:column;background:var(--shell);bo
 .note ul{margin:6px 0 2px;padding-left:18px;color:var(--ink2);max-height:34vh;overflow:auto}
 .note li{margin-bottom:6px}
 main{position:relative;min-height:0;min-width:0;background:var(--sea)}
+.mapbox{position:absolute;inset:0}
 #map{position:absolute;inset:0}
+#veil{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:var(--shell);font:500 20px var(--display);letter-spacing:.04em;color:var(--redstone);transition:opacity .35s}
+#veil.out{opacity:0;pointer-events:none}
+.spin{width:44px;height:44px;border-radius:50%;border:5px solid var(--blush);border-top-color:var(--redstone);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
 #nat{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--sea)}
 #nat .s{fill:var(--land);stroke:var(--state);stroke-width:.8;cursor:pointer}
 #nat .s:hover{fill:var(--panel2)}
@@ -160,7 +166,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
   main>.hud,#rail{margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px))}
   #title{order:-1;max-width:none;padding:12px 14px}
   #title h2{font-size:27px}
-  #map,#nat{position:relative;inset:auto;height:58svh;min-height:340px;max-height:640px;width:100%}
+  .mapbox{position:relative;inset:auto;height:58svh;min-height:340px;max-height:640px;width:100%}
   #deck{padding:12px 14px 10px;order:1}
   #rail{order:2}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
@@ -210,6 +216,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
     <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
     <li><b>Personnel:</b> the largest number of people assigned at any report.</li>
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
+    <li><b>Loading:</b> each fire map stays covered until its base map, terrain, ownership, roads, rivers and county lines have loaded. If an outside map service is slow, the map is shown after 12 seconds and the late layer is added when it arrives.</li>
     <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on.</li>
     <li><b>3D terrain:</b> drapes the map over elevation from the Mapzen terrain tiles hosted by Amazon Web Services, with heights exaggerated 1.4 times so relief reads at fire scale. The PDF map is always flat and north-up.</li>
     <li><b>Base maps:</b> shaded relief and imagery load from USGS The National Map when you open a fire. Imagery is the USGS orthoimagery base map, which is built from NAIP aerial photography at close zooms. It mostly predates these fires, and detail softens past its closest level.</li>
@@ -220,8 +227,11 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
   </ul></details>
 </aside>
 <main>
+  <div class="mapbox">
   <div id="map" role="application" aria-label="Map of the fire perimeter over time"></div>
+  <div id="veil" role="status" hidden><span class="spin" aria-hidden="true"></span><span>Loading map layers…</span></div>
   <svg id="nat" role="img" aria-label="Equal area map of fires by state" hidden></svg>
+  </div>
   <div class="hud" id="title"><div class="thead"><h2 id="fname">Loading fires…</h2><div class="fnav" id="fnav"><button id="prev" type="button" aria-label="Previous fire by cost">&#8249;</button><button id="next" type="button" aria-label="Next fire by cost">&#8250;</button></div></div><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
   <div id="rail"><div class="hud" id="layers">
     <fieldset class="seg"><legend>Base map</legend>
@@ -249,7 +259,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112f';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112g';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -261,7 +271,7 @@ const title=s=>s&&s===s.toUpperCase()?s.replace(/[A-Za-z]\S*/g,w=>w[0]+w.slice(1
 const ICON={play:'<svg viewBox="0 0 20 20"><path d="M5 2.5v15l13-7.5z"/></svg>',pause:'<svg viewBox="0 0 20 20"><path d="M4 2h4.5v16H4zM11.5 2H16v16h-4.5z"/></svg>'};
 const NR='<small style="margin:0;font-size:20px">Not reported</small>';
 
-let curBB=null,fitTok=0;
+let curBB=null,fitTok=0,nhdBad=false;
 let stateSel=null,sizeBy='cost',STATES={features:[]},DMG={};
 const ST={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',PR:'Puerto Rico'};
 const LIVE=true;
@@ -514,6 +524,7 @@ async function loadCtx(d){
     f=>({type:'Feature',properties:{k:'sea'},geometry:f.geometry})];
   const show=()=>{kinds(fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:fs})};
   const r=await Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false)));
+  nhdBad=!r[4]&&!r[5];
   if(r.every(x=>x)){if(ctxCache.size>8)ctxCache.delete(ctxCache.keys().next().value);ctxCache.set(id,fs)}
   show();
   if(cur===d&&!national&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean'].filter((n,i)=>!r[i]))];
@@ -550,11 +561,11 @@ let raf=0;
 function animateTo(a,b){
   cancelAnimationFrame(raf);
   if(reduced||!playing){shown={a,b};paintNums();return}
-  const from={...shown},t0=performance.now(),dur=Math.min(320,stepMs()*.8);
+  const from={...shown},t0=performance.now(),dur=Math.min(600,stepMs()*.8);
   (function tick(n){const k=Math.min(1,(n-t0)/dur);shown={a:from.a+(a-from.a)*k,b:from.b+(b-from.b)*k};paintNums();if(k<1)raf=requestAnimationFrame(tick)})(t0);
 }
 function paintNums(){ $('#v1').innerHTML=num(shown.a)+'<small>ac</small>'; $('#v2').innerHTML=shown.b>0?money(shown.b):NR; $('#v3').innerHTML=shown.b>0&&shown.a>=1?'$'+num(shown.b/shown.a)+'<small>per ac</small>':'<small style="margin:0;font-size:20px">n/a</small>'; }
-function stepMs(){const n=cur.steps.length;return Math.max(280,Math.min(900,11000/n))/speed}
+function stepMs(){const n=cur.steps.length;return Math.max(560,Math.min(1800,22000/n))/speed}
 
 /* ---- timeline: acres and cost each run from zero to their own peak ---- */
 let X=null,YA=null,YC=null,W=0;
@@ -670,8 +681,9 @@ const STATS=[{k:'Date',v:''},{k:'Fire size',v:''},{k:'Estimated cost to date',v:
 function dmgText(m){const d=DMG[m.id];return [d?d.t:'',m.fat&&!(d&&d.k)?`${m.fat} ${m.fat>1?'deaths':'death'} recorded in WFIGS.`:''].filter(Boolean).join(' ')}
 async function go(id,auto,instant){
   const meta=fires.find(f=>f.id===id);if(!meta)return;
-  stop();let d;
-  try{d=await load(meta)}catch(e){$('#fmeta').textContent='This fire did not load. Select it again to retry.';return}
+  stop();orbitOn(false);let d;const veil=$('#veil'),my=++fitTok;veil.hidden=false;veil.classList.remove('out');
+  try{d=await load(meta)}catch(e){veil.hidden=true;$('#fmeta').textContent='This fire did not load. Select it again to retry.';return}
+  if(my!==fitTok)return;
   step=d.steps.length-1;national=false;stateSel=null;$('#nat').toggleAttribute('hidden',true);$('#map').style.visibility='';$('#sizeWrap').hidden=true;cur=d;cur.meta=meta;$('#all').setAttribute('aria-pressed','false');$('#all').textContent='Show all fires on the U.S. map';
   if(location.hash.slice(1)!==id)history.replaceState(null,'','#'+id);
   ['per','perc','perl','actg','actl','pt','st'].forEach(l=>map.setLayoutProperty(l,'visibility','visible'));
@@ -681,11 +693,12 @@ async function go(id,auto,instant){
   map.getSource('ctx').setData(EMPTY);tileErr=0;$('#lstat').hidden=LIVE;
   const narrow=innerWidth<=820;
   const bb=[Math.min(d.bbox[0],d.pt[0]),Math.min(d.bbox[1],d.pt[1]),Math.max(d.bbox[2],d.pt[0]),Math.max(d.bbox[3],d.pt[1])];
-  curBB=bb;map.setMinZoom(0);const tok=++fitTok;map.once('moveend',()=>{if(tok===fitTok&&!national)map.setMinZoom(Math.max(0,map.getZoom()-1.5))});
+  curBB=bb;map.setMinZoom(0);const tok=my;map.once('moveend',()=>{if(tok===fitTok&&!national)map.setMinZoom(Math.max(0,map.getZoom()-1.5))});
   /* the padding stays on the map, so the fire sits in the clear space between the cards and turning the view circles the fire */
   map.setPadding(narrow?{top:20,bottom:20,left:14,right:14}:{top:110,bottom:215,left:40,right:40});
-  map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:narrow?16:24,duration:reduced||instant?0:700,maxZoom:14,bearing:map.getBearing()});
-  ctxVis();loadCtx(d);
+  map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:narrow?16:24,duration:0,maxZoom:14,bearing:map.getBearing()});
+  if(instant&&LIVE&&!is3d)set3d(true,true);
+  ctxVis();const ctxDone=loadCtx(d);
   $('#fname').textContent=meta.name;
   $('#fmeta').textContent=`Fire ${meta.rank} of ${num(fires.length)} by cost · ${[[meta.cnty,meta.st].filter(Boolean).join(', '),meta.desc].filter(Boolean).join(' · ')}`;
   $('#fcause').hidden=false;$('#fcause').textContent='Ignition cause: '+causeLong(meta);
@@ -698,7 +711,13 @@ async function go(id,auto,instant){
   $('#ctl').hidden=false;$('#tl').hidden=false;$('#scrub').max=d.steps.length-1;$('#toll').hidden=true;$('#fnav').hidden=false;$('#prev').disabled=meta.rank<=1;$('#next').disabled=meta.rank>=fires.length;
   statsHTML(STATS);drawChart();applyLayers();shown={a:d.steps.at(-1).a,b:d.steps.at(-1).c||0};setStep(d.steps.length-1);renderRoster();
   const row=roster.querySelector(`[data-id="${id}"]`);if(row&&!auto)row.scrollIntoView({block:'nearest'});
-  if(auto&&!reduced&&d.steps.length>2){setStep(0);setTimeout(()=>{if(cur===d)start()},750)}
+  const play=auto&&!reduced&&d.steps.length>2;if(play)setStep(0);
+  /* the map stays covered until its tiles, terrain and surrounding features are in, or a time limit passes; a service that has already failed this visit gets a shorter wait */
+  const idle=new Promise(r=>{map.once('idle',r);map.triggerRepaint()});
+  await Promise.race([Promise.all([ctxDone,idle]),new Promise(r=>setTimeout(r,nhdBad?5000:12000))]);
+  if(my!==fitTok||national)return;
+  veil.classList.add('out');setTimeout(()=>{if(my===fitTok)veil.hidden=true},400);
+  if(play)setTimeout(()=>{if(cur===d&&my===fitTok)start()},500);
   if(is3d&&orbWant)orbitOn(true);
 }
 function byState(){const m={};fires.forEach(f=>(m[f.st]=m[f.st]||[]).push(f));return Object.entries(m).map(([st,l])=>({st,...statsFor(l)}))}
@@ -744,7 +763,7 @@ function drawNat(){
 $('#nat').addEventListener('click',e=>{const t=e.target;if(t.dataset.id)go(t.dataset.id,true);else if(t.dataset.st&&fires.some(f=>f.st===t.dataset.st))showAll(t.dataset.st)});
 $('#sizeBy').addEventListener('change',e=>{sizeBy=e.target.value;if(sizeBy==='cause'||TOLL(sizeBy))legOpen=true;drawNat()});
 function showAll(st){
-  stop();orbitOn(false);national=true;stateSel=st||null;renderRoster();$('#fnav').hidden=true;$('#all').setAttribute('aria-pressed','true');$('#all').textContent='Return to the costliest fire';
+  stop();orbitOn(false);fitTok++;$('#veil').hidden=true;national=true;stateSel=st||null;renderRoster();$('#fnav').hidden=true;$('#all').setAttribute('aria-pressed','true');$('#all').textContent='Return to the costliest fire';
   history.replaceState(null,'',st?'#state-'+st:'#all-fires');
   $('#map').style.visibility='hidden';$('#nat').toggleAttribute('hidden',false);$('#sizeWrap').hidden=false;
   const l=fires.filter(f=>!st||f.st===st),t=statsFor(l),top=[...l].sort((a,b)=>b.cost-a.cost)[0];
@@ -755,7 +774,7 @@ function showAll(st){
   const tl=$('#toll');tl.hidden=false;tl.innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
   applyLayers();drawNat();
 }
-function route(){const h=location.hash.slice(1);if(h==='all-fires')showAll();else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)])showAll(h.slice(6));else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,false,first).then(()=>{if(first&&LIVE&&cur&&!national){set3d(true);orbitOn(true)}})}}
+function route(){const h=location.hash.slice(1);if(h==='all-fires')showAll();else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)])showAll(h.slice(6));else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,false,first)}}
 let started=false;
 addEventListener('hashchange',route);
 $('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
