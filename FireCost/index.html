@@ -69,6 +69,8 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 #map{position:absolute;inset:0}
 #veil{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:var(--shell);font:500 20px var(--display);letter-spacing:.04em;color:var(--redstone);transition:opacity .35s}
 #veil.out{opacity:0;pointer-events:none}
+#veil.shot{background-size:100% 100%;background-repeat:no-repeat;transition:opacity .9s}
+#veil.shot>*{display:none}
 .spin{width:44px;height:44px;border-radius:50%;border:5px solid var(--blush);border-top-color:var(--redstone);animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
@@ -219,7 +221,6 @@ main{display:flex;flex-direction:column}
 #enter{background:var(--shell);color:var(--basalt);border:0;border-radius:var(--pill);padding:14px 30px;min-height:52px;font:600 20px var(--display);letter-spacing:.03em;cursor:pointer}
 #enter:hover{background:var(--blush)}
 #enter:focus-visible{outline:3px solid var(--white);outline-offset:3px}
-#sp-status{font-size:14px;color:var(--blush)}
 .sp-src{margin:0;font-size:13px;line-height:1.5;color:#F6DAD3;max-width:60em}
 .sp-src b{color:var(--white);font-weight:600}
 </style>
@@ -253,7 +254,7 @@ main{display:flex;flex-direction:column}
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
     <li><b>GIF:</b> Create GIF saves the open fire's time series as an animated image, drawn flat and north-up with the layers you have switched on. Long fires are sampled to at most 60 frames.</li>
     <li><b>Opening photo:</b> the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026, by the U.S. Forest Service via InciWeb (public domain), tinted in the Redstone GIS colors.</li>
-    <li><b>Playback:</b> when a fire finishes playing, the map holds for five seconds and then opens and plays the next fire in the list, in whatever order and search the list is showing. Pause stops it.</li>
+    <li><b>Playback:</b> when a fire finishes playing, the map holds for five seconds and then opens and plays the next fire in the list, in whatever order and search the list is showing. Pause stops it. Near the end of each fire the next one is loaded in the background, and the finished fire's last view stays up until the next is ready.</li>
     <li><b>Loading:</b> each fire map stays covered until its base map, terrain, ownership, roads, rivers and county lines have loaded. If an outside map service is slow, the map is shown after 12 seconds and the late layer is added when it arrives.</li>
     <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on.</li>
     <li><b>3D terrain:</b> drapes the map over elevation from the Mapzen terrain tiles hosted by Amazon Web Services, with heights exaggerated 1.4 times so relief reads at fire scale. The PDF map is always flat and north-up.</li>
@@ -309,7 +310,7 @@ main{display:flex;flex-direction:column}
       <li>See where every fire started, what caused it, whose land it burned and what was lost.</li>
       <li>Compare cost, acres, structures and lives across every state.</li>
     </ul>
-    <div class="sp-go"><button id="enter" type="button">Explore the map</button><span id="sp-status" role="status">Loading map layers…</span></div>
+    <div class="sp-go"><button id="enter" type="button">Explore the map</button></div>
     <p class="sp-src"><b>Data sources:</b> fire locations, daily perimeters, cost and cause from the National Interagency Fire Center's WFIGS, extracted November 3, 2026. Base maps and terrain from USGS The National Map and Mapzen terrain tiles. Land ownership from the BLM. Roads, counties and coastline from the US Census Bureau. Rivers and lakes from the USGS National Hydrography Dataset. Structures, deaths and injuries from news and agency reports, which are incomplete.</p>
     <p class="sp-src">Photo: the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026. U.S. Forest Service via InciWeb, public domain.</p>
   </div>
@@ -320,7 +321,7 @@ main{display:flex;flex-direction:column}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112k';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112l';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -574,11 +575,16 @@ async function ask(url,where,fields,bb,off){
 /* layer 2 holds only primary highways, so an unnumbered freeway there still draws as one */
 const roadF=(f,pri)=>{const p=f.properties||{},nm=(p.NAME||'').trim(),t=/^I-/.test(nm)?'I':p.RTTYP,c={I:0,U:1,S:2,C:3}[t]??(pri?0:3),n=c===3?'':((nm.match(/(\d+[A-Z]?)\s*$/)||nm.match(/(\d+)/)||[])[1])||'';
   return{type:'Feature',properties:{k:'road',c,n,b:Math.min(4,Math.max(2,n.length))},geometry:f.geometry}};
-async function loadCtx(d){
-  if(!LIVE)return;
-  const id=d.meta.id,src=map.getSource('ctx');
+function loadCtx(d){
+  if(!LIVE)return Promise.resolve();
+  const src=map.getSource('ctx');
   const kinds=fs=>{d.kinds=new Set(fs.map(f=>{const p=f.properties;return p.k==='road'?'road'+p.c:p.k==='river'?'ctxRiver':p.k==='lake'?'ctxLake':p.k==='sea'?'ctxSea':'ctxCounty'}));if(cur===d&&!national){ctxVis();legend()}};
-  if(ctxCache.has(id)){src.setData({type:'FeatureCollection',features:ctxCache.get(id)});kinds(ctxCache.get(id));return}
+  const show=()=>{kinds(d.ctx.fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:d.ctx.fs})};
+  const note=()=>{const r=d.ctx.r;if(cur===d&&!national&&r&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean'].filter((n,i)=>!r[i]))];
+    st.hidden=false;st.textContent=nm.join(', ')+' did not load. The outside map service may be slow or busy.'}};
+  /* a fetch that is still running, or one that finished cleanly, is reused: a preload for the next fire or an earlier visit */
+  if(d.ctx&&d.ctx.ok!==false){show();return d.ctx.done.then(()=>{show();note()})}
+  d.ctx={fs:[],ok:null,r:null};
   const b=d.bbox,px=(b[2]-b[0])*.45+.02,py=(b[3]-b[1])*.45+.02,bb=[b[0]-px,b[1]-py,b[2]+px,b[3]+py].map(v=>+v.toFixed(4));
   const span=Math.max(bb[2]-bb[0],bb[3]-bb[1]),km=span*95,off=Math.max(5e-5,span/2500).toFixed(6),so=km>260?6:km>130?5:km>55?4:3,T=TIGER+'Transportation/MapServer/';
   const jobs=[ask(T+'2/query','1=1','NAME,RTTYP',bb,off),ask(T+'6/query',"RTTYP IN ('I','U','S')",'NAME,RTTYP',bb,off),
@@ -588,18 +594,35 @@ async function loadCtx(d){
     ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',bb,off),
     ask(TIGER+'Hydro/MapServer/1/query',"MTFCC IN ('H2053','H2051')",'MTFCC',bb,off)];
   /* each layer draws as soon as its own answer arrives, so one slow service does not hold back the rest */
-  const fs=[],conv=[f=>roadF(f,true),f=>roadF(f),f=>roadF(f),f=>roadF(f),
+  const fs=d.ctx.fs,conv=[f=>roadF(f,true),f=>roadF(f),f=>roadF(f),f=>roadF(f),
     f=>({type:'Feature',properties:{k:'river',n:(f.properties.GNIS_NAME||'').trim(),o:f.properties.StreamOrde},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'lake'},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'sea'},geometry:f.geometry})];
-  const show=()=>{kinds(fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:fs})};
-  const r=await Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false)));
-  nhdBad=!r[4]&&!r[5];
-  if(r.every(x=>x)){if(ctxCache.size>8)ctxCache.delete(ctxCache.keys().next().value);ctxCache.set(id,fs)}
-  show();
-  if(cur===d&&!national&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean'].filter((n,i)=>!r[i]))];
-    st.hidden=false;st.textContent=nm.join(', ')+' did not load. The outside map service may be slow or busy.'}
+  d.ctx.done=Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false))).then(r=>{d.ctx.r=r;d.ctx.ok=r.every(x=>x);nhdBad=!r[4]&&!r[5];show();note()});
+  return d.ctx.done;
+}
+/* ---- tour preload: while a fire plays out, fetch the next one's data, surroundings and map tiles ---- */
+let preFor=null;
+async function preloadNext(){
+  if(!cur||preFor===cur.meta.id)return;preFor=cur.meta.id;
+  const l=listNow(),i=l.findIndex(f=>f.id===cur.meta.id),nx=l[(i+1)%l.length];if(!nx||nx.id===cur.meta.id)return;
+  try{const d=await load(nx);d.meta=nx;loadCtx(d);warmTiles(d)}catch(e){}
+}
+function warmTiles(d){
+  if(!LIVE)return;
+  const bb=[Math.min(d.bbox[0],d.pt[0]),Math.min(d.bbox[1],d.pt[1]),Math.max(d.bbox[2],d.pt[0]),Math.max(d.bbox[3],d.pt[1])];
+  const cam=map.cameraForBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:24,maxZoom:14});if(!cam)return;
+  /* 256-pixel tiles sit one level above the map's own zoom */
+  const z0=Math.floor(cam.zoom)+1,w=bb[2]-bb[0],h=bb[3]-bb[1],B=[bb[0]-w*.6,bb[1]-h*.6,bb[2]+w*.6,bb[3]+h*.6];
+  const xy=(lon,lat,z)=>{const n=2**z;return[Math.floor((lon+180)/360*n),Math.floor((1-Math.asinh(Math.tan(lat*Math.PI/180))/Math.PI)/2*n)]};
+  const tiles=z=>{const [x0,y1]=xy(B[0],B[1],z),[x1,y0]=xy(B[2],B[3],z),o=[];for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)o.push([z,x,y]);return o};
+  const pick=(zmax,zmin)=>{let z=Math.max(zmin,Math.min(zmax,z0)),t=tiles(z);while(t.length>36&&z>zmin){z--;t=tiles(z)}return t.slice(0,48)};
+  const get=u=>fetch(u).catch(()=>{});
+  if(basemap==='relief')pick(15,0).forEach(([z,x,y])=>get(`${USGS}USGSShadedReliefOnly/MapServer/tile/${z}/${y}/${x}`));
+  if(basemap==='imagery')pick(16,0).forEach(([z,x,y])=>get(`${USGS}USGSImageryOnly/MapServer/tile/${z}/${y}/${x}`));
+  if(ownOn)pick(14,4).forEach(([z,x,y])=>get(`${SMA}${z}/${y}/${x}`));
+  if(is3d)pick(13,0).forEach(([z,x,y])=>get(`${DEM}${z}/${x}/${y}.png`));
 }
 function ctxVis(){Object.entries(CTX).forEach(([t,ls])=>ls.forEach(l=>map.setLayoutProperty(l,'visibility',!national&&$('#'+t).checked?'visible':'none')));
   /* the elevation-based ocean fill is only switched on for fires where the Census finds ocean nearby */
@@ -670,7 +693,7 @@ tl.addEventListener('pointerup',()=>drag=false);tl.addEventListener('pointerleav
 $('#scrub').addEventListener('input',e=>{stop();setStep(+e.target.value)});
 $('#speed').addEventListener('click',()=>{speed=speed===1?2:speed===2?4:1;$('#speed').textContent=speed+'×';if(playing){clearInterval(timer);run()}});
 let holdT=0;
-function run(){timer=setInterval(()=>{if(step>=cur.steps.length-1){clearInterval(timer);holdT=setTimeout(()=>{if(playing)tourNext()},5000);return}setStep(step+1)},stepMs())}
+function run(){timer=setInterval(()=>{const n=cur.steps.length;if(step>=n-5||n<=8)preloadNext();if(step>=n-1){clearInterval(timer);holdT=setTimeout(()=>{if(playing)tourNext()},5000);return}setStep(step+1)},stepMs())}
 function tourNext(){const l=listNow(),i=l.findIndex(f=>f.id===cur.meta.id),nx=l[(i+1)%l.length];
   if(!nx||nx.id===cur.meta.id){setStep(0);run();return}
   go(nx.id,'tour')}
@@ -804,7 +827,9 @@ function clearPad(bb){
   return w(p)>140&&h(p)>120?p:{top:110,bottom:215,left:40,right:40}}
 async function go(id,auto,instant){
   const meta=fires.find(f=>f.id===id);if(!meta)return;
-  stop();orbitOn(false);let d;const veil=$('#veil'),my=++fitTok;veil.hidden=false;veil.classList.remove('out');
+  stop();let d,shot=null;const veil=$('#veil'),my=++fitTok;
+  if(auto==='tour'&&cur&&!national){shot=await new Promise(r=>{let done=0;const f=v=>{if(!done++)r(v)};map.once('render',()=>{try{f(map.getCanvas().toDataURL('image/jpeg',.82))}catch(e){f(null)}});setTimeout(()=>f(null),700);map.triggerRepaint()});if(my!==fitTok)return}
+  orbitOn(false);veil.classList.toggle('shot',!!shot);veil.style.backgroundImage=shot?`url(${shot})`:'';veil.hidden=false;veil.classList.remove('out');
   try{d=await load(meta)}catch(e){veil.hidden=true;$('#fmeta').textContent='This fire did not load. Select it again to retry.';return}
   if(my!==fitTok)return;
   step=d.steps.length-1;national=false;stateSel=null;$('#nat').toggleAttribute('hidden',true);$('#map').style.visibility='';$('#sizeWrap').hidden=true;cur=d;cur.meta=meta;$('#all').setAttribute('aria-pressed','false');$('#all').textContent='Show all fires on the U.S. map';
@@ -840,8 +865,7 @@ async function go(id,auto,instant){
   const idle=new Promise(r=>{map.once('idle',r);map.triggerRepaint()});
   await Promise.race([Promise.all([ctxDone,idle]),new Promise(r=>setTimeout(r,nhdBad?5000:12000))]);
   if(my!==fitTok||national)return;
-  veil.classList.add('out');setTimeout(()=>{if(my===fitTok)veil.hidden=true},400);
-  $('#sp-status').textContent='Map ready';
+  veil.classList.add('out');setTimeout(()=>{if(my===fitTok)veil.hidden=true},shot?1000:400);
   await splashGone;if(my!==fitTok||national)return;
   if(play)setTimeout(()=>{if(cur===d&&my===fitTok)start()},500);
   else if(auto==='tour')holdT=setTimeout(()=>{if(cur===d&&my===fitTok)tourNext()},7000);
@@ -901,7 +925,7 @@ function showAll(st){
   const tl=$('#toll');tl.hidden=false;tl.innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
   applyLayers();drawNat();
 }
-function route(){const h=location.hash.slice(1);if(h==='all-fires'){started=true;showAll();$('#sp-status').textContent='Map ready'}else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)]){started=true;showAll(h.slice(6));$('#sp-status').textContent='Map ready'}else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,first,first)}}
+function route(){const h=location.hash.slice(1);if(h==='all-fires'){started=true;showAll()}else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)]){started=true;showAll(h.slice(6))}else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,first,first)}}
 let started=false;
 addEventListener('hashchange',route);
 $('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
