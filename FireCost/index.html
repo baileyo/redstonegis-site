@@ -249,7 +249,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112e';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112f';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -388,6 +388,7 @@ map.on('error',e=>{if(e&&['relief','imagery','own','dem'].includes(e.sourceId)&&
 let legOpen=LIVE&&!matchMedia('(max-width:820px)').matches,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
 /* legend entries are fixed per fire: what the fire has, what was found around it when it opened, and which layers are switched on */
 function seen(){
+  if(!cur)return new Set();
   const v=new Set(['pt']),k=(cur&&cur.kinds)||new Set(),on=id=>$('#'+id).checked;
   if(cur&&cur.per&&cur.per.length){v.add('per');v.add('actl')}
   if(on('tRoad'))[0,1,2,3].forEach(c=>k.has('road'+c)&&v.add('road'+c));
@@ -411,7 +412,7 @@ function legend(){
      +row('ctxLake',`<div><span class="sw" style="background:#73DFFF;border-color:${riverCol}"></span>Lake or reservoir</div>`)
      +row('ctxSea',`<div><span class="sw" style="background:#73DFFF;border-color:${riverCol}"></span>Ocean</div>`)
      +row('ctxCounty',`<div><span class="sw" style="height:0;border:0;border-top:2px dashed ${c('--ink2')}"></span>County line</div>`)
-     +`<div><span class="sw" style="height:0;border:0;border-top:2.4px solid ${c('--state')}"></span>State line</div>`+own;
+     +(cur?`<div><span class="sw" style="height:0;border:0;border-top:2.4px solid ${c('--state')}"></span>State line</div>`+own:'');
   }
   if(h!==lastLeg){box.innerHTML=h;lastLeg=h}box.hidden=!h||!legOpen;$('#legBtn').setAttribute('aria-expanded',legOpen);$('#legArrow').textContent=legOpen?'Hide':'Show';
 }
