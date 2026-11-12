@@ -210,10 +210,11 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
     <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
     <li><b>Personnel:</b> the largest number of people assigned at any report.</li>
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
-    <li><b>Opening view:</b> the page opens in 3D on imagery and slowly circles the fire. Touching or dragging the map stops the rotation; the Rotate view switch starts it again.</li>
+    <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on.</li>
     <li><b>3D terrain:</b> drapes the map over elevation from the Mapzen terrain tiles hosted by Amazon Web Services, with heights exaggerated 1.4 times so relief reads at fire scale. The PDF map is always flat and north-up.</li>
     <li><b>Base maps:</b> shaded relief and imagery load from USGS The National Map when you open a fire. Imagery is the USGS orthoimagery base map, which is built from NAIP aerial photography at close zooms. It mostly predates these fires, and detail softens past its closest level.</li>
     <li><b>Land ownership:</b> BLM Surface Management Agency, drawn from BLM's map tiles. Tribal and Alaska Native lands are grouped with other federal lands. Private and unknown land is left clear.</li>
+    <li><b>Ocean:</b> drawn in the same blue as lakes for fires near a coast. The shoreline comes from Census TIGERweb water areas, and open water beyond them from elevation at or below sea level.</li>
     <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable.</li>
     <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
   </ul></details>
@@ -228,7 +229,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
       <label><input type="radio" name="base" value="relief" checked><span>Relief</span></label>
       <label><input type="radio" name="base" value="imagery"><span>Imagery</span></label>
     </fieldset>
-    <label class="tog"><input type="checkbox" id="own"><span>Land ownership</span></label>
+    <label class="tog"><input type="checkbox" id="own" checked><span>Land ownership</span></label>
     <div class="togs"><label class="tog"><input type="checkbox" id="t3d"><span>3D terrain</span></label><label class="tog"><input type="checkbox" id="tOrb"><span>Rotate view</span></label></div>
     <div class="togs"><label class="tog"><input type="checkbox" id="tRoad" checked><span>Roads</span></label><label class="tog"><input type="checkbox" id="tRiver" checked><span>Rivers</span></label><label class="tog"><input type="checkbox" id="tCounty" checked><span>Counties</span></label></div>
     <div id="hint3d" hidden>Right-drag or Ctrl-drag to tilt and turn. On a phone, use two fingers to move, tilt and turn the map.</div>
@@ -248,7 +249,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112d';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112e';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -264,7 +265,7 @@ let curBB=null,fitTok=0;
 let stateSel=null,sizeBy='cost',STATES={features:[]},DMG={};
 const ST={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',PR:'Puerto Rico'};
 const LIVE=true;
-let basemap=LIVE?'relief':'plain', ownOn=false, tileErr=0;
+let basemap=LIVE?'relief':'plain', ownOn=LIVE, tileErr=0;
 let fires=[], cache=new Map(), cur=null, step=0, playing=false, timer=null, speed=1, shown={a:0,b:0}, national=false;
 try{ fires=await (await fetch('fires.json?v='+V)).json(); }catch(e){ $('#lede').textContent='The fire list did not load. Reload the page to try again.'; return; }
 fires.forEach((f,i)=>{f.rank=i+1;f.name=title(f.name);f.cost=f.cost||0;f.cpa=f.cost&&f.ac>=1?f.cost/f.ac:null});
@@ -310,6 +311,20 @@ maplibregl.addProtocol('own',async(p,ac)=>{
   const blob=await new Promise(ok=>c.toBlob(ok,'image/png'));return{data:await blob.arrayBuffer()};
 });
 
+const DEM='https://s3.amazonaws.com/elevation-tiles-prod/terrarium/',BELOW=[[-116.4,32.5,-115.1,33.9],[-117.4,35.8,-116.5,37],[-90.4,29.8,-89.7,30.15],[-122,37.7,-121.2,38.4]];
+maplibregl.addProtocol('sea',async(p,ac)=>{
+  const [z,x,y]=p.url.slice(6).split('/').map(Number),c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d',{willReadFrequently:true});
+  const r=await fetch(`${DEM}${z}/${x}/${y}.png`,{signal:ac&&ac.signal});
+  if(r.ok){g.drawImage(await createImageBitmap(await r.blob()),0,0,256,256);
+    const im=g.getImageData(0,0,256,256),d=im.data,n=2**z;
+    for(let j=0;j<256;j++){const lat=Math.atan(Math.sinh(Math.PI*(1-2*(y+(j+.5)/256)/n)))*180/Math.PI;
+      for(let i=0;i<256;i++){const k=(j*256+i)*4,e=d[k]*256+d[k+1]+d[k+2]/256-32768;let sea=e<=-1;
+        if(sea){const lon=(x+(i+.5)/256)/n*360-180;if(BELOW.some(b=>lon>b[0]&&lon<b[2]&&lat>b[1]&&lat<b[3]))sea=false}
+        if(sea){d[k]=115;d[k+1]=223;d[k+2]=255;d[k+3]=255}else d[k+3]=0}}
+    g.putImageData(im,0,0)}
+  const blob=await new Promise(ok=>c.toBlob(ok,'image/png'));return{data:await blob.arrayBuffer()};
+});
+
 const map=new maplibregl.Map({container:'map',attributionControl:false,maxPitch:78,maxZoom:17,cooperativeGestures:matchMedia('(max-width:820px)').matches,
   style:{version:8,glyphs:'glyph://{fontstack}/{range}',sources:{},layers:[{id:'bg',type:'background',paint:{'background-color':css('--sea')}}]},
   bounds:[[-125,24],[-66,50]],fitBoundsOptions:{padding:40}});
@@ -328,14 +343,18 @@ map.addSource('co',{type:'geojson',data:base.co});
 const USGS='https://basemap.nationalmap.gov/arcgis/rest/services/';
 map.addSource('relief',{type:'raster',tiles:[USGS+'USGSShadedReliefOnly/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:15});
 map.addSource('imagery',{type:'raster',tiles:[USGS+'USGSImageryOnly/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:16});
+map.addSource('sea',{type:'raster',tiles:['sea://{z}/{x}/{y}'],tileSize:256,maxzoom:10});
 map.addSource('own',{type:'raster',tiles:['own://{z}/{x}/{y}'],tileSize:256,minzoom:4,maxzoom:14});
 const L=[
  {id:'land',type:'fill',source:'land',paint:{'fill-color':'#F4EEEA'}},
  {id:'relief',type:'raster',source:'relief',layout:{visibility:'none'},paint:{'raster-fade-duration':150}},
  {id:'imagery',type:'raster',source:'imagery',layout:{visibility:'none'},paint:{'raster-fade-duration':150}},
  {id:'own',type:'raster',source:'own',layout:{visibility:'none'},paint:{'raster-opacity':.5,'raster-fade-duration':150}},
+ {id:'sea',type:'raster',source:'sea',layout:{visibility:'none'},paint:{'raster-fade-duration':0}},
  {id:'co',type:'line',source:'co',minzoom:5,layout:{visibility:'none'},paint:{'line-width':.6}},
  {id:'st',type:'line',source:'st',paint:{'line-width':['interpolate',['linear'],['zoom'],5,1,10,2.4]}},
+ {id:'ctxRiver',type:'line',source:'ctx',filter:['==',['get','k'],'river'],layout:{'line-cap':'round'},paint:{'line-width':['interpolate',['linear'],['get','o'],3,1.2,6,2.4,8,3.2]}},
+ {id:'ctxSea',type:'fill',source:'ctx',filter:['==',['get','k'],'sea'],paint:{'fill-color':'#73DFFF','fill-antialias':false}},
  {id:'ctxLake',type:'fill',source:'ctx',filter:['==',['get','k'],'lake'],paint:{'fill-color':'#73DFFF'}},{id:'ctxLakeL',type:'line',source:'ctx',filter:['==',['get','k'],'lake'],paint:{'line-width':1}},
  {id:'per',type:'fill',source:'per',filter:['==',['get','g'],-9],paint:{'fill-opacity':.35}},
  {id:'perc',type:'line',source:'per',filter:['==',['get','g'],-9],layout:{'line-join':'round'},paint:{'line-width':4.6,'line-color':'#fff','line-opacity':.55}},
@@ -343,7 +362,6 @@ const L=[
  {id:'actg',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':12,'line-blur':8,'line-opacity':.6}},
  {id:'actl',type:'line',source:'act',filter:['==',['get','g'],-9],layout:{'line-join':'round','line-cap':'round'},paint:{'line-width':3}},
  {id:'ctxCounty',type:'line',source:'ctx',filter:['==',['get','k'],'county'],paint:{'line-width':1.4,'line-dasharray':[5,2.5]}},
- {id:'ctxRiver',type:'line',source:'ctx',filter:['==',['get','k'],'river'],layout:{'line-cap':'round'},paint:{'line-width':['interpolate',['linear'],['get','o'],3,1.2,6,2.4,8,3.2]}},
  {id:'ctxRoadC',type:'line',source:'ctx',filter:['==',['get','k'],'road'],layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':['match',['get','c'],0,5,1,4,2,3.2,0]}},
  {id:'ctxRoad',type:'line',source:'ctx',filter:['==',['get','k'],'road'],layout:{'line-cap':'round','line-join':'round'},paint:{'line-width':['match',['get','c'],0,3,1,2.2,2,1.5,.7]}},
  {id:'ctxRiverL',type:'symbol',source:'ctx',filter:['==',['get','k'],'river'],layout:{'symbol-placement':'line','symbol-spacing':420,'text-field':['get','n'],'text-font':['Barlow SemiBold Italic'],'text-size':11.5,'text-max-angle':70,'text-offset':[0,-.8],'text-padding':3}},
@@ -367,13 +385,13 @@ addIcons();
 L.forEach(l=>map.addLayer(l));
 map.on('error',e=>{if(e&&['relief','imagery','own','dem'].includes(e.sourceId)&&++tileErr===6&&!national){const st=$('#lstat');st.hidden=false;st.textContent='Some map tiles did not load. The outside map service may be busy; try again shortly.'}});
 
-let legOpen=false,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
+let legOpen=LIVE&&!matchMedia('(max-width:820px)').matches,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
 /* legend entries are fixed per fire: what the fire has, what was found around it when it opened, and which layers are switched on */
 function seen(){
   const v=new Set(['pt']),k=(cur&&cur.kinds)||new Set(),on=id=>$('#'+id).checked;
   if(cur&&cur.per&&cur.per.length){v.add('per');v.add('actl')}
   if(on('tRoad'))[0,1,2,3].forEach(c=>k.has('road'+c)&&v.add('road'+c));
-  if(on('tRiver'))['ctxRiver','ctxLake'].forEach(x=>k.has(x)&&v.add(x));
+  if(on('tRiver'))['ctxRiver','ctxLake','ctxSea'].forEach(x=>k.has(x)&&v.add(x));
   if(on('tCounty')&&k.has('ctxCounty'))v.add('ctxCounty');
   return v}
 function legend(){
@@ -391,6 +409,7 @@ function legend(){
      +row('road3',`<div><span class="sw" style="height:0;border:0;border-top:1px solid #8b948f"></span>County road</div>`)
      +row('ctxRiver',`<div><span class="sw" style="height:3px;border:0;background:${riverCol}"></span>Major river</div>`)
      +row('ctxLake',`<div><span class="sw" style="background:#73DFFF;border-color:${riverCol}"></span>Lake or reservoir</div>`)
+     +row('ctxSea',`<div><span class="sw" style="background:#73DFFF;border-color:${riverCol}"></span>Ocean</div>`)
      +row('ctxCounty',`<div><span class="sw" style="height:0;border:0;border-top:2px dashed ${c('--ink2')}"></span>County line</div>`)
      +`<div><span class="sw" style="height:0;border:0;border-top:2.4px solid ${c('--state')}"></span>State line</div>`+own;
   }
@@ -435,11 +454,11 @@ let is3d=false;const compass=new maplibregl.NavigationControl({showZoom:false,vi
 function set3d(on,quick){
   is3d=on;$('#t3d').checked=on;$('#hint3d').hidden=!on;$('#tOrb').disabled=!on||reduced;
   if(on){
-    if(!map.getSource('dem'))map.addSource('dem',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13});
+    if(!map.getSource('dem'))map.addSource('dem',{type:'raster-dem',tiles:[DEM+'{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13});
     map.setTerrain({source:'dem',exaggeration:1.4});
     try{map.setSky({'sky-color':'#7fb0e6','horizon-color':'#e4edf3','fog-color':'#e4edf3','sky-horizon-blend':.7,'horizon-fog-blend':.7,'fog-ground-blend':.4})}catch(e){}
     flat(false);map.addControl(compass,'bottom-right');
-    if(basemap==='plain'||!once3d){once3d=true;basemap='imagery';document.querySelector('input[name=base][value=imagery]').checked=true;applyLayers()}
+    if(basemap==='plain'){basemap='relief';document.querySelector('input[name=base][value=relief]').checked=true;applyLayers()}
     map.easeTo({pitch:60,bearing:quick?0:map.getBearing()-18,duration:quick||reduced?0:1400});
   }else{
     orbitOn(false);flat(true);try{map.removeControl(compass)}catch(e){}
@@ -449,19 +468,19 @@ function set3d(on,quick){
 }
 $('#t3d').addEventListener('change',e=>set3d(e.target.checked));
 /* slow turn around the fire; any touch of the map hands control back */
-let orbit=0,once3d=false;
+let orbit=0,orbWant=true;
 function orbitOn(on){
   cancelAnimationFrame(orbit);orbit=0;on=!!on&&is3d&&!reduced&&!national;$('#tOrb').checked=on;if(!on)return;
   let last=performance.now();
   const turn=t=>{if(!orbit)return;const dt=Math.min(120,t-last);last=t;if(!(map.isEasing&&map.isEasing()))map.setBearing(map.getBearing()+dt*.0032);orbit=requestAnimationFrame(turn)};
   orbit=requestAnimationFrame(turn)}
 $('#tOrb').disabled=true;
-$('#tOrb').addEventListener('change',e=>orbitOn(e.target.checked));
+$('#tOrb').addEventListener('change',e=>{orbWant=e.target.checked;orbitOn(orbWant)});
 ['mousedown','touchstart','wheel'].forEach(ev=>map.getCanvasContainer().addEventListener(ev,()=>orbit&&orbitOn(false),{passive:true}));
 
 /* ---- roads, rivers, lakes, counties: asked for from Census and USGS when a fire opens ---- */
 const TIGER='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/',NHD='https://hydro.nationalmap.gov/arcgis/rest/services/nhd/MapServer/';
-const CTX={tRoad:['ctxRoad','ctxRoadC','ctxRoadL'],tRiver:['ctxRiver','ctxRiverL','ctxLake','ctxLakeL'],tCounty:['ctxCounty','ctxCountyL']},ctxCache=new Map();
+const CTX={tRoad:['ctxRoad','ctxRoadC','ctxRoadL'],tRiver:['ctxRiver','ctxRiverL','ctxLake','ctxLakeL','ctxSea'],tCounty:['ctxCounty','ctxCountyL']},ctxCache=new Map();
 async function ask(url,where,fields,bb,off){
   let out=[],start=0;
   for(let i=0;i<4;i++){
@@ -476,7 +495,7 @@ const roadF=(f,pri)=>{const p=f.properties||{},nm=(p.NAME||'').trim(),t=/^I-/.te
 async function loadCtx(d){
   if(!LIVE)return;
   const id=d.meta.id,src=map.getSource('ctx');
-  const kinds=fs=>{d.kinds=new Set(fs.map(f=>{const p=f.properties;return p.k==='road'?'road'+p.c:p.k==='river'?'ctxRiver':p.k==='lake'?'ctxLake':'ctxCounty'}));if(cur===d&&!national)legend()};
+  const kinds=fs=>{d.kinds=new Set(fs.map(f=>{const p=f.properties;return p.k==='road'?'road'+p.c:p.k==='river'?'ctxRiver':p.k==='lake'?'ctxLake':p.k==='sea'?'ctxSea':'ctxCounty'}));if(cur===d&&!national){ctxVis();legend()}};
   if(ctxCache.has(id)){src.setData({type:'FeatureCollection',features:ctxCache.get(id)});kinds(ctxCache.get(id));return}
   const b=d.bbox,px=(b[2]-b[0])*.45+.02,py=(b[3]-b[1])*.45+.02,bb=[b[0]-px,b[1]-py,b[2]+px,b[3]+py].map(v=>+v.toFixed(4));
   const span=Math.max(bb[2]-bb[0],bb[3]-bb[1]),km=span*95,off=Math.max(5e-5,span/2500).toFixed(6),so=km>260?6:km>130?5:km>55?4:3,T=TIGER+'Transportation/MapServer/';
@@ -484,20 +503,24 @@ async function loadCtx(d){
     km<110?ask(T+'6/query',"RTTYP = 'C'",'NAME,RTTYP',bb,off):[],km<110?ask(T+'8/query',"RTTYP = 'C'",'NAME,RTTYP',bb,off):[],
     ask(NHD+'4/query',`GNIS_NAME IS NOT NULL AND GNIS_NAME <> ' ' AND StreamOrde >= ${so}`,'GNIS_NAME,StreamOrde',bb,off),
     ask(NHD+'10/query',`FTYPE IN ('LakePond','Reservoir') AND AREASQKM >= ${km>130?3:.2}`,'GNIS_NAME',bb,off),
-    ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',bb,off)];
+    ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',bb,off),
+    ask(TIGER+'Hydro/MapServer/1/query',"MTFCC IN ('H2053','H2051')",'MTFCC',bb,off)];
   /* each layer draws as soon as its own answer arrives, so one slow service does not hold back the rest */
   const fs=[],conv=[f=>roadF(f,true),f=>roadF(f),f=>roadF(f),f=>roadF(f),
     f=>({type:'Feature',properties:{k:'river',n:(f.properties.GNIS_NAME||'').trim(),o:f.properties.StreamOrde},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'lake'},geometry:f.geometry}),
-    f=>({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry})];
+    f=>({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry}),
+    f=>({type:'Feature',properties:{k:'sea'},geometry:f.geometry})];
   const show=()=>{kinds(fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:fs})};
   const r=await Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false)));
   if(r.every(x=>x)){if(ctxCache.size>8)ctxCache.delete(ctxCache.keys().next().value);ctxCache.set(id,fs)}
   show();
-  if(cur===d&&!national&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines'].filter((n,i)=>!r[i]))];
+  if(cur===d&&!national&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean'].filter((n,i)=>!r[i]))];
     st.hidden=false;st.textContent=nm.join(', ')+' did not load. The outside map service may be slow or busy.'}
 }
-function ctxVis(){Object.entries(CTX).forEach(([t,ls])=>ls.forEach(l=>map.setLayoutProperty(l,'visibility',!national&&$('#'+t).checked?'visible':'none')))}
+function ctxVis(){Object.entries(CTX).forEach(([t,ls])=>ls.forEach(l=>map.setLayoutProperty(l,'visibility',!national&&$('#'+t).checked?'visible':'none')));
+  /* the elevation-based ocean fill is only switched on for fires where the Census finds ocean nearby */
+  map.setLayoutProperty('sea','visibility',!national&&$('#tRiver').checked&&cur&&cur.kinds&&cur.kinds.has('ctxSea')?'visible':'none')}
 Object.keys(CTX).forEach(t=>$('#'+t).addEventListener('change',()=>{ctxVis();legendSoon()}));
 
 /* ---- roster ---- */
@@ -614,7 +637,7 @@ async function makePDF(){
     const trace=(k,c,mxv)=>{P.setDrawColor(...hx(c));P.setLineWidth(1.3);let x=px(t0),v=py(0,1);st.forEach(p=>{const nx=px(p.t),nv=py(p[k],mxv);P.line(x,v,nx,v);P.line(nx,v,nx,nv);x=nx;v=nv})};trace('a','#6B1200',am);trace('c','#9a6700',cm);
     P.setDrawColor(...hx('#18231f'));P.setLineWidth(.8);P.line(px(s.t),y+9,px(s.t),py(0,1)+3);
     txt(date(t0),L,py(0,1)+10,7.5,'normal','#66756e');txt(date(st[st.length-1].t),L+W,py(0,1)+10,7.5,'normal','#66756e',{align:'right'});
-    y=py(0,1)+22;const rows=[['per','Fire perimeter','#E0AFA6','#6B1200'],['actl','Active fire edge','#F0380F','#F0380F'],['pt',m.po?'Fire start location':'Reported fire location','#ffffff','#d9361a'],['road0','Interstate','#ffd84d','#2a322f'],['road1','U.S. highway','#ffe9a0','#2a322f'],['road2','State highway','#ffffff','#2a322f'],['road3','County road','#8b948f','#8b948f'],['ctxRiver','Major river','#1f6fb2','#1f6fb2'],['ctxLake','Lake or reservoir','#73DFFF','#1f6fb2'],['ctxCounty','County line','#ffffff','#39443f']].filter(r=>vis.has(r[0]));
+    y=py(0,1)+22;const rows=[['per','Fire perimeter','#E0AFA6','#6B1200'],['actl','Active fire edge','#F0380F','#F0380F'],['pt',m.po?'Fire start location':'Reported fire location','#ffffff','#d9361a'],['road0','Interstate','#ffd84d','#2a322f'],['road1','U.S. highway','#ffe9a0','#2a322f'],['road2','State highway','#ffffff','#2a322f'],['road3','County road','#8b948f','#8b948f'],['ctxRiver','Major river','#1f6fb2','#1f6fb2'],['ctxLake','Lake or reservoir','#73DFFF','#1f6fb2'],['ctxSea','Ocean','#73DFFF','#1f6fb2'],['ctxCounty','County line','#ffffff','#39443f']].filter(r=>vis.has(r[0]));
     if(ownOn)OWN.forEach((n,i)=>rows.push(['',n,OC[i],OC[i]]));
     txt('LEGEND',L,y,7,'bold','#46554f');rows.forEach((r,i)=>{const cx=L+(i%3)*180,ry=y+6+Math.floor(i/3)*11;P.setFillColor(...hx(r[2]));P.setDrawColor(...hx(r[3]));P.setLineWidth(.7);P.rect(cx,ry,10,7,'FD');txt(r[1],cx+13,ry+6.3,7.5)});
     const dm=dmgText(m);if(dm){P.setFont('helvetica','normal');P.setFontSize(8);P.setTextColor(...hx('#18231f'));P.text(P.splitTextToSize('Losses: '+dm,W),L,y+18+Math.ceil(rows.length/3)*11)}
@@ -675,6 +698,7 @@ async function go(id,auto,instant){
   statsHTML(STATS);drawChart();applyLayers();shown={a:d.steps.at(-1).a,b:d.steps.at(-1).c||0};setStep(d.steps.length-1);renderRoster();
   const row=roster.querySelector(`[data-id="${id}"]`);if(row&&!auto)row.scrollIntoView({block:'nearest'});
   if(auto&&!reduced&&d.steps.length>2){setStep(0);setTimeout(()=>{if(cur===d)start()},750)}
+  if(is3d&&orbWant)orbitOn(true);
 }
 function byState(){const m={};fires.forEach(f=>(m[f.st]=m[f.st]||[]).push(f));return Object.entries(m).map(([st,l])=>({st,...statsFor(l)}))}
 function stateRoster(q,s){
@@ -736,7 +760,7 @@ addEventListener('hashchange',route);
 $('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
 $('#next').addEventListener('click',()=>cur&&cur.meta.rank<fires.length&&go(fires[cur.meta.rank].id,false));
 addEventListener('resize',()=>{if(national)drawNat();else if(cur)drawChart()});
-if(!LIVE){document.querySelector('input[name=base][value=plain]').checked=true;document.querySelectorAll('#layers input').forEach(i=>i.disabled=true);$('#lstat').textContent='Preview: relief, imagery, ownership, roads, rivers and county lines load only on your website.'}
+if(!LIVE){document.querySelector('input[name=base][value=plain]').checked=true;$('#own').checked=false;document.querySelectorAll('#layers input').forEach(i=>i.disabled=true);$('#lstat').textContent='Preview: relief, imagery, ownership, roads, rivers and county lines load only on your website.'}
 renderRoster();$('#play').innerHTML=ICON.play;route();
 })();
 
