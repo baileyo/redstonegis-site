@@ -85,7 +85,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 #nat circle:hover{fill-opacity:.9}
 #nat circle.nr{fill:none;stroke:var(--ink3);stroke-dasharray:1.5 1.5;stroke-width:.7}
 .hud{position:absolute;background:var(--hud);border:1px solid var(--rule);border-radius:var(--r);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-#title{top:14px;left:14px;padding:12px 16px;max-width:min(480px,calc(100% - 310px))}
+#title{top:14px;left:14px;padding:12px 16px;max-width:min(480px,calc(100% - 28px))}
 .thead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 #title h2{margin:0;font:700 32px/1.02 var(--display);text-transform:uppercase;letter-spacing:.01em;min-width:0;overflow-wrap:anywhere}
 .fnav{display:flex;gap:6px;flex:none}
@@ -96,9 +96,15 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 #title .warn{color:var(--ink2);font-size:13.5px;margin-top:8px;border-top:1px solid var(--rule);padding-top:8px}
 #fdmg a{color:var(--redstone);text-underline-offset:2px}
 #fdmg b{color:var(--ink)}
-#rail{z-index:3;position:absolute;top:14px;right:14px;display:grid;gap:8px;justify-items:stretch;width:272px;max-height:calc(100% - 306px);overflow:auto;padding:0 0 6px}
-#rail .hud{position:static}
-#layers{padding:10px 12px;display:grid;gap:8px;font-size:14px}
+main{display:flex;flex-direction:column}
+.stage{position:relative;flex:1;min-height:0}
+/* layer options docked in a bar above the map, so nothing but the title and readouts sits on the map */
+#layers{display:flex;flex-wrap:wrap;align-items:center;gap:6px 13px;padding:8px 16px;background:var(--white);border-bottom:1px solid var(--rule);font-size:14px}
+#layers .seg{flex:none;width:204px}
+.dockbtns{display:flex;gap:8px;margin-left:auto}
+#lstat{flex:1 0 100%}
+#hint3d{display:none}
+#legwrap{border-top:1px solid var(--rule);background:var(--white);padding:8px 12px 10px 16px}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border:1px solid var(--rule);border-radius:var(--pill);background:var(--shell);margin:0;padding:3px}
 .seg legend{position:absolute;width:1px;height:1px;overflow:hidden}
 .seg label{text-align:center;padding:6px 2px;cursor:pointer;font:500 14.5px var(--display);letter-spacing:.02em;border-radius:var(--pill)}
@@ -111,12 +117,14 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 .tog:has(input:disabled){opacity:.5;cursor:default}
 .togs{display:flex;gap:4px 14px;flex-wrap:wrap}
 #lstat,#hint3d{font-size:12.5px;line-height:1.35;color:var(--ink3)}
-.railbtn,#pdf{font:500 15.5px var(--display);letter-spacing:.03em;background:var(--basalt);color:var(--white);border:0;border-radius:var(--pill);padding:9px 14px;min-height:42px;cursor:pointer;box-shadow:var(--shadow)}
-#pdf:hover{background:var(--oxide)}
-#pdf:disabled{opacity:.6;cursor:progress}
-#legBtn{background:var(--hud);border:1px solid var(--rule);border-radius:var(--pill);padding:9px 16px;min-height:42px;font:500 15.5px var(--display);letter-spacing:.03em;cursor:pointer;display:flex;justify-content:space-between;gap:10px;box-shadow:var(--shadow)}
+.railbtn{font:500 15px var(--display);letter-spacing:.03em;background:var(--basalt);color:var(--white);border:0;border-radius:var(--pill);padding:7px 16px;min-height:38px;cursor:pointer;white-space:nowrap}
+.railbtn:hover{background:var(--oxide)}
+.railbtn:disabled{opacity:.6;cursor:progress}
+#gif{background:var(--redstone)}
+#legBtn{width:100%;background:none;border:0;padding:4px 0;min-height:34px;font:500 15px var(--display);letter-spacing:.03em;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;gap:10px}
 #legArrow{color:var(--redstone)}
-#legend{padding:10px 12px;font-size:13.5px;display:grid;gap:5px;max-height:34vh;overflow:auto}
+#legend{padding:6px 0 0;font-size:13.5px;display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;max-height:25vh;overflow:auto}
+#legend .lh,#legend .key,#legend .shields{grid-column:1/-1}
 #legend div{display:flex;align-items:center;gap:8px}
 .lh{font:500 13px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin-top:4px;border-top:1px solid var(--rule);padding-top:7px}
 .sw{width:18px;height:13px;border-radius:4px;flex:none;border:1.5px solid}
@@ -163,21 +171,25 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
   header p{flex-basis:100%;font-size:14px}
   main{order:1;height:auto;min-height:0;display:flex;flex-direction:column;background:var(--shell);gap:10px;padding-block:10px}
   .hud{position:static;-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--white);box-shadow:none}
-  main>.hud,#rail{margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px))}
+  .stage>.hud{margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px))}
   #title{order:-1;max-width:none;padding:12px 14px}
   #title h2{font-size:27px}
   .mapbox{position:relative;inset:auto;height:58svh;min-height:340px;max-height:640px;width:100%}
   #deck{padding:12px 14px 10px;order:1}
-  #rail{order:2}
   .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
   .stat .v{font-size:29px}
-  #rail{position:static;width:auto;max-height:none;overflow:visible;display:grid;gap:8px;padding:0}
-  #legend{max-height:none;grid-template-columns:1fr 1fr}
-  #legend .lh,#legend .key,#legend .shields{grid-column:1/-1}
+  .stage{display:contents}
+  #layers{order:2;border:1px solid var(--rule);border-radius:var(--r);margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px));padding:12px 14px;gap:4px 18px}
+  #layers .seg{width:100%;flex:1 0 100%}
+  .dockbtns{flex:1 0 100%;margin:4px 0 0}
+  .railbtn{flex:1 1 140px;min-height:46px}
+  #hint3d{display:block;flex:1 0 100%}
+  #legwrap{order:3;border:1px solid var(--rule);border-radius:var(--r);margin-left:max(12px,env(safe-area-inset-left,0px));margin-right:max(12px,env(safe-area-inset-right,0px));padding:8px 14px 12px}
+  #legend{max-height:none}
   .seg label{padding:10px 2px;font-size:16px}
   .tog{min-height:38px;font-size:15px}
   .togs{gap:2px 18px}
-  .railbtn,#pdf,#legBtn{min-height:46px;box-shadow:none}
+  #legBtn{min-height:44px}
   aside{order:2;border-right:0;border-top:1px solid var(--rule)}
   .controls{padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
   #roster{max-height:70vh;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
@@ -187,6 +199,29 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 }
 @media (max-width:380px){.stat .v{font-size:25px}.controls{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* opening screen: the season's subject over a fire photo in the main site's hero tint */
+#splash{position:fixed;inset:0;z-index:60;background:var(--redstone);color:var(--white);overflow:auto;isolation:isolate;transition:opacity .5s;display:flex}
+#splash.out{opacity:0;pointer-events:none}
+.sp-media{position:fixed;inset:0;z-index:-1}
+.sp-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:38% 50%;max-width:none}
+.tint-multiply{position:absolute;inset:0;background:#D9543A;mix-blend-mode:multiply}
+.tint-wash{position:absolute;inset:0;background:linear-gradient(90deg,rgba(166,28,0,.72) 0%,rgba(166,28,0,.5) 60%,rgba(166,28,0,.2) 100%)}
+.sp-copy{box-sizing:border-box;width:100%;max-width:880px;margin-block:auto;padding-block:max(32px,env(safe-area-inset-top,0px)) 40px;padding-left:max(clamp(20px,6vw,72px),env(safe-area-inset-left,0px));padding-right:max(clamp(20px,6vw,72px),env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.kicker{margin:0;font:500 15px var(--display);letter-spacing:.14em;text-transform:uppercase;color:var(--blush)}
+#splash h2{margin:0;font:700 clamp(46px,9vw,112px)/.92 var(--display);text-transform:uppercase;letter-spacing:-.005em;text-wrap:balance}
+.sp-lede{margin:0;font-size:clamp(17px,2.1vw,22px);line-height:1.45;max-width:34em}
+.sp-lede b{font-weight:600}
+.sp-points{margin:0;padding:0;list-style:none;display:grid;gap:7px;font-size:16px;max-width:38em}
+.sp-points li{padding-left:20px;position:relative}
+.sp-points li::before{content:"";position:absolute;left:0;top:.55em;width:8px;height:8px;border-radius:2px;background:var(--blush)}
+.sp-go{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;margin-top:4px}
+#enter{background:var(--shell);color:var(--basalt);border:0;border-radius:var(--pill);padding:14px 30px;min-height:52px;font:600 20px var(--display);letter-spacing:.03em;cursor:pointer}
+#enter:hover{background:var(--blush)}
+#enter:focus-visible{outline:3px solid var(--white);outline-offset:3px}
+#sp-status{font-size:14px;color:var(--blush)}
+.sp-src{margin:0;font-size:13px;line-height:1.5;color:#F6DAD3;max-width:60em}
+.sp-src b{color:var(--white);font-weight:600}
 </style>
 </head>
 <body>
@@ -216,6 +251,8 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
     <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
     <li><b>Personnel:</b> the largest number of people assigned at any report.</li>
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
+    <li><b>GIF:</b> Create GIF saves the open fire's time series as an animated image, drawn flat and north-up with the layers you have switched on. Long fires are sampled to at most 60 frames.</li>
+    <li><b>Opening photo:</b> the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026, by the U.S. Forest Service via InciWeb (public domain), tinted in the Redstone GIS colors.</li>
     <li><b>Playback:</b> when a fire finishes playing, the map holds for five seconds and then opens and plays the next fire in the list, in whatever order and search the list is showing. Pause stops it.</li>
     <li><b>Loading:</b> each fire map stays covered until its base map, terrain, ownership, roads, rivers and county lines have loaded. If an outside map service is slow, the map is shown after 12 seconds and the late layer is added when it arrives.</li>
     <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on.</li>
@@ -225,34 +262,57 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
     <li><b>Ocean:</b> drawn in the same blue as lakes for fires near a coast. The shoreline comes from Census TIGERweb water areas, and open water beyond them from elevation at or below sea level.</li>
     <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable.</li>
     <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted November 3, 2026. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
+  <section id="legwrap"><button id="legBtn" type="button" aria-expanded="false" aria-controls="legend"><span>Legend</span><span id="legArrow">Show</span></button><div id="legend" aria-label="Map legend" hidden></div></section>
   </ul></details>
 </aside>
 <main>
+  <div id="layers" aria-label="Map layers">
+    <fieldset class="seg"><legend>Base map</legend>
+      <label><input type="radio" name="base" value="plain"><span>Plain</span></label>
+      <label><input type="radio" name="base" value="relief" checked><span>Relief</span></label>
+      <label><input type="radio" name="base" value="imagery"><span>Imagery</span></label>
+    </fieldset>
+    <label class="tog"><input type="checkbox" id="own" checked><span>Ownership</span></label>
+    <label class="tog"><input type="checkbox" id="t3d"><span>3D terrain</span></label>
+    <label class="tog"><input type="checkbox" id="tOrb"><span>Rotate</span></label>
+    <label class="tog"><input type="checkbox" id="tRoad" checked><span>Roads</span></label>
+    <label class="tog"><input type="checkbox" id="tRiver" checked><span>Rivers</span></label>
+    <label class="tog"><input type="checkbox" id="tCounty" checked><span>Counties</span></label>
+    <span class="dockbtns"><button id="pdf" class="railbtn" type="button">Download PDF map</button><button id="gif" class="railbtn" type="button">Create GIF</button></span>
+    <div id="hint3d" hidden>Right-drag or Ctrl-drag to tilt and turn. On a phone, use two fingers to move, tilt and turn the map.</div>
+    <div id="lstat" hidden></div>
+  </div>
+  <div class="stage">
   <div class="mapbox">
   <div id="map" role="application" aria-label="Map of the fire perimeter over time"></div>
   <div id="veil" role="status" hidden><span class="spin" aria-hidden="true"></span><span>Loading map layers…</span></div>
   <svg id="nat" role="img" aria-label="Equal area map of fires by state" hidden></svg>
   </div>
   <div class="hud" id="title"><div class="thead"><h2 id="fname">Loading fires…</h2><div class="fnav" id="fnav"><button id="prev" type="button" aria-label="Previous fire by cost">&#8249;</button><button id="next" type="button" aria-label="Next fire by cost">&#8250;</button></div></div><div class="meta" id="fmeta"></div><div class="meta" id="fcause" hidden></div><div class="meta" id="ffacts"></div><div class="warn" id="fdmg" hidden></div><div class="warn" id="fwarn" hidden></div></div>
-  <div id="rail"><div class="hud" id="layers">
-    <fieldset class="seg"><legend>Base map</legend>
-      <label><input type="radio" name="base" value="plain"><span>Plain</span></label>
-      <label><input type="radio" name="base" value="relief" checked><span>Relief</span></label>
-      <label><input type="radio" name="base" value="imagery"><span>Imagery</span></label>
-    </fieldset>
-    <label class="tog"><input type="checkbox" id="own" checked><span>Land ownership</span></label>
-    <div class="togs"><label class="tog"><input type="checkbox" id="t3d"><span>3D terrain</span></label><label class="tog"><input type="checkbox" id="tOrb"><span>Rotate view</span></label></div>
-    <div class="togs"><label class="tog"><input type="checkbox" id="tRoad" checked><span>Roads</span></label><label class="tog"><input type="checkbox" id="tRiver" checked><span>Rivers</span></label><label class="tog"><input type="checkbox" id="tCounty" checked><span>Counties</span></label></div>
-    <div id="hint3d" hidden>Right-drag or Ctrl-drag to tilt and turn. On a phone, use two fingers to move, tilt and turn the map.</div>
-    <div id="lstat" hidden></div>
-  </div><button id="pdf" class="railbtn" type="button">Download PDF map</button><button id="legBtn" type="button" aria-expanded="false" aria-controls="legend"><span>Legend</span><span id="legArrow">Show</span></button><div class="hud" id="legend" aria-label="Map legend" hidden></div></div>
   <div class="hud" id="deck">
     <div class="stats" id="stats"></div>
     <div id="toll" hidden></div>
     <div class="ctl" id="ctl"><button id="play" type="button" aria-label="Play"></button><button class="speed" id="speed" type="button" aria-label="Playback speed">1×</button></div>
     <div id="tl"><svg id="chart" role="img" aria-label="Estimated cost to date and acres burned over time"></svg><input id="scrub" type="range" min="0" max="1" step="1" value="0" aria-label="Move through the fire's updates"><div id="tip" hidden></div></div>
   </div>
+  </div>
 </main>
+</div>
+<div id="splash" role="dialog" aria-modal="true" aria-labelledby="sp-h">
+  <div class="sp-media" aria-hidden="true"><img src="hero.jpg" alt="" onerror="this.remove()"><div class="tint-multiply"></div><div class="tint-wash"></div></div>
+  <div class="sp-copy">
+    <p class="kicker">Redstone GIS &middot; 2026 wildfire season</p>
+    <h2 id="sp-h">The Cost of Fire, 2026</h2>
+    <p class="sp-lede" id="sp-lede">What it cost to fight the wildfires of 2026.</p>
+    <ul class="sp-points">
+      <li>Watch each fire grow day by day, with its firefighting cost rising alongside.</li>
+      <li>See where every fire started, what caused it, whose land it burned and what was lost.</li>
+      <li>Compare cost, acres, structures and lives across every state.</li>
+    </ul>
+    <div class="sp-go"><button id="enter" type="button">Explore the map</button><span id="sp-status" role="status">Loading map layers…</span></div>
+    <p class="sp-src"><b>Data sources:</b> fire locations, daily perimeters, cost and cause from the National Interagency Fire Center's WFIGS, extracted November 3, 2026. Base maps and terrain from USGS The National Map and Mapzen terrain tiles. Land ownership from the BLM. Roads, counties and coastline from the US Census Bureau. Rivers and lakes from the USGS National Hydrography Dataset. Structures, deaths and injuries from news and agency reports, which are incomplete.</p>
+    <p class="sp-src">Photo: the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026. U.S. Forest Service via InciWeb, public domain.</p>
+  </div>
 </div>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
@@ -260,7 +320,7 @@ main{position:relative;min-height:0;min-width:0;background:var(--sea)}
 <script src="https://unpkg.com/d3-geo@3.1.1/dist/d3-geo.min.js"></script>
 <script>
 (async function(){
-const $=s=>document.querySelector(s), DAY=864e5, V='20261112j';
+const $=s=>document.querySelector(s), DAY=864e5, V='20261112k';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -284,6 +344,13 @@ const sum=(l,k)=>l.reduce((a,f)=>a+(f[k]||0),0);
 const statsFor=l=>({n:l.length,ac:sum(l,'ac'),cost:sum(l,'cost'),nc:l.filter(f=>f.cost).length,pers:sum(l,'pers'),sd:sum(l,'sd'),sm:sum(l,'sm'),dth:sum(l,'dth'),inj:sum(l,'inj'),nsd:l.filter(f=>f.sd||f.sm).length,plus:l.some(f=>f.sdp)});
 let totals=statsFor(fires);
 $('#lede').innerHTML=`<b>${num(totals.n)} wildfires</b> in 2026 reported a firefighting cost or burned 500 acres or more. Together they cost an estimated <b>${money(totals.cost)}</b> to fight and burned <b>${(totals.ac/1e6).toFixed(1)} million acres</b>, January 1 to November 3.`;
+$('#sp-lede').innerHTML=$('#lede').innerHTML;
+/* opening screen: the map loads underneath, and playback and rotation wait until it is dismissed */
+let splashDone;const splashGone=new Promise(r=>splashDone=r),splash=$('#splash');
+function enter(){if(splash.classList.contains('out'))return;splash.classList.add('out');setTimeout(()=>splash.hidden=true,550);splashDone()}
+$('#enter').addEventListener('click',enter);
+addEventListener('keydown',e=>{if(e.key==='Escape')enter()});
+$('#enter').focus({preventScroll:true});
 try{DMG=await (await fetch('damage.json?v='+V)).json()}catch(e){}
 /* toll per fire: structures and injuries from public reports, deaths as the larger of WFIGS and those reports */
 fires.forEach(f=>{const g=DMG[f.id]||{};f.sd=g.d||0;f.sdp=g.p?1:0;f.sm=g.m||0;f.dth=Math.max(f.fat||0,g.k||0);f.inj=g.i||0});
@@ -396,7 +463,7 @@ addIcons();
 L.forEach(l=>map.addLayer(l));
 map.on('error',e=>{if(e&&['relief','imagery','own','dem'].includes(e.sourceId)&&++tileErr===6&&!national){const st=$('#lstat');st.hidden=false;st.textContent='Some map tiles did not load. The outside map service may be busy; try again shortly.'}});
 
-let legOpen=LIVE&&!matchMedia('(max-width:820px)').matches,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
+let legOpen=!matchMedia('(max-width:820px)').matches,lastLeg='',riverCol='#1f6fb2',perCol='#6B1200',legT=0;
 /* legend entries are fixed per fire: what the fire has, what was found around it when it opened, and which layers are switched on */
 function seen(){
   if(!cur)return new Set();
@@ -453,13 +520,16 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',paint);
 
 /* ---- base map and ownership switches ---- */
 function applyLayers(){
-  $('#layers').hidden=national;$('#pdf').hidden=national||!LIVE;
+  $('#layers').hidden=national;$('#pdf').hidden=$('#gif').hidden=national||!LIVE;
   const v=(l,on)=>map.setLayoutProperty(l,'visibility',on&&!national?'visible':'none');
   v('relief',basemap==='relief');v('imagery',basemap==='imagery');v('own',ownOn);paint();
 }
 document.querySelectorAll('input[name=base]').forEach(r=>r.addEventListener('change',e=>{basemap=e.target.value;tileErr=0;$('#lstat').hidden=true;applyLayers()}));
 $('#own').addEventListener('change',e=>{ownOn=e.target.checked;if(ownOn)legOpen=true;tileErr=0;applyLayers()});
 $('#legBtn').addEventListener('click',()=>{legOpen=!legOpen;legend()});
+const legWrap=$('#legwrap'),mqN=matchMedia('(max-width:820px)');
+function placeLegend(){if(mqN.matches)$('#layers').after(legWrap);else document.querySelector('.note').before(legWrap)}
+placeLegend();mqN.addEventListener('change',placeLegend);
 
 /* ---- 3D: the map draped over terrain, tilted, free to turn ---- */
 let is3d=false;const compass=new maplibregl.NavigationControl({showZoom:false,visualizePitch:true});
@@ -672,6 +742,44 @@ async function makePDF(){
 }
 $('#pdf').addEventListener('click',makePDF);
 
+/* ---- animated GIF of the open fire's time series ---- */
+async function makeGIF(){
+  const btn=$('#gif'),d=cur,m=d.meta,label='Create GIF';
+  if(!d||d.steps.length<2||d.nomap){btn.textContent='No time series to animate';setTimeout(()=>btn.textContent=label,2600);return}
+  btn.disabled=true;btn.textContent='Preparing GIF…';stop();
+  const was3d=is3d,wasOrb=!!orbit,step0=step;orbitOn(false);if(was3d)set3d(false,true);
+  const cam={center:map.getCenter(),zoom:map.getZoom()},minZ=map.getMinZoom(),pad0=map.getPadding(),pr=map.getPixelRatio();
+  const settle=ms=>new Promise(r=>{let done=0;const f=()=>{if(!done++)r()};map.once('idle',f);setTimeout(f,ms);map.triggerRepaint()});
+  try{
+    const {GIFEncoder,quantize,applyPalette}=await import('https://unpkg.com/gifenc@1.0.3/dist/gifenc.esm.js');
+    map.setMinZoom(0);map.setPixelRatio(1);map.setPadding({top:0,bottom:0,left:0,right:0});
+    map.fitBounds([[curBB[0],curBB[1]],[curBB[2],curBB[3]]],{padding:{top:64,bottom:84,left:36,right:36},duration:0,maxZoom:14,bearing:0});await settle(9000);
+    const src=map.getCanvas(),W=Math.min(760,src.width),H=Math.round(W*src.height/src.width),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+    const g=cv.getContext('2d',{willReadFrequently:true}),n=d.steps.length,cap=60;
+    const idx=n<=cap?[...Array(n).keys()]:[...new Set(Array.from({length:cap},(_,i)=>Math.round(i*(n-1)/(cap-1))))];
+    const F='Oswald,"Arial Narrow",Arial,sans-serif',gif=GIFEncoder();
+    const band=(y,h)=>{g.fillStyle='rgba(42,20,16,.86)';g.fillRect(0,y,W,h)};
+    for(let k=0;k<idx.length;k++){
+      setStep(idx[k]);await settle(1500);
+      await new Promise(r=>{map.once('render',()=>{g.drawImage(src,0,0,W,H);r()});map.triggerRepaint()});
+      const s=d.steps[idx[k]];
+      band(0,46);g.fillStyle='#fff';g.textBaseline='middle';g.textAlign='left';g.font='700 24px '+F;g.fillText(m.name.toUpperCase()+' FIRE',14,24);
+      g.textAlign='right';g.font='400 14px '+F;g.fillStyle='#E6B8AF';g.fillText([m.cnty,m.st].filter(Boolean).join(', ')+' · redstonegis.com/FireCost',W-14,24);
+      band(H-62,62);const cols=[['DATE',date(s.t)],['FIRE SIZE',num(s.a)+' ac'],['COST TO DATE',money(s.c)||'not reported'],['CONTAINED',s.pc!=null?Math.round(s.pc)+'%':'n/a']];
+      cols.forEach(([a,b],i)=>{const x=14+i*(W-28)/4;g.textAlign='left';g.font='500 11px '+F;g.fillStyle='#E6B8AF';g.fillText(a,x,H-46);g.font='600 23px '+F;g.fillStyle=i===2?'#F2C14E':'#fff';g.fillText(b,x,H-22)});
+      const px=g.getImageData(0,0,W,H).data,pal=quantize(px,256);
+      gif.writeFrame(applyPalette(px,pal),W,H,{palette:pal,delay:k===idx.length-1?3500:650});
+      btn.textContent=`Creating GIF… ${k+1} of ${idx.length}`;await new Promise(r=>setTimeout(r,0));
+    }
+    gif.finish();
+    const a=document.createElement('a'),url=URL.createObjectURL(new Blob([gif.bytes()],{type:'image/gif'}));
+    a.href=url;a.download=`${m.name.replace(/[^A-Za-z0-9]+/g,'_')}_Fire_Cost.gif`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+    btn.textContent=label;
+  }catch(e){console.error(e);btn.textContent='GIF failed. Try again.';setTimeout(()=>btn.textContent=label,3500)}
+  map.setPixelRatio(pr);map.setPadding(pad0);map.jumpTo(cam);map.setMinZoom(minZ);setStep(Math.min(step0,d.steps.length-1));btn.disabled=false;if(was3d)set3d(true,true);if(wasOrb)orbitOn(true);
+}
+$('#gif').addEventListener('click',makeGIF);
+
 /* ---- navigation ---- */
 const bundles=new Map();
 async function load(m){
@@ -686,11 +794,11 @@ async function load(m){
   if(cache.size>40)cache.delete(cache.keys().next().value);cache.set(m.id,d);return d}
 const STATS=[{k:'Date',v:''},{k:'Fire size',v:''},{k:'Estimated cost to date',v:'',hero:1},{k:'Cost per acre',v:''}];
 function dmgText(m){const d=DMG[m.id];return [d?d.t:'',m.fat&&!(d&&d.k)?`${m.fat} ${m.fat>1?'deaths':'death'} recorded in WFIGS.`:''].filter(Boolean).join(' ')}
-/* space left for the fire once the title, layer panel and readouts are on screen: either below the title or beside it, whichever shows the fire larger */
+/* space left for the fire once the title and readouts are on screen: either below the title or beside it, whichever shows the fire larger */
 function clearPad(bb){
   if(innerWidth<=820)return{top:20,bottom:20,left:14,right:14};
-  const m=$('main').getBoundingClientRect(),t=$('#title').getBoundingClientRect(),r=$('#rail').getBoundingClientRect(),k=$('#deck').getBoundingClientRect(),g=22;
-  const right=m.right-r.left+g,bottom=m.bottom-k.top+g,A={top:t.bottom-m.top+g,left:g+10,right,bottom},B={top:g+10,left:t.right-m.left+g,right,bottom};
+  const m=$('.stage').getBoundingClientRect(),t=$('#title').getBoundingClientRect(),k=$('#deck').getBoundingClientRect(),g=22;
+  const right=g+34,bottom=m.bottom-k.top+g,A={top:t.bottom-m.top+g,left:g+10,right,bottom},B={top:g+10,left:t.right-m.left+g,right,bottom};
   const merc=y=>Math.log(Math.tan(Math.PI/4+y*Math.PI/360)),bw=Math.max(1e-7,(bb[2]-bb[0])*Math.PI/180),bh=Math.max(1e-7,merc(bb[3])-merc(bb[1]));
   const w=p=>m.width-p.left-p.right,h=p=>m.height-p.top-p.bottom,sc=p=>Math.min(w(p)/bw,h(p)/bh),p=sc(A)>=sc(B)?A:B;
   return w(p)>140&&h(p)>120?p:{top:110,bottom:215,left:40,right:40}}
@@ -733,6 +841,8 @@ async function go(id,auto,instant){
   await Promise.race([Promise.all([ctxDone,idle]),new Promise(r=>setTimeout(r,nhdBad?5000:12000))]);
   if(my!==fitTok||national)return;
   veil.classList.add('out');setTimeout(()=>{if(my===fitTok)veil.hidden=true},400);
+  $('#sp-status').textContent='Map ready';
+  await splashGone;if(my!==fitTok||national)return;
   if(play)setTimeout(()=>{if(cur===d&&my===fitTok)start()},500);
   else if(auto==='tour')holdT=setTimeout(()=>{if(cur===d&&my===fitTok)tourNext()},7000);
   if(is3d&&orbWant)orbitOn(true);
@@ -791,7 +901,7 @@ function showAll(st){
   const tl=$('#toll');tl.hidden=false;tl.innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
   applyLayers();drawNat();
 }
-function route(){const h=location.hash.slice(1);if(h==='all-fires')showAll();else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)])showAll(h.slice(6));else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,false,first)}}
+function route(){const h=location.hash.slice(1);if(h==='all-fires'){started=true;showAll();$('#sp-status').textContent='Map ready'}else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)]){started=true;showAll(h.slice(6));$('#sp-status').textContent='Map ready'}else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,first,first)}}
 let started=false;
 addEventListener('hashchange',route);
 $('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
