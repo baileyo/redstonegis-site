@@ -1,0 +1,32 @@
+name: Capture Cost of Fire media
+
+# One-off, run by hand: screenshots the live page for the opening-screen
+# slideshow and saves them as a downloadable artifact. Uploads nothing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      fire:
+        description: 'Fire id to capture'
+        default: '2026-WAOWF-260406'
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --quiet playwright
+      - run: python .github/firecost/capture.py out "${{ inputs.fire }}"
+      - name: Encode the time series
+        run: |
+          ffmpeg -loglevel error -y -framerate 3 -i out/frames/f%03d.jpg -vf "framerate=24:interp_start=0:interp_end=255:scene=100,scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -crf 27 -movflags +faststart -an out/series.mp4
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firecost-media
+          path: out
+          retention-days: 3
