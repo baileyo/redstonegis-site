@@ -21,10 +21,6 @@ jobs:
           python-version: '3.12'
       - run: pip install --quiet playwright
       - run: python .github/firecost/capture.py out "${{ inputs.fire }}"
-      - name: Encode the time series
-        run: |
-          ffmpeg -loglevel error -y -framerate 3 -i out/frames/f%03d.jpg -vf "framerate=24:interp_start=0:interp_end=255:scene=100,scale=1280:-2" -c:v libx264 -pix_fmt yuv420p -crf 27 -movflags +faststart -an out/series.mp4
-          ls -la out
       - uses: actions/upload-artifact@v4
         with:
           name: firecost-media
