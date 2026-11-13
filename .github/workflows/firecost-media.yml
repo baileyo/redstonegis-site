@@ -1,7 +1,7 @@
 name: Capture Cost of Fire media
 
 # One-off, run by hand: screenshots the live page for the opening-screen
-# slideshow and saves them as a downloadable artifact. Uploads nothing.
+# slideshow and saves them to the firecost-media branch. Uploads nothing to the website.
 
 on:
   workflow_dispatch:
@@ -12,6 +12,8 @@ on:
 
 jobs:
   capture:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -21,8 +23,10 @@ jobs:
           python-version: '3.12'
       - run: pip install --quiet playwright
       - run: python .github/firecost/capture.py out "${{ inputs.fire }}"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: firecost-media
-          path: out
-          retention-days: 3
+      - name: Save to the firecost-media branch
+        run: |
+          cd out
+          git init -q -b firecost-media
+          git config user.name "github-actions"; git config user.email "actions@users.noreply.github.com"
+          git add -A && git commit -q -m "Captured media"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" firecost-media
