@@ -9,6 +9,7 @@
     --surface:#fcfcfb; --panel:#ffffff; --border:#e4e3df; --grid:#ecebe7;
     --text:#0b0b0b; --text2:#52514e; --muted:#84837d;
     --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+    --m1:#1b5aa8; --m2:#2a78d6; --m3:#77aeea; --m4:#0e7d57; --m5:#1baf7a; --m6:#74d3b0; --m7:#b84a1e; --m8:#eb6834; --m9:#f4a585; --m10:#4536a8; --m11:#6250d6; --m12:#a69bea;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--surface);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -22,6 +23,11 @@
   .dot.live{background:#1baf7a}.dot.snap{background:#eda100}
   button,select{font:inherit;font-size:13.5px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--panel);color:var(--text);cursor:pointer}
   button:hover{background:#f3f2ee}
+  .seg{display:inline-flex}
+  .seg button{border-radius:0;margin-left:-1px}
+  .seg button:first-child{border-radius:6px 0 0 6px;margin-left:0}
+  .seg button:last-child{border-radius:0 6px 6px 0}
+  .seg button[aria-pressed="true"]{background:var(--text);color:#fff;border-color:var(--text)}
   section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 18px 14px;margin:0 0 22px}
   .head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:flex-start;margin-bottom:6px}
   .desc{color:var(--text2);font-size:13.5px;margin:0}
@@ -62,21 +68,11 @@
 
   <section>
     <div class="head">
-      <div><h2 id="t1">Acres treated month by month — Western states</h2>
-      <p class="desc">Sum of acres accomplished by month completed. AZ, CA, CO, ID, MT, NM, NV, OR, UT, WA, WY.</p></div>
-      <div class="controls"><button type="button" data-csv="west">Download CSV</button></div>
-    </div>
-    <div class="legend" id="lg-west"></div>
-    <div class="chart" id="c-west"></div>
-    <details open><summary>Table</summary><div class="tw" id="tb-west"></div></details>
-  </section>
-
-  <section>
-    <div class="head">
       <div><h2 id="t2">Acres treated by month and year — all states</h2>
       <p class="desc" id="d2">Sum of acres accomplished by month completed, nationwide.</p></div>
-      <div class="controls"><label for="stateSel">Area</label>
-        <select id="stateSel"><option value="*">All states</option></select>
+      <div class="controls"><div class="seg" role="group" aria-label="Area">
+          <button type="button" data-area="*" aria-pressed="true">All states</button><button type="button" data-area="WEST" aria-pressed="false">Western states</button></div>
+        <select id="stateSel" aria-label="Single state"><option value="">Single state…</option></select>
         <button type="button" data-csv="all">Download CSV</button></div>
     </div>
     <div class="legend" id="lg-all"></div>
@@ -96,7 +92,7 @@
   </section>
 
   <footer>
-    <p><strong>Method.</strong> <code>Month</code> = month of <code>DATE_COMPLETED</code>, <code>Year_Completed</code> = calendar year of <code>DATE_COMPLETED</code>, acres = <code>SUM(NBR_UNITS_ACCOMPLISHED)</code>. Records with no completion date are excluded from the first two charts. The current month is incomplete and is drawn faded. The Forest Service revises past records, so earlier months can shift slightly between refreshes.</p>
+    <p><strong>Method.</strong> <code>Month</code> = month of <code>DATE_COMPLETED</code>, <code>Year_Completed</code> = calendar year of <code>DATE_COMPLETED</code>, acres = <code>SUM(NBR_UNITS_ACCOMPLISHED)</code>. Records with no completion date are excluded from the month-and-year chart. The current month is incomplete and is drawn faded. The Forest Service revises past records, so earlier months can shift slightly between refreshes.</p>
     <p><strong>Source.</strong> <a href="https://data.fs.usda.gov/geodata/edw/datasets.php?xmlKeyword=Hazardous+Fuel+Treatment">USFS Enterprise Data Warehouse — Hazardous Fuel Treatment Reduction: Polygon</a>, queried through the <a href="https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_HazardousFuelsTreatments_01/MapServer/15">EDW map service</a>.</p>
   </footer>
 </main>
@@ -184,33 +180,36 @@ function axes(svg,W,H,M,max){
 function tip(host){let t=host.querySelector('.tip');if(!t){t=document.createElement('div');t.className='tip';host.appendChild(t);}return t;}
 function placeTip(t,host,px,py){t.style.display='block';const w=t.offsetWidth,hw=host.clientWidth;let x=px+14;if(x+w>hw)x=px-w-14;t.style.left=Math.max(0,x)+'px';t.style.top=Math.max(0,py)+'px';}
 
-/* ---------- grouped bar chart: months × years ---------- */
-function lineChart(hostId,legendId,data){
+/* ---------- grouped bar chart: years on the axis, month bars within each year ---------- */
+const MCOL=MON.map((_,i)=>`var(--m${i+1})`);
+function yearChart(hostId,legendId,data){
   const host=$(hostId);host.innerHTML='';
-  const years=state.years,n=years.length,W=1000,H=380,M={t:16,r:12,b:34,l:52};
+  const years=state.years,W=1000,H=400,M={t:16,r:12,b:50,l:52};
   const pw=W-M.l-M.r,ph=H-M.t-M.b;
   let mx=0;years.forEach(y=>data[y].forEach((v,i)=>{if(reached(y,i))mx=Math.max(mx,v);}));
-  const max=niceMax(mx),band=pw/12,inner=band*.84,gap=2,bw=Math.max(2,(inner-gap*(n-1))/n);
-  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Grouped bar chart of acres by month, one bar per year. Data in the table below.'},host);
+  const max=niceMax(mx),band=pw/years.length,inner=band*.9,slot=inner/12,bw=Math.max(2,slot-2);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Grouped bar chart of acres: years along the axis, twelve month bars within each year. Data in the table below.'},host);
   axes(svg,W,H,M,max);
   const t=tip(host);
-  MON.forEach((m,i)=>{
-    const gx=M.l+band*i+(band-inner)/2;
-    el('text',{x:M.l+band*(i+.5),y:H-M.b+20,'text-anchor':'middle'},svg,m);
-    const hl=el('rect',{x:M.l+band*i,y:M.t,width:band,height:ph,fill:'var(--grid)',opacity:0},svg);
-    years.forEach((y,yi)=>{
+  years.forEach((y,yi)=>{
+    const gx=M.l+band*yi+(band-inner)/2;
+    const total=data[y].reduce((a,v,i)=>a+(reached(y,i)?v:0),0);
+    el('text',{x:M.l+band*(yi+.5),y:H-M.b+36,'text-anchor':'middle',style:'font-size:13px;font-weight:600;fill:var(--text)'},svg,String(y));
+    MON.forEach((m,i)=>{
+      const x=gx+slot*i+1;
+      el('text',{x:x+bw/2,y:H-M.b+14,'text-anchor':'middle',style:'font-size:9.5px;fill:var(--muted)'},svg,m[0]);
       if(!reached(y,i))return;
-      const v=data[y][i],h=ph*v/max,x=gx+yi*(bw+gap),top=M.t+ph-h,r=Math.min(3,bw/2,h);
-      const bar=el('path',{d:`M${x} ${M.t+ph}V${top+r}q0 ${-r} ${r} ${-r}h${bw-2*r}q${r} 0 ${r} ${r}V${M.t+ph}Z`,fill:COLORS[yi%COLORS.length]},svg);
+      const v=data[y][i],h=ph*v/max,top=M.t+ph-h,r=Math.min(3,bw/2,h);
+      const bar=el('path',{d:`M${x} ${M.t+ph}V${top+r}q0 ${-r} ${r} ${-r}h${bw-2*r}q${r} 0 ${r} ${r}V${M.t+ph}Z`,fill:MCOL[i]},svg);
       if(isPartial(y,i))bar.setAttribute('opacity','.45');
+      const hit=el('rect',{x:gx+slot*i,y:M.t,width:slot,height:ph+16,fill:'transparent'},svg);
+      hit.addEventListener('mousemove',ev=>{const rc=svg.getBoundingClientRect();bar.setAttribute('stroke','var(--text)');bar.setAttribute('stroke-width','1.5');
+        t.innerHTML=`<b>${m} ${y}${isPartial(y,i)?' (to date)':''}</b><div><span><i style="background:${MCOL[i]}"></i>Acres</span><span>${fmt(v)}</span></div><div><span>${y} total${y===state.asOf.getFullYear()?' to date':''}</span><span>${fmt(total)}</span></div>`;
+        placeTip(t,host,ev.clientX-rc.left,ev.clientY-rc.top-20);});
+      hit.addEventListener('mouseleave',()=>{bar.removeAttribute('stroke');t.style.display='none';});
     });
-    const hit=el('rect',{x:M.l+band*i,y:M.t,width:band,height:ph,fill:'transparent'},svg);
-    hit.addEventListener('mousemove',ev=>{const r=svg.getBoundingClientRect();hl.setAttribute('opacity',.6);
-      t.innerHTML=`<b>${m}</b>`+years.map((y,yi)=>reached(y,i)?`<div><span><i style="background:${COLORS[yi%COLORS.length]}"></i>${y}${isPartial(y,i)?' (to date)':''}</span><span>${fmt(data[y][i])}</span></div>`:'').join('');
-      placeTip(t,host,ev.clientX-r.left,ev.clientY-r.top-20);});
-    hit.addEventListener('mouseleave',()=>{hl.setAttribute('opacity',0);t.style.display='none';});
   });
-  $(legendId).innerHTML=years.map((y,i)=>`<span><i style="background:${COLORS[i%COLORS.length]}"></i>${y}</span>`).join('');
+  $(legendId).innerHTML=MON.map((m,i)=>`<span><i style="background:${MCOL[i]}"></i>${m}</span>`).join('');
 }
 function pivotTable(hostId,data){
   const years=state.years;
@@ -261,14 +260,15 @@ function barChart(){
 }
 
 /* ---------- render ---------- */
-function selData(){return state.sel==='*'||!state.byState?state.all:agg([state.sel]);}
+function selData(){return state.sel==='WEST'?state.west:state.sel==='*'||!state.byState?state.all:agg([state.sel]);}
+function selName(){return state.sel==='*'?'':state.sel==='WEST'?'Western states':state.sel;}
 function render(){
   const y0=state.years[0],y1=state.years[state.years.length-1],rng=`${y0}–${y1} YTD`;
-  $('t1').textContent=`Acres treated month by month — Western states, ${rng}`;
-  $('t2').textContent=`Acres treated by month and year, ${rng}`+(state.sel==='*'?'':` — ${state.sel}`);
-  $('d2').textContent='Sum of acres accomplished by month completed, '+(state.sel==='*'?'nationwide.':state.sel+' only.');
-  lineChart('c-west','lg-west',state.west);pivotTable('tb-west',state.west);
-  const d=selData();lineChart('c-all','lg-all',d);pivotTable('tb-all',d);
+  $('t2').textContent=`Acres treated by month and year, ${rng}`+(selName()?` — ${selName()}`:'');
+  $('d2').textContent='Sum of acres accomplished by month completed, '+(state.sel==='*'?'nationwide.':state.sel==='WEST'?'Western states only (AZ, CA, CO, ID, MT, NM, NV, OR, UT, WA, WY).':state.sel+' only.');
+  document.querySelectorAll('[data-area]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.area===state.sel)));
+  $('stateSel').value=(state.sel==='*'||state.sel==='WEST')?'':state.sel;
+  const d=selData();yearChart('c-all','lg-all',d);pivotTable('tb-all',d);
   $('t3').textContent=`Acres treated by month of award date — FY${state.fy} to date`;
   barChart();
   $('dot').className='dot '+(state.live?'live':'snap');
@@ -278,10 +278,10 @@ function render(){
 }
 function fillControls(){
   const sel=$('stateSel'),keep=state.sel;
-  sel.innerHTML='<option value="*">All states</option>';
+  sel.innerHTML='<option value="">Single state…</option>';
   if(state.byState)Object.keys(state.byState).sort().forEach(s=>{const o=document.createElement('option');o.value=o.textContent=s;sel.appendChild(o);});
   sel.disabled=!state.byState;
-  state.sel=state.byState&&state.byState[keep]?keep:'*';sel.value=state.sel;
+  state.sel=(keep==='*'||keep==='WEST'||(state.byState&&state.byState[keep]))?keep:'*';
   const d=state.asOf,curFY=d.getMonth()>=9?d.getFullYear()+1:d.getFullYear(),fy=$('fySel');
   if(state.fy==null)state.fy=d.getFullYear();   // fiscal year matching the calendar year → "YTD"
   fy.innerHTML='';for(let f=curFY;f>=START_YEAR;f--){const o=document.createElement('option');o.value=f;o.textContent=`FY${f} (Oct ${f-1})`;fy.appendChild(o);}
@@ -295,14 +295,15 @@ async function load(){
 function csv(kind){
   let rows;
   if(kind==='award'){rows=[['award_month','fiscal_year','acres_accomplished']].concat(awardSeries().map(d=>[d.k,d.m>=10?d.y+1:d.y,d.v.toFixed(1)]));}
-  else{const d=kind==='west'?state.west:selData();
+  else{const d=selData();
     rows=[['month'].concat(state.years)].concat(MON.map((m,i)=>[i+1].concat(state.years.map(y=>reached(y,i)?d[y][i].toFixed(1):''))));}
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));
-  a.download=`usfs_haz_fuels_${kind}${kind==='all'&&state.sel!=='*'?'_'+state.sel:''}_${state.asOf.toISOString().slice(0,10)}.csv`;
+  a.download=`usfs_haz_fuels_${kind}${kind==='all'&&state.sel!=='*'?'_'+state.sel.toLowerCase():''}_${state.asOf.toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a);a.click();a.remove();
 }
-$('stateSel').addEventListener('change',e=>{state.sel=e.target.value;render();});
+$('stateSel').addEventListener('change',e=>{state.sel=e.target.value||'*';render();});
+document.querySelectorAll('[data-area]').forEach(b=>b.addEventListener('click',()=>{state.sel=b.dataset.area;render();}));
 $('fySel').addEventListener('change',e=>{state.fy=+e.target.value;render();});
 $('refresh').addEventListener('click',load);
 document.querySelectorAll('[data-csv]').forEach(b=>b.addEventListener('click',()=>csv(b.dataset.csv)));
