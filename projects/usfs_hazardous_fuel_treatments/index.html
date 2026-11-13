@@ -27,7 +27,7 @@
   .seg button{border-radius:0;margin-left:-1px}
   .seg button:first-child{border-radius:6px 0 0 6px;margin-left:0}
   .seg button:last-child{border-radius:0 6px 6px 0}
-  .seg button[aria-pressed="true"]{background:var(--text);color:#fff;border-color:var(--text)}
+  .seg button[aria-pressed="true"],.tog[aria-pressed="true"]{background:var(--text);color:#fff;border-color:var(--text)}
   section{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px 18px 14px;margin:0 0 22px}
   .head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;align-items:flex-start;margin-bottom:6px}
   .desc{color:var(--text2);font-size:13.5px;margin:0}
@@ -72,11 +72,15 @@
       <p class="desc" id="d2">Sum of acres accomplished by month completed, nationwide.</p></div>
       <div class="controls"><div class="seg" role="group" aria-label="Area">
           <button type="button" data-area="*" aria-pressed="true">All states</button><button type="button" data-area="WEST" aria-pressed="false">Western states</button></div>
+        <div class="seg" role="group" aria-label="View">
+          <button type="button" data-view="month" aria-pressed="true">By month</button><button type="button" data-view="year" aria-pressed="false">Whole year</button></div>
+        <button type="button" class="tog" id="trendBtn" aria-pressed="false">Trendline</button>
         <select id="stateSel" aria-label="Single state"><option value="">Single state…</option></select>
         <button type="button" data-csv="all">Download CSV</button></div>
     </div>
     <div class="legend" id="lg-all"></div>
     <div class="chart" id="c-all"></div>
+    <p class="desc" id="trendNote" style="margin-top:6px"></p>
     <details><summary>Table</summary><div class="tw" id="tb-all"></div></details>
   </section>
 
@@ -112,11 +116,11 @@ const SNAPSHOT={asOf:'2026-11-13',
  west:{2021:[115346.2,45093.1,47746.7,93744.8,110977.5,138677.8,311766.5,179406.6,304639,324492.9,296466.8,179405.2],2022:[38128.2,40157.7,173340.7,46264.3,50765.8,64084.7,90267.1,93983.3,160904.5,234468.3,318894.8,257570.4],2023:[60074.7,39315.1,49507.1,66485.3,164714.4,138187.3,135444.5,247582.2,260601.6,354989.9,283542.3,86020.5],2024:[151331.4,39713,41143,101645.1,152258.4,148021.8,148394.4,151360,204161.2,448627.8,447023.4,219674],2025:[158877.3,47412.5,32004.2,68651.8,111447.4,103939.1,95867.8,129182.5,393500.9,257660.3,196040.7,201878.2],2026:[140988.1,62285.1,73949.9,74766.7,106263.8,105603.6,102929.3,74268.1,199125.8,139731.7,20369.2,0]},
  award:{"2020-10":231989.4,"2020-11":491548.7,"2020-12":115543.7,"2021-01":131837.8,"2021-02":199079,"2021-03":768565.8,"2021-04":505128.1,"2021-05":199925.2,"2021-06":216766.9,"2021-07":342817,"2021-08":232785.9,"2021-09":458557.9,"2021-10":376110,"2021-11":356717.3,"2021-12":218623.7,"2022-01":276988.7,"2022-02":386750.2,"2022-03":660826.9,"2022-04":306636.1,"2022-05":143475.9,"2022-06":84647.2,"2022-07":140511.8,"2022-08":146054.3,"2022-09":295138.8,"2022-10":229043.5,"2022-11":322848.1,"2022-12":255612.3,"2023-01":177662.9,"2023-02":451143.2,"2023-03":848070.2,"2023-04":364754.3,"2023-05":305553.6,"2023-06":212965.3,"2023-07":190422.2,"2023-08":374996.2,"2023-09":474335.2,"2023-10":361187.8,"2023-11":256082.5,"2023-12":104625.7,"2024-01":266485.3,"2024-02":579259.4,"2024-03":608763.1,"2024-04":431285.4,"2024-05":229631.9,"2024-06":236343.5,"2024-07":213122.9,"2024-08":236680.3,"2024-09":412184.6,"2024-10":406142.4,"2024-11":428110.8,"2024-12":240265.1,"2025-01":183016.6,"2025-02":293220.3,"2025-03":313887.8,"2025-04":325804.4,"2025-05":172919.5,"2025-06":154310.1,"2025-07":109642.3,"2025-08":229045.2,"2025-09":436279.3,"2025-10":287991.7,"2025-11":211297.3,"2025-12":270997.8,"2026-01":309122.9,"2026-02":568120.5,"2026-03":636596.9,"2026-04":287135.9,"2026-05":224082.1,"2026-06":146657.4,"2026-07":212296.3,"2026-08":151614.1,"2026-09":335736,"2026-10":161100.8,"2026-11":17955.9}};
 
-const state={live:false,asOf:null,byState:null,all:null,west:null,award:null,sel:'*',fy:null};
+const state={live:false,asOf:null,byState:null,all:null,west:null,award:null,sel:'*',fy:null,view:'month',trend:false};
 const $=id=>document.getElementById(id);
 const fmt=v=>v==null?'–':Math.round(v).toLocaleString('en-US');
 const fmt1=v=>v==null?'':(+v.toFixed(1)).toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
-const short=v=>v>=1e6?(v/1e6).toFixed(v%1e6?1:0)+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
+const short=v=>v>=1e6?(+(v/1e6).toFixed(2))+'M':v>=1e3?Math.round(v/1e3)+'k':String(v);
 const now=()=>new Date();
 
 /* ---------- data ---------- */
@@ -190,7 +194,7 @@ function yearChart(hostId,legendId,data){
   const max=niceMax(mx),band=pw/years.length,inner=band*.9,slot=inner/12,bw=Math.max(2,slot-2);
   const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Grouped bar chart of acres: years along the axis, twelve month bars within each year. Data in the table below.'},host);
   axes(svg,W,H,M,max);
-  const t=tip(host);
+  const t=tip(host),tp=[];
   years.forEach((y,yi)=>{
     const gx=M.l+band*yi+(band-inner)/2;
     const total=data[y].reduce((a,v,i)=>a+(reached(y,i)?v:0),0);
@@ -201,7 +205,7 @@ function yearChart(hostId,legendId,data){
       if(!reached(y,i))return;
       const v=data[y][i],h=ph*v/max,top=M.t+ph-h,r=Math.min(3,bw/2,h);
       const bar=el('path',{d:`M${x} ${M.t+ph}V${top+r}q0 ${-r} ${r} ${-r}h${bw-2*r}q${r} 0 ${r} ${r}V${M.t+ph}Z`,fill:MCOL[i]},svg);
-      if(isPartial(y,i))bar.setAttribute('opacity','.45');
+      if(isPartial(y,i))bar.setAttribute('opacity','.45');else tp.push([yi*12+i,v,x+bw/2]);
       const hit=el('rect',{x:gx+slot*i,y:M.t,width:slot,height:ph+16,fill:'transparent'},svg);
       hit.addEventListener('mousemove',ev=>{const rc=svg.getBoundingClientRect();bar.setAttribute('stroke','var(--text)');bar.setAttribute('stroke-width','1.5');
         t.innerHTML=`<b>${m} ${y}${isPartial(y,i)?' (to date)':''}</b><div><span><i style="background:${MCOL[i]}"></i>Acres</span><span>${fmt(v)}</span></div><div><span>${y} total${y===state.asOf.getFullYear()?' to date':''}</span><span>${fmt(total)}</span></div>`;
@@ -210,6 +214,61 @@ function yearChart(hostId,legendId,data){
     });
   });
   $(legendId).innerHTML=MON.map((m,i)=>`<span><i style="background:${MCOL[i]}"></i>${m}</span>`).join('');
+  let note='';
+  if(state.trend){const fit=linfit(tp);
+    if(fit){trendPath(svg,tp.map(p=>[p[2],M.t+ph-ph*Math.min(max,Math.max(0,fit.a+fit.b*p[0]))/max,false]));
+      note=`Trendline: a typical month is changing by ${signed(fit.b*12)} acres per year — straight-line fit through every complete month, ${MON[tp[0][0]%12]} ${years[0]} to ${MON[tp[tp.length-1][0]%12]} ${years[Math.floor(tp[tp.length-1][0]/12)]}.`;}
+    else note='Not enough months for a trendline.';}
+  $('trendNote').textContent=note;
+}
+/* least-squares line through [x,y] points */
+function linfit(pts){const n=pts.length;if(n<2)return null;let sx=0,sy=0,sxx=0,sxy=0;
+  pts.forEach(p=>{sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
+  const d=n*sxx-sx*sx;if(!d)return null;const b=(n*sxy-sx*sy)/d;return {a:(sy-b*sx)/n,b};}
+function trendPath(svg,pts){ // pts: [px,py,dashed]
+  const seg=(a,dash)=>{if(a.length<2)return;const o={d:a.map((p,k)=>(k?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '),fill:'none',stroke:'var(--text)','stroke-width':2,'stroke-linecap':'round','pointer-events':'none'};if(dash)o['stroke-dasharray']='6 5';el('path',o,svg);};
+  const solid=pts.filter(p=>!p[2]);seg(solid,false);
+  if(solid.length<pts.length)seg([solid[solid.length-1]].concat(pts.filter(p=>p[2])),true);
+}
+const signed=v=>(v>=0?'+':'−')+fmt(Math.abs(v));
+function yearTotals(data){return state.years.map(y=>data[y].reduce((a,v,i)=>a+(reached(y,i)?v:0),0));}
+function annualChart(hostId,legendId,data){
+  const host=$(hostId);host.innerHTML='';$(legendId).innerHTML='';
+  const years=state.years,tot=yearTotals(data),curY=state.asOf.getFullYear();
+  const W=1000,H=400,M={t:26,r:12,b:50,l:52},pw=W-M.l-M.r,ph=H-M.t-M.b;
+  const full=years.map((y,i)=>[i,tot[i],y]).filter(p=>p[2]<curY);
+  const fit=state.trend?linfit(full):null;
+  let mx=Math.max(1,...tot);if(fit)years.forEach((y,i)=>mx=Math.max(mx,fit.a+fit.b*i));
+  const max=niceMax(mx),band=pw/years.length,bw=Math.min(90,band*.6);
+  const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Bar chart of total acres per calendar year. Data in the table below.'},host);
+  axes(svg,W,H,M,max);const t=tip(host);
+  years.forEach((y,i)=>{
+    const cx=M.l+band*(i+.5),v=tot[i],h=ph*v/max,top=M.t+ph-h,r=Math.min(4,h),ytd=y===curY;
+    const bar=el('path',{d:`M${cx-bw/2} ${M.t+ph}V${top+r}q0 ${-r} ${r} ${-r}h${bw-2*r}q${r} 0 ${r} ${r}V${M.t+ph}Z`,fill:'var(--s1)'},svg);
+    if(ytd)bar.setAttribute('opacity','.5');
+    el('text',{x:cx,y:top-7,'text-anchor':'middle',style:'fill:var(--text);font-size:12.5px'},svg,fmt(v));
+    el('text',{x:cx,y:H-M.b+22,'text-anchor':'middle',style:'font-size:13px;font-weight:600;fill:var(--text)'},svg,String(y));
+    if(ytd)el('text',{x:cx,y:H-M.b+38,'text-anchor':'middle',style:'fill:var(--muted)'},svg,'year to date');
+    const hit=el('rect',{x:M.l+band*i,y:M.t,width:band,height:ph,fill:'transparent'},svg);
+    hit.addEventListener('mousemove',ev=>{const rc=svg.getBoundingClientRect();
+      const prev=i>0?tot[i-1]:null;
+      t.innerHTML=`<b>${y}${ytd?' (year to date)':''}</b><div><span>Acres</span><span>${fmt(v)}</span></div>`+(prev&&!ytd?`<div><span>vs ${y-1}</span><span>${signed(v-prev)} (${(100*(v-prev)/prev).toFixed(0)}%)</span></div>`:'')+(fit?`<div><span>Trend</span><span>${fmt(fit.a+fit.b*i)}</span></div>`:'');
+      placeTip(t,host,ev.clientX-rc.left,ev.clientY-rc.top-20);});
+    hit.addEventListener('mouseleave',()=>t.style.display='none');
+  });
+  let note='';
+  if(state.trend){
+    if(fit){trendPath(svg,years.map((y,i)=>[M.l+band*(i+.5),M.t+ph-ph*Math.max(0,fit.a+fit.b*i)/max,y>=curY]));
+      note=`Trendline: ${signed(fit.b)} acres per year — straight-line fit of the complete years ${full[0][2]}–${full[full.length-1][2]}; the dashed part extends it across ${curY}, which is still in progress.`;}
+    else note='Not enough complete years for a trendline.';}
+  $('trendNote').textContent=note;
+}
+function annualTable(hostId,data){
+  const tot=yearTotals(data),curY=state.asOf.getFullYear();
+  let h='<table><thead><tr><th>Year</th><th>Acres accomplished</th><th>Change from prior year</th></tr></thead><tbody>';
+  state.years.forEach((y,i)=>{const ytd=y===curY;h+=`<tr><td>${y}${ytd?'*':''}</td><td>${fmt1(tot[i])}</td><td>${i&&!ytd?signed(tot[i]-tot[i-1])+' ('+(100*(tot[i]-tot[i-1])/tot[i-1]).toFixed(0)+'%)':'<span class="na">–</span>'}</td></tr>`;});
+  h+='</tbody></table><p class="desc" style="margin-top:6px">* year to date</p>';
+  $(hostId).innerHTML=h;
 }
 function pivotTable(hostId,data){
   const years=state.years;
@@ -268,7 +327,11 @@ function render(){
   $('d2').textContent='Sum of acres accomplished by month completed, '+(state.sel==='*'?'nationwide.':state.sel==='WEST'?'Western states only (AZ, CA, CO, ID, MT, NM, NV, OR, UT, WA, WY).':state.sel+' only.');
   document.querySelectorAll('[data-area]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.area===state.sel)));
   $('stateSel').value=(state.sel==='*'||state.sel==='WEST')?'':state.sel;
-  const d=selData();yearChart('c-all','lg-all',d);pivotTable('tb-all',d);
+  const d=selData(),yr=state.view==='year';
+  if(yr){annualChart('c-all','lg-all',d);annualTable('tb-all',d);}else{yearChart('c-all','lg-all',d);pivotTable('tb-all',d);}
+  $('t2').textContent=(yr?`Acres treated by year, ${rng}`:`Acres treated by month and year, ${rng}`)+(selName()?` — ${selName()}`:'');
+  document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===state.view)));
+  $('trendBtn').setAttribute('aria-pressed',String(state.trend));
   $('t3').textContent=`Acres treated by month of award date — FY${state.fy} to date`;
   barChart();
   $('dot').className='dot '+(state.live?'live':'snap');
@@ -295,15 +358,18 @@ async function load(){
 function csv(kind){
   let rows;
   if(kind==='award'){rows=[['award_month','fiscal_year','acres_accomplished']].concat(awardSeries().map(d=>[d.k,d.m>=10?d.y+1:d.y,d.v.toFixed(1)]));}
+  else if(state.view==='year'){const tt=yearTotals(selData());rows=[['year','acres_accomplished']].concat(state.years.map((y,i)=>[y,tt[i].toFixed(1)]));kind='all_by_year';}
   else{const d=selData();
     rows=[['month'].concat(state.years)].concat(MON.map((m,i)=>[i+1].concat(state.years.map(y=>reached(y,i)?d[y][i].toFixed(1):''))));}
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));
-  a.download=`usfs_haz_fuels_${kind}${kind==='all'&&state.sel!=='*'?'_'+state.sel.toLowerCase():''}_${state.asOf.toISOString().slice(0,10)}.csv`;
+  a.download=`usfs_haz_fuels_${kind}${kind.startsWith('all')&&state.sel!=='*'?'_'+state.sel.toLowerCase():''}_${state.asOf.toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a);a.click();a.remove();
 }
 $('stateSel').addEventListener('change',e=>{state.sel=e.target.value||'*';render();});
 document.querySelectorAll('[data-area]').forEach(b=>b.addEventListener('click',()=>{state.sel=b.dataset.area;render();}));
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{state.view=b.dataset.view;render();}));
+$('trendBtn').addEventListener('click',()=>{state.trend=!state.trend;render();});
 $('fySel').addEventListener('change',e=>{state.fy=+e.target.value;render();});
 $('refresh').addEventListener('click',load);
 document.querySelectorAll('[data-csv]').forEach(b=>b.addEventListener('click',()=>csv(b.dataset.csv)));
