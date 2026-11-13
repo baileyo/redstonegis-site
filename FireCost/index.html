@@ -207,7 +207,21 @@ main{display:flex;flex-direction:column}
 #splash{position:fixed;inset:0;z-index:60;background:var(--redstone);color:var(--white);overflow:auto;isolation:isolate;transition:opacity .5s;display:flex}
 #splash.out{opacity:0;pointer-events:none}
 .sp-media{position:fixed;inset:0;z-index:-1}
-.sp-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:38% 50%;max-width:none}
+.sp-media img,.sp-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none;display:block}
+/* the main site's hero: photos wipe aside to show maps on the right, and each side changes while it is out of sight */
+.sp-maps{position:absolute;top:0;right:0;bottom:0;width:66%;-webkit-mask-image:linear-gradient(90deg,transparent,#000 30%);mask-image:linear-gradient(90deg,transparent,#000 30%)}
+.sp-photos{position:absolute;inset:0;-webkit-mask:linear-gradient(90deg,#000 33.3%,transparent 66.6%) 0% 0/300% 100% no-repeat;mask:linear-gradient(90deg,#000 33.3%,transparent 66.6%) 0% 0/300% 100% no-repeat;animation:spwipe 36s linear infinite}
+.sp-photos .p1{object-position:38% 50%}
+.sp-maps .m1{object-position:30% 40%}.sp-maps .m2{object-position:60% 45%;opacity:0}
+.sp-maps .m1{animation:spm1 72s linear infinite}.sp-maps .m2{animation:spm2 72s linear infinite}
+.sp-photos .p2{opacity:0;animation:spp2 72s linear infinite}.sp-photos.two .p1{animation:spp1 72s linear infinite}
+@keyframes spwipe{0%,8.33%{-webkit-mask-position:0% 0;mask-position:0% 0}50%,58.33%{-webkit-mask-position:100% 0;mask-position:100% 0}100%{-webkit-mask-position:0% 0;mask-position:0% 0}}
+@keyframes spm1{0%,2.07%{opacity:0}2.08%,52.07%{opacity:1}52.08%,100%{opacity:0}}
+@keyframes spm2{0%,2.07%{opacity:1}2.08%,52.07%{opacity:0}52.08%,100%{opacity:1}}
+@keyframes spp1{0%,27.07%{opacity:1}27.08%,77.07%{opacity:0}77.08%,100%{opacity:1}}
+@keyframes spp2{0%,27.07%{opacity:0}27.08%,77.07%{opacity:1}77.08%,100%{opacity:0}}
+@media (max-width:820px){.sp-maps{width:100%}}
+@media (prefers-reduced-motion:reduce){.sp-photos,.sp-media img,.sp-media video{animation:none}.sp-maps{display:none}.sp-photos .p2{display:none}}
 .tint-multiply{position:absolute;inset:0;background:#D9543A;mix-blend-mode:multiply}
 .tint-wash{position:absolute;inset:0;background:linear-gradient(90deg,rgba(166,28,0,.72) 0%,rgba(166,28,0,.5) 60%,rgba(166,28,0,.2) 100%)}
 .sp-copy{box-sizing:border-box;width:100%;max-width:880px;margin-block:auto;padding-block:max(32px,env(safe-area-inset-top,0px)) 40px;padding-left:max(clamp(20px,6vw,72px),env(safe-area-inset-left,0px));padding-right:max(clamp(20px,6vw,72px),env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px;align-items:flex-start}
@@ -302,7 +316,11 @@ main{display:flex;flex-direction:column}
 </main>
 </div>
 <div id="splash" role="dialog" aria-modal="true" aria-labelledby="sp-h">
-  <div class="sp-media" aria-hidden="true"><img src="hero.jpg" alt="" onerror="this.remove()"><div class="tint-multiply"></div><div class="tint-wash"></div></div>
+  <div class="sp-media" aria-hidden="true">
+    <div class="sp-maps"><img class="m1" src="national.jpg" alt="" onerror="this.remove()"><video class="m2" src="series.mp4" poster="series-poster.jpg" autoplay muted loop playsinline preload="auto"></video></div>
+    <div class="sp-photos"><img class="p1" src="hero.jpg" alt="" onerror="this.remove()"><!--FIRELINE--></div>
+    <div class="tint-multiply"></div><div class="tint-wash"></div>
+  </div>
   <div class="sp-copy">
     <p class="kicker">Redstone GIS &middot; 2026 wildfire season</p>
     <h2 id="sp-h">The Cost of Fire, 2026</h2>
@@ -314,7 +332,7 @@ main{display:flex;flex-direction:column}
     </ul>
     <div class="sp-go"><button id="enter" type="button">Explore the map</button></div>
     <p class="sp-src"><b>Data sources:</b> fire locations, daily perimeters, cost and cause from the National Interagency Fire Center's WFIGS, refreshed daily and last extracted <span class="asof">November 3, 2026</span>. Base maps and terrain from USGS The National Map and Mapzen terrain tiles. Land ownership from the BLM. Roads, counties and coastline from the US Census Bureau. Rivers and lakes from the USGS National Hydrography Dataset. Structures, deaths and injuries from news and agency reports, which are incomplete.</p>
-    <p class="sp-src">Photo: the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026. U.S. Forest Service via InciWeb, public domain.</p>
+    <p class="sp-src">Background: the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026. U.S. Forest Service via InciWeb, public domain; the national map and the Little Giant Fire time series from this page.<!--FIRELINECREDIT--></p>
   </div>
 </div>
 
@@ -325,7 +343,7 @@ main{display:flex;flex-direction:column}
 (async function(){
 const $=s=>document.querySelector(s), DAY=864e5;
 /* V stamps data requests so a daily refresh is picked up; ASOF is when the fire data was last rebuilt from WFIGS */
-let V='20261112o',ASOF=Date.UTC(2026,10,3,18);
+let V='20261112p',ASOF=Date.UTC(2026,10,3,18);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -356,7 +374,8 @@ document.querySelectorAll('.nunmapped').forEach(e=>e.textContent=num(fires.filte
 $('#sp-lede').innerHTML=$('#lede').innerHTML;
 /* opening screen: the map loads underneath, and playback and rotation wait until it is dismissed */
 let splashDone;const splashGone=new Promise(r=>splashDone=r),splash=$('#splash');
-function enter(){if(splash.classList.contains('out'))return;splash.classList.add('out');setTimeout(()=>splash.hidden=true,550);splashDone()}
+function enter(){if(splash.classList.contains('out'))return;splash.classList.add('out');setTimeout(()=>{splash.hidden=true;splash.querySelectorAll('video').forEach(v=>{v.pause();v.removeAttribute('src');v.load()})},550);splashDone()}
+if(reduced)splash.querySelectorAll('video').forEach(v=>{v.removeAttribute('autoplay');v.pause()});
 $('#enter').addEventListener('click',enter);
 addEventListener('keydown',e=>{if(e.key==='Escape')enter()});
 $('#enter').focus({preventScroll:true});
