@@ -258,7 +258,7 @@ main{display:flex;flex-direction:column}
     <li><b>Opening photo:</b> the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026, by the U.S. Forest Service via InciWeb (public domain), tinted in the Redstone GIS colors.</li>
     <li><b>Playback:</b> when a fire finishes playing, the map holds for five seconds and then opens and plays the next fire in the list, in whatever order and search the list is showing. Pause stops it. Near the end of each fire the next one is loaded in the background, and the finished fire's last view stays up until the next is ready.</li>
     <li><b>Loading:</b> each fire map stays covered until its base map, terrain, ownership, roads, rivers and county lines have loaded. If an outside map service is slow, the map is shown after 12 seconds and the late layer is added when it arrives.</li>
-    <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on.</li>
+    <li><b>Opening view:</b> each fire opens in 3D on shaded relief with land ownership on, and the view slowly circles the fire until you touch or drag the map. The Rotate view switch turns the rotation off or back on. The turn goes clockwise or counterclockwise, whichever keeps the fire's final perimeter better inside the open part of the map over the length of its time series; if neither direction keeps it in view, the map opens slightly farther out.</li>
     <li><b>3D terrain:</b> drapes the map over elevation from the Mapzen terrain tiles hosted by Amazon Web Services, with heights exaggerated 1.4 times so relief reads at fire scale. The PDF map is always flat and north-up.</li>
     <li><b>Base maps:</b> shaded relief and imagery load from USGS The National Map when you open a fire. Imagery is the USGS orthoimagery base map, which is built from NAIP aerial photography at close zooms. It mostly predates these fires, and detail softens past its closest level.</li>
     <li><b>Land ownership:</b> BLM Surface Management Agency, drawn from BLM's map tiles. Tribal and Alaska Native lands are grouped with other federal lands. Private and unknown land is left clear.</li>
@@ -325,7 +325,7 @@ main{display:flex;flex-direction:column}
 (async function(){
 const $=s=>document.querySelector(s), DAY=864e5;
 /* V stamps data requests so a daily refresh is picked up; ASOF is when the fire data was last rebuilt from WFIGS */
-let V='20261112n',ASOF=Date.UTC(2026,10,3,18);
+let V='20261112o',ASOF=Date.UTC(2026,10,3,18);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -559,11 +559,30 @@ function set3d(on,quick){
 }
 $('#t3d').addEventListener('change',e=>set3d(e.target.checked));
 /* slow turn around the fire; any touch of the map hands control back */
-let orbit=0,orbWant=true;
+let orbit=0,orbWant=true,orbDir=1;
+/* which way to turn: from the opening view, sweep the angle the time series will cover in each direction, and take the
+   direction that keeps the final perimeter best inside the clear part of the map; zoom out a little if neither does */
+function bestTurn(d){
+  orbDir=1;if(!is3d||reduced)return;
+  try{
+    const g=d.per&&d.per.length?d.per[d.per.length-1].geometry:null;let pts=[];
+    if(g){const walk=c=>{if(typeof c[0]==='number')pts.push(c);else c.forEach(walk)};walk(g.coordinates)}
+    if(pts.length<3){const b=d.bbox||curBB;if(!b)return;pts=[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]]}
+    const k=Math.ceil(pts.length/240);pts=pts.filter((_,i)=>i%k===0).map(c=>new maplibregl.LngLat(c[0],c[1]));
+    const tr=map.transform.clone(),pd=map.getPadding(),b0=map.getBearing();try{tr.elevation=0}catch(e){}
+    const x0=pd.left,x1=tr.width-pd.right,y0=pd.top,y1=tr.height-pd.bottom,cx=(x0+x1)/2,cy=(y0+y1)/2;
+    const fit=b=>{tr.bearing=b;let m=9;for(const ll of pts){const q=tr.locationPoint(ll);if(!isFinite(q.x)||!isFinite(q.y))return 0;
+      m=Math.min(m,q.x<cx?(cx-x0)/(cx-q.x):(x1-cx)/(q.x-cx||1e-9),q.y<cy?(cy-y0)/(cy-q.y):(y1-cy)/(q.y-cy||1e-9))}return m};
+    const sweep=Math.max(45,Math.min(180,.0032*(stepMs()*d.steps.length+6000))),score=dir=>{let lo=9,sum=0,n=0;for(let a=0;a<=sweep;a+=5){const f=fit(b0+dir*a);lo=Math.min(lo,f);sum+=f;n++}return{lo,mean:sum/n}};
+    const cw=score(1),ccw=score(-1),pick=Math.abs(cw.lo-ccw.lo)>.03*Math.max(cw.lo,ccw.lo)?(cw.lo>ccw.lo?cw:ccw):(cw.mean>=ccw.mean?cw:ccw);
+    orbDir=pick===ccw?-1:1;window.__turn={dir:orbDir,sweep,cw,ccw};
+    if(pick.lo<.97&&pick.lo>0)map.setZoom(map.getZoom()+Math.log2(Math.max(.5,pick.lo*.97)));
+  }catch(e){orbDir=1}
+}
 function orbitOn(on){
   cancelAnimationFrame(orbit);orbit=0;on=!!on&&is3d&&!reduced&&!national;$('#tOrb').checked=on;if(!on)return;
   let last=performance.now();
-  const turn=t=>{if(!orbit)return;const dt=Math.min(120,t-last);last=t;if(!(map.isEasing&&map.isEasing()))map.setBearing(map.getBearing()+dt*.0032);orbit=requestAnimationFrame(turn)};
+  const turn=t=>{if(!orbit)return;const dt=Math.min(120,t-last);last=t;if(!(map.isEasing&&map.isEasing()))map.setBearing(map.getBearing()+orbDir*dt*.0032);orbit=requestAnimationFrame(turn)};
   orbit=requestAnimationFrame(turn)}
 $('#tOrb').disabled=true;
 $('#tOrb').addEventListener('change',e=>{orbWant=e.target.checked;orbitOn(orbWant)});
@@ -866,6 +885,7 @@ async function go(id,auto,instant){
   map.setPadding(clearPad(bb));
   map.fitBounds([[bb[0],bb[1]],[bb[2],bb[3]]],{padding:narrow?16:24,duration:0,maxZoom:14,bearing:map.getBearing()});
   if(instant&&LIVE&&!is3d)set3d(true,true);
+  bestTurn(d);
   /* keep the open fire in view in the list, without moving the page itself */
   const row=roster.querySelector(`[data-id="${id}"]`);if(row&&!narrow&&auto!==true){const top=row.offsetTop-roster.offsetTop;if(top<roster.scrollTop||top+row.offsetHeight>roster.scrollTop+roster.clientHeight)roster.scrollTop=Math.max(0,top-roster.clientHeight/3)}
   const play=auto&&!reduced&&d.steps.length>2;if(play)setStep(0);
