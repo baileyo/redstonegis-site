@@ -381,13 +381,13 @@ footer.site{border-top:1px solid var(--rule);margin-top:40px;padding-top:14px;fo
 <section class="view page" id="v-timeline" aria-label="Timeline" hidden>
   <div class="col gut">
     <h2>How the land was given out</h2>
-    <p class="lede">Annual patents, stacked by the kind of entry. Each surge follows a law from Congress that opened a new way to claim public land.</p>
+    <p class="lede">Annual patents, stacked by the kind of entry. Each surge follows <span id="actsWho">a law from Congress</span> that opened a new way to claim public land.</p>
     <div class="tctl"><label class="sm" for="tState">State <select id="tState" class="stateSel"><option value="">All 31 states</option></select></label>
     <span class="tsum" id="tSum"></span></div>
     <div class="tlegend" id="tleg"></div>
     <label class="sm" style="margin:4px 0 8px"><input type="checkbox" id="tNon"> Include non-patent records (CDI, survey, LSR)</label>
     <div id="tchart"></div>
-    <h3>The laws behind the curve</h3>
+    <h3 id="actsHead">The laws behind the curve</h3>
     <ul class="acts" id="acts"></ul>
   </div>
 </section>
@@ -997,7 +997,7 @@ function initStates(){
 // =====================================================================
 // TIMELINE
 // =====================================================================
-const ACTS = [
+const ACTS_US = [
   [1785,'Land Ordinance','Creates the rectangular survey of townships, ranges and sections that every later patent is described by.',1785,1800,[1],'cash sales, 1785–1800'],
   [1800,'Harrison Land Act','Sells public land on credit in smaller tracts; widespread defaults lead Congress to end credit sales in 1820.',1800,1820,[1],'cash and credit sales, 1800–1820'],
   [1820,'Land Act of 1820','Ends credit, sets cash sales at $1.25 an acre with an 80-acre minimum. Cash entry dominates the next forty years.',1820,1861,[1],'cash sales, 1820–1861'],
@@ -1012,19 +1012,40 @@ const ACTS = [
   [1934,'Taylor Grazing Act','Closes most remaining public domain to homesteading and puts it under federal grazing management.',1934,1976,[0],'the wind-down of homesteading, 1934–1976'],
   [1976,'Federal Land Policy and Management Act','Ends homesteading outside Alaska (1986 in Alaska) and declares the remaining public lands will stay in federal ownership.',1976,2026,[0,1,2,3,4,5,6],'all patents since 1976'],
 ];
+const ACTS_TX = [
+  [1836,'Headrights','Republic land by date of arrival: a league and a labor (4,605.5 acres) for heads of family who arrived before March 2, 1836, then 1,280 and 640 acres for later arrivals through 1841. Patents followed over the next forty years.',1836,1890,[5],'grants and claims, 1836–1890'],
+  [1837,'Bounty and donation grants','Republic soldiers receive 320 acres for each three months of service, up to 1,280 acres. Veterans of Béxar and San Jacinto, and heirs of the Alamo and Goliad dead, receive 640-acre donations.',1837,1890,[2],'warrant and scrip patents, 1837–1890'],
+  [1841,'Empresario colonies','The Peters (1841), Fisher-Miller and Castro (1842) and Mercer (1844) colony contracts bring settlers for 640 acres a family and 320 for a single man.',1841,1890,[5],'grants and claims, 1841–1890'],
+  [1845,'Annexation and preemption','Texas joins the Union but keeps its public land. Preemption gives settlers 320 acres, and 160 from 1854, until 1898.',1845,1905,[0],'preemption patents, 1845–1905'],
+  [1854,'Railroad land grants','Railroads earn land scrip for track built, later 16 sections per mile, and survey an equal alternate section for the school fund each time. The Legislature ended the grants in 1882.',1854,1905,[2],'warrant and scrip patents, 1854–1905'],
+  [1874,'School land sales','The state begins selling school land. Price, acreage and residence rules change repeatedly until 1905.',1874,1905,[1],'cash sales, 1874–1905'],
+  [1879,'Veteran and Confederate scrip','640, then 1,280 acres for surviving veterans of the Texas Revolution (1879–1887), and 1,280 acres for disabled Confederate veterans and the widows of soldiers who died in service (1881–1883).',1879,1905,[2],'warrant and scrip patents, 1879–1905'],
+  [1898,'Hogue v. Baker','The Texas Supreme Court rules that no vacant public land is left. An act of 1900 gives what remains to the school fund.',1898,2026,[0,1,2,3,4,5,6],'all patents since 1898'],
+  [1905,'School land sale act','School land is sold by competitive bid: up to 4 sections with residence, or up to 8 without it in western counties.',1905,2026,[1],'cash sales, 1905–2026'],
+];
+// federal acts for the BLM states; Texas has its own (shown only when Texas is selected)
+let ACTS = ACTS_US;
+const actsFor = () => st.focus==='Texas' ? ACTS_TX : ACTS_US;
 function initTimeline(){
   $('tleg').innerHTML=CATS.map((c,k)=>`<span id="tl${k}"><i class="sw" style="background:var(--c${k})"></i>${c}</span>`).join('');
-  $('acts').innerHTML=ACTS.map(([y,n,d,f,to,ks,lab],i)=>`<li><span class="yr">${y}</span><div><b>${n}</b><p>${d}</p><button data-i="${i}" title="Show ${lab} on the map"><span class="sws">${ks.length<7?ks.map(k=>`<i class="sw" style="background:var(--c${k})"></i>`).join(''):''}</span>Map ${lab}</button></div></li>`).join('');
+  let actsShown=null;
+  function renderActs(){ ACTS=actsFor(); if (actsShown===ACTS) return; actsShown=ACTS;
+    $('actsHead').textContent = ACTS===ACTS_TX ? 'The Texas laws behind the curve' : 'The laws behind the curve';
+    $('actsWho').textContent = ACTS===ACTS_TX ? 'a law of the Republic or State of Texas' : 'a law from Congress';
+    $('acts').innerHTML=ACTS.map(([y,n,d,f,to,ks,lab],i)=>`<li><span class="yr">${y}</span><div><b>${n}</b><p>${d}</p><button data-i="${i}" title="Show ${lab} on the map"><span class="sws">${ks.length<7?ks.map(k=>`<i class="sw" style="background:var(--c${k})"></i>`).join(''):''}</span>Map ${lab}</button></div></li>`).join('');
+  }
+  renderActs();
   $('acts').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const [,,,f,to,ks]=ACTS[+b.dataset.i];
     MAP.show({mode:'cus', from:f, year:to, mask:ks.reduce((m,k)=>m|1<<k,0), law:+b.dataset.i}); });
   $('tNon').onchange=drawTimeline;
-  FOCUS_HOOKS.push(()=>{ if(!$('v-timeline').hidden) drawTimeline(); });
+  FOCUS_HOOKS.push(()=>{ renderActs(); if(!$('v-timeline').hidden) drawTimeline(); });
   themeHooks.push(()=>{ if(!$('v-timeline').hidden) drawTimeline(); });
   addEventListener('resize',()=>{ if(!$('v-timeline').hidden) drawTimeline(); });
   drawTimeline();
 }
 function drawTimeline(){
   const el=$('tchart'); if(!el||$('v-timeline').hidden) return;
+  ACTS=actsFor();
   const non=$('tNon').checked, ks=d3.range(non?NC:7);
   $('tl7').hidden=!non;
   const years=d3.range(YA,YB+1);
