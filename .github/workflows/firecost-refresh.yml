@@ -56,5 +56,6 @@ jobs:
           SSH="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30"
           DEST="${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:redstonegis.com/FireCost"
           rsync -rlz --checksum -e "$SSH" out/data/ "$DEST/data/"
+          rsync -lz --checksum -e "$SSH" out/timeline.json "$DEST/timeline.json"
           rsync -lz --checksum -e "$SSH" out/fires.json "$DEST/fires.json"
           rsync -lz --checksum -e "$SSH" out/asof.json "$DEST/asof.json"

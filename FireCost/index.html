@@ -267,6 +267,7 @@ main{display:flex;flex-direction:column}
     <li><b>Ignition cause:</b> the FireCause field in WFIGS (Human, Natural or Undetermined), with the general and specific cause where an investigator entered one.</li>
     <li><b>Structures, deaths and injuries:</b> WFIGS does not carry structure or injury counts. Structures destroyed and damaged, and injuries, come from news and agency reports for 46 fires: the 25 costliest plus those listed in Wikipedia's 2026 United States wildfires table. Each fire's figure links to its source. Deaths use the larger of the WFIGS fatality count and the reported count for each fire. All of these totals are incomplete: a fire or state with no figure may still have had losses, and "at least" counts are added at their minimum.</li>
     <li><b>Personnel:</b> the largest number of people assigned at any report.</li>
+    <li><b>Season slider:</b> on the U.S. and state maps, the timeline runs from January 1 to the latest extract. Each fire appears on its discovery date, and its acres and cost follow its own perimeter records day by day; a fire with no mapped perimeter shows its size at discovery until its containment date, then its final figures. Circle sizes keep one scale for the whole season. Personnel, structures, deaths and injuries are not dated in the sources, so they count from the day a fire is discovered. The ranked list beside the map always shows season totals.</li>
     <li><b>All fires map:</b> the national map uses an Albers equal area projection, with Alaska and Hawaii inset. State maps use an equal area conic fitted to each state.</li>
     <li><b>GIF:</b> Create GIF saves the open fire's time series as an animated image, drawn flat and north-up with the layers you have switched on. Long fires are sampled to at most 60 frames.</li>
     <li><b>Opening photo:</b> the Kaiser Canyon Fire along Highway 155 in Washington, July 23, 2026, by the U.S. Forest Service via InciWeb (public domain), tinted in the Redstone GIS colors.</li>
@@ -277,7 +278,7 @@ main{display:flex;flex-direction:column}
     <li><b>Base maps:</b> shaded relief and imagery load from USGS The National Map when you open a fire. Imagery is the USGS orthoimagery base map, which is built from NAIP aerial photography at close zooms. It mostly predates these fires, and detail softens past its closest level.</li>
     <li><b>Land ownership:</b> BLM Surface Management Agency, drawn from BLM's map tiles. Tribal and Alaska Native lands are grouped with other federal lands. Private and unknown land is left clear.</li>
     <li><b>Ocean:</b> drawn in the same blue as lakes for fires near a coast. The shoreline comes from Census TIGERweb water areas, and open water beyond them from elevation at or below sea level.</li>
-    <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable.</li>
+    <li><b>Roads, rivers and counties:</b> interstates, U.S. highways, state routes, county roads and county lines from Census TIGERweb; rivers and lakes from the USGS National Hydrography Dataset. These load live, so they can be slow or briefly unavailable. Highways, county lines, the coast and the larger rivers and lakes are loaded for a wide area around each fire so they reach across the tilted 3D view as it turns; county roads and small streams are loaded near the fire only.</li>
     <li><b>Sources:</b> NIFC WFIGS Incident Locations and Daily Perimeters, extracted <span class="asof">November 3, 2026</span>. USGS The National Map. BLM Surface Management Agency. US Census TIGERweb and us-atlas. USGS NHD. Page type is Oswald and Public Sans; labels drawn on the map use Barlow.</li>
   <section id="legwrap"><button id="legBtn" type="button" aria-expanded="false" aria-controls="legend"><span>Legend</span><span id="legArrow">Show</span></button><div id="legend" aria-label="Map legend" hidden></div></section>
   </ul></details>
@@ -343,7 +344,7 @@ main{display:flex;flex-direction:column}
 (async function(){
 const $=s=>document.querySelector(s), DAY=864e5;
 /* V stamps data requests so a daily refresh is picked up; ASOF is when the fire data was last rebuilt from WFIGS */
-let V='20261112p',ASOF=Date.UTC(2026,10,3,18);
+let V='20261114a',ASOF=Date.UTC(2026,10,3,18);
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const num=n=>Math.round(n).toLocaleString('en-US');
@@ -369,6 +370,25 @@ fires.forEach((f,i)=>{f.rank=i+1;f.name=title(f.name);f.cost=f.cost||0;f.cpa=f.c
 const sum=(l,k)=>l.reduce((a,f)=>a+(f[k]||0),0);
 const statsFor=l=>({n:l.length,ac:sum(l,'ac'),cost:sum(l,'cost'),nc:l.filter(f=>f.cost).length,pers:sum(l,'pers'),sd:sum(l,'sd'),sm:sum(l,'sm'),dth:sum(l,'dth'),inj:sum(l,'inj'),nsd:l.filter(f=>f.sd||f.sm).length,plus:l.some(f=>f.sdp)});
 let totals=statsFor(fires);
+/* ---- season timeline for the overview maps: each fire's acres and cost as of a day ---- */
+const T0=Date.UTC(2026,0,1),NDAY=Math.max(1,Math.floor((ASOF-T0)/DAY));let TL=null,natT=null,nat=null;
+const tlOf=f=>{if(f._tl)return f._tl;const dd=Math.max(0,Math.floor((f.disc-T0)/DAY));let a=TL&&TL.f[f.id];
+  if(!a){const e=Math.max(dd+1,Math.floor(((f.cont||f.out||f.mod||f.disc)-T0)/DAY));a=[dd,Math.round(f.da||0),0,e,-1,-1]}
+  return f._tl={dd,a}};
+/* the fire as it stood on that day: absent before discovery, its final figures from its last reading on */
+function asOf(f,day){
+  if(day==null)return f;const {dd,a}=tlOf(f);if(day<dd)return null;
+  let i=-1;for(let j=0;j<a.length&&a[j]<=day;j+=3)i=j;
+  if(i<0)i=0;if(i>=a.length-3)return f;
+  const v=Object.create(f);v.ac=a[i+1];v.cost=a[i+2];v.cpa=v.cost&&v.ac>=1?v.cost/v.ac:null;return v}
+const natList=day=>{const o=[];for(const f of fires){if(stateSel&&f.st!==stateSel)continue;const v=asOf(f,day);if(v)o.push(v)}return o};
+function natSeries(){
+  const n=NDAY+1,A=new Float64Array(n),C=new Float64Array(n),N=new Uint16Array(n);
+  for(const f of fires){if(stateSel&&f.st!==stateSel)continue;const {dd,a}=tlOf(f);let j=0,ac=a[1],co=a[2];
+    for(let d=Math.min(dd,NDAY);d<n;d++){while(j+3<a.length&&a[j+3]<=d)j+=3;if(j>=a.length-3){ac=f.ac;co=f.cost}else{ac=a[j+1];co=a[j+2]}A[d]+=ac;C[d]+=co;N[d]++}}
+  return Array.from({length:n},(_,d)=>({t:T0+d*DAY,a:A[d],c:C[d],n:N[d]}))}
+const SER=()=>national?nat:cur.steps;
+fetch('timeline.json?v='+V).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.f){TL=j;fires.forEach(f=>delete f._tl);if(national)showAll(stateSel)}}).catch(()=>{});
 $('#lede').innerHTML=`<b>${num(totals.n)} wildfires</b> in 2026 reported a firefighting cost or burned 500 acres or more. Together they cost an estimated <b>${money(totals.cost)}</b> to fight and burned <b>${(totals.ac/1e6).toFixed(1)} million acres</b>, January 1 to ${asofDay}.`;
 document.querySelectorAll('.nunmapped').forEach(e=>e.textContent=num(fires.filter(f=>f.f==null).length));
 $('#sp-lede').innerHTML=$('#lede').innerHTML;
@@ -539,7 +559,7 @@ function paint(){
   [['ctxCountyL',sat?'#f0f0f0':'#6b6b6b'],['pt',tx]].forEach(([l,col])=>{map.setPaintProperty(l,'text-color',col);map.setPaintProperty(l,'text-halo-color',ha);map.setPaintProperty(l,'text-halo-width',l==='pt'?3:1.6)});
   map.setPaintProperty('ctxRoadL','text-color',['match',['get','c'],0,'#fff',3,'#ffd23f','#111']);map.setPaintProperty('ctxRoad','line-color',['match',['get','c'],0,'#ffd84d',1,'#ffe9a0',2,'#fff',sat?'#d9d4c6':'#8b948f']);map.setPaintProperty('ctxRoad','line-opacity',['match',['get','c'],3,.75,1]);
   legend();
-  if(cur&&!national)drawChart();
+  if(cur||national)drawChart();
   if(national)drawNat();
 }
 paint();
@@ -612,7 +632,7 @@ const TIGER='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/',NHD
 const CTX={tRoad:['ctxRoad','ctxRoadC','ctxRoadL'],tRiver:['ctxRiver','ctxRiverL','ctxLake','ctxLakeL','ctxSea'],tCounty:['ctxCounty','ctxCountyL']},ctxCache=new Map();
 async function ask(url,where,fields,bb,off){
   let out=[],start=0;
-  for(let i=0;i<4;i++){
+  for(let i=0;i<8;i++){
     const p=new URLSearchParams({where,geometry:bb.join(','),geometryType:'esriGeometryEnvelope',inSR:4326,spatialRel:'esriSpatialRelIntersects',outFields:fields,outSR:4326,returnGeometry:'true',maxAllowableOffset:off,geometryPrecision:5,f:'geojson',resultOffset:start,resultRecordCount:1000});
     const r=await fetch(url+'?'+p,{signal:AbortSignal.timeout?AbortSignal.timeout(30000):undefined});if(!r.ok)throw new Error('ctx');const j=await r.json();if(j.error)throw new Error('ctx');
     const g=j.features||[];out=out.concat(g);
@@ -626,25 +646,31 @@ function loadCtx(d){
   const src=map.getSource('ctx');
   const kinds=fs=>{d.kinds=new Set(fs.map(f=>{const p=f.properties;return p.k==='road'?'road'+p.c:p.k==='river'?'ctxRiver':p.k==='lake'?'ctxLake':p.k==='sea'?'ctxSea':'ctxCounty'}));if(cur===d&&!national){ctxVis();legend()}};
   const show=()=>{kinds(d.ctx.fs);if(cur===d&&!national)src.setData({type:'FeatureCollection',features:d.ctx.fs})};
-  const note=()=>{const r=d.ctx.r;if(cur===d&&!national&&r&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean'].filter((n,i)=>!r[i]))];
+  const note=()=>{const r=d.ctx.r;if(cur===d&&!national&&r&&r.some(x=>!x)){const st=$('#lstat'),nm=[...new Set(['Roads','Roads','Roads','Roads','Rivers','Lakes','County lines','Ocean','Rivers','Lakes'].filter((n,i)=>!r[i]))];
     st.hidden=false;st.textContent=nm.join(', ')+' did not load. The outside map service may be slow or busy.'}};
   /* a fetch that is still running, or one that finished cleanly, is reused: a preload for the next fire or an earlier visit */
   if(d.ctx&&d.ctx.ok!==false){show();return d.ctx.done.then(()=>{show();note()})}
   d.ctx={fs:[],ok:null,r:null};
   const b=d.bbox,px=(b[2]-b[0])*.45+.02,py=(b[3]-b[1])*.45+.02,bb=[b[0]-px,b[1]-py,b[2]+px,b[3]+py].map(v=>+v.toFixed(4));
   const span=Math.max(bb[2]-bb[0],bb[3]-bb[1]),km=span*95,off=Math.max(5e-5,span/2500).toFixed(6),so=km>260?6:km>130?5:km>55?4:3,T=TIGER+'Transportation/MapServer/';
-  const jobs=[ask(T+'2/query','1=1','NAME,RTTYP',bb,off),ask(T+'6/query',"RTTYP IN ('I','U','S')",'NAME,RTTYP',bb,off),
+  /* the tilted, turning 3D view sees far past the fire, so highways, county lines, coast and the larger rivers and lakes are
+     fetched for a wide square around it; county roads and small streams stay close in */
+  const cy=(b[1]+b[3])/2,cxm=(b[0]+b[2])/2,sp=Math.max(b[3]-b[1],(b[2]-b[0])*Math.cos(cy*Math.PI/180)),hw=Math.min(Math.max(4*sp,.45),Math.max(2.6,1.3*sp)),hx=hw/Math.cos(cy*Math.PI/180);
+  const wb=[cxm-hx,cy-hw,cxm+hx,cy+hw].map(v=>+v.toFixed(4)),wkm=2*hw*111,woff=Math.max(1e-4,2*hw/2200).toFixed(6),wso=wkm>450?7:wkm>260?6:wkm>130?5:4;
+  const jobs=[ask(T+'2/query','1=1','NAME,RTTYP',wb,woff),ask(T+'6/query',"RTTYP IN ('I','U','S')",'NAME,RTTYP',wb,woff),
     km<110?ask(T+'6/query',"RTTYP = 'C'",'NAME,RTTYP',bb,off):[],km<110?ask(T+'8/query',"RTTYP = 'C'",'NAME,RTTYP',bb,off):[],
-    ask(NHD+'4/query',`GNIS_NAME IS NOT NULL AND GNIS_NAME <> ' ' AND StreamOrde >= ${so}`,'GNIS_NAME,StreamOrde',bb,off),
-    ask(NHD+'10/query',`FTYPE IN ('LakePond','Reservoir') AND AREASQKM >= ${km>130?3:.2}`,'GNIS_NAME',bb,off),
-    ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',bb,off),
-    ask(TIGER+'Hydro/MapServer/1/query',"MTFCC IN ('H2053','H2051')",'MTFCC',bb,off)];
+    ask(NHD+'4/query',`GNIS_NAME IS NOT NULL AND GNIS_NAME <> ' ' AND StreamOrde >= ${so}${wso>so?' AND StreamOrde < '+wso:''}`,'GNIS_NAME,StreamOrde',bb,off),
+    ask(NHD+'10/query',`FTYPE IN ('LakePond','Reservoir') AND AREASQKM >= ${km>130?3:.2} AND AREASQKM < ${wkm>450?25:8}`,'GNIS_NAME',bb,off),
+    ask(TIGER+'State_County/MapServer/1/query','1=1','BASENAME',wb,woff),
+    ask(TIGER+'Hydro/MapServer/1/query',"MTFCC IN ('H2053','H2051')",'MTFCC',wb,woff),
+    wso>so?ask(NHD+'4/query',`GNIS_NAME IS NOT NULL AND GNIS_NAME <> ' ' AND StreamOrde >= ${wso}`,'GNIS_NAME,StreamOrde',wb,woff):[],
+    ask(NHD+'10/query',`FTYPE IN ('LakePond','Reservoir') AND AREASQKM >= ${wkm>450?25:8}`,'GNIS_NAME',wb,woff)];
   /* each layer draws as soon as its own answer arrives, so one slow service does not hold back the rest */
   const fs=d.ctx.fs,conv=[f=>roadF(f,true),f=>roadF(f),f=>roadF(f),f=>roadF(f),
     f=>({type:'Feature',properties:{k:'river',n:(f.properties.GNIS_NAME||'').trim(),o:f.properties.StreamOrde},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'lake'},geometry:f.geometry}),
     f=>({type:'Feature',properties:{k:'county',n:f.properties.BASENAME},geometry:f.geometry}),
-    f=>({type:'Feature',properties:{k:'sea'},geometry:f.geometry})];
+    f=>({type:'Feature',properties:{k:'sea'},geometry:f.geometry})];conv.push(conv[4],conv[5]);
   d.ctx.done=Promise.all(jobs.map((j,i)=>Promise.resolve(j).then(v=>{v.forEach(f=>f.geometry&&fs.push(conv[i](f)));if(v.length)show();return true},()=>false))).then(r=>{d.ctx.r=r;d.ctx.ok=r.every(x=>x);nhdBad=!r[4]&&!r[5];show();note()});
   return d.ctx.done;
 }
@@ -708,12 +734,12 @@ function animateTo(a,b){
   (function tick(n){const k=Math.min(1,(n-t0)/dur);shown={a:from.a+(a-from.a)*k,b:from.b+(b-from.b)*k};paintNums();if(k<1)raf=requestAnimationFrame(tick)})(t0);
 }
 function paintNums(){ $('#v1').innerHTML=num(shown.a)+'<small>ac</small>'; $('#v2').innerHTML=shown.b>0?money(shown.b):NR; $('#v3').innerHTML=shown.b>0&&shown.a>=1?'$'+num(shown.b/shown.a)+'<small>per ac</small>':'<small style="margin:0;font-size:20px">n/a</small>'; }
-function stepMs(){const n=cur.steps.length;return Math.max(560,Math.min(1800,22000/n))/speed}
+function stepMs(){const n=SER().length;return national?Math.max(50,26000/n)/speed:Math.max(560,Math.min(1800,22000/n))/speed}
 
 /* ---- timeline: acres and cost each run from zero to their own peak ---- */
 let X=null,YA=null,YC=null,W=0;
 function drawChart(){
-  const el=$('#chart'),s=cur.steps;W=el.clientWidth||600;const H=72,top=17,bot=54,t0=s[0].t,t1=Math.max(s[s.length-1].t,t0+DAY);
+  const el=$('#chart'),s=SER();W=el.clientWidth||600;const H=72,top=17,bot=54,t0=s[0].t,t1=Math.max(s[s.length-1].t,t0+DAY);
   const amax=Math.max(...s.map(p=>p.a),1),cmax=Math.max(...s.map(p=>p.c||0),1),hasC=s.some(p=>p.c);
   X=t=>6+(W-12)*(t-t0)/(t1-t0);YA=v=>bot-(bot-top)*v/amax;YC=v=>bot-(bot-top)*(v||0)/cmax;
   const line=(k,Y)=>{let d=`M${X(t0)} ${Y(0)}`;s.forEach(p=>{d+=`H${X(p.t).toFixed(1)}V${Y(p[k]).toFixed(1)}`});return d+`H${X(t1).toFixed(1)}`};
@@ -722,7 +748,7 @@ function drawChart(){
   el.innerHTML=`<line x1="6" x2="${W-6}" y1="${bot}" y2="${bot}" stroke="${c('--rule')}"/>
    <path d="${fd}V${bot}H${X(t0)}Z" fill="${c('--fire')}" opacity=".35"/>${hasC?`<path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--panel')}"/><path d="${cd}V${bot}H${X(t0)}Z" fill="${c('--cost')}" opacity=".32"/>`:''}
    <path d="${fd}" fill="none" stroke="${c('--fireline')}" stroke-width="2" stroke-linejoin="round"/>${hasC?`<path d="${cd}" fill="none" stroke="${c('--costline')}" stroke-width="2.4" stroke-linejoin="round"/>`:''}
-   ${s.map(p=>`<line x1="${X(p.t).toFixed(1)}" x2="${X(p.t).toFixed(1)}" y1="${bot}" y2="${bot+4}" stroke="${c('--ink3')}"/>`).join('')}
+   ${(national?Array.from({length:12},(_,m)=>({t:Date.UTC(2026,m,1)})).filter(p=>p.t<=t1):s).map(p=>`<line x1="${X(p.t).toFixed(1)}" x2="${X(p.t).toFixed(1)}" y1="${bot}" y2="${bot+4}" stroke="${c('--ink3')}"/>`).join('')}
    <text x="6" y="${H-2}" font-size="12" fill="${c('--ink3')}" font-family="${mono}">${date(t0)}</text>
    <text x="${W-6}" y="${H-2}" font-size="12" text-anchor="end" fill="${c('--ink3')}" font-family="${mono}">${date(s[s.length-1].t)}</text>
    <rect x="6" y="3" width="14" height="4" fill="${c('--costline')}"/><text x="24" y="10" font-size="12" fill="${c('--ink2')}" font-family="Oswald,Arial Narrow,sans-serif">${hasC?(nar?`Cost to ${money(cmax)}`:`Cost to date, $0 to ${money(cmax)}`):'Cost not reported'}</text>
@@ -730,24 +756,36 @@ function drawChart(){
    <line id="head" y1="${top-3}" y2="${bot+4}" stroke="${c('--ink')}" stroke-width="2"/><circle id="dotA" r="4.5" fill="${c('--fireline')}" stroke="${c('--panel')}" stroke-width="2"/><circle id="dot" r="4.5" fill="${c('--costline')}" stroke="${c('--panel')}" stroke-width="2"/>`;
   head();
 }
-function head(){const p=cur.steps[step],x=X(p.t).toFixed(1),h=$('#head'),o=$('#dot'),a=$('#dotA');if(!h)return;h.setAttribute('x1',x);h.setAttribute('x2',x);o.setAttribute('cx',x);o.setAttribute('cy',YC(p.c).toFixed(1));a.setAttribute('cx',x);a.setAttribute('cy',YA(p.a).toFixed(1))}
-function nearest(clientX){const r=$('#tl').getBoundingClientRect(),x=(clientX-r.left);let b=0,bd=1e9;cur.steps.forEach((p,i)=>{const d=Math.abs(X(p.t)-x);if(d<bd){bd=d;b=i}});return b}
+function head(){const p=SER()[step],x=X(p.t).toFixed(1),h=$('#head'),o=$('#dot'),a=$('#dotA');if(!h)return;h.setAttribute('x1',x);h.setAttribute('x2',x);o.setAttribute('cx',x);o.setAttribute('cy',YC(p.c).toFixed(1));a.setAttribute('cx',x);a.setAttribute('cy',YA(p.a).toFixed(1))}
+function nearest(clientX){const r=$('#tl').getBoundingClientRect(),x=(clientX-r.left);let b=0,bd=1e9;SER().forEach((p,i)=>{const d=Math.abs(X(p.t)-x);if(d<bd){bd=d;b=i}});return b}
 const tl=$('#tl');let drag=false;
-tl.addEventListener('pointerdown',e=>{if(national)return;drag=true;tl.setPointerCapture(e.pointerId);stop();setStep(nearest(e.clientX))});
-tl.addEventListener('pointermove',e=>{if(national||!cur)return;const i=nearest(e.clientX),p=cur.steps[i],t=$('#tip');t.hidden=false;t.textContent=`${date(p.t)}: ${money(p.c)||'cost not reported'}, ${num(p.a)} ac`;const r=tl.getBoundingClientRect();t.style.left=Math.max(120,Math.min(r.width-120,X(p.t)))+'px';if(drag)setStep(i)});
+tl.addEventListener('pointerdown',e=>{drag=true;tl.setPointerCapture(e.pointerId);stop();setStep(nearest(e.clientX))});
+tl.addEventListener('pointermove',e=>{if(!national&&!cur)return;const i=nearest(e.clientX),p=SER()[i],t=$('#tip');t.hidden=false;t.textContent=national?`${date(p.t)}: ${num(p.n)} fires, ${money(p.c)||'$0'}, ${num(p.a)} ac`:`${date(p.t)}: ${money(p.c)||'cost not reported'}, ${num(p.a)} ac`;const r=tl.getBoundingClientRect();t.style.left=Math.max(120,Math.min(r.width-120,X(p.t)))+'px';if(drag)setStep(i)});
 tl.addEventListener('pointerup',()=>drag=false);tl.addEventListener('pointerleave',()=>$('#tip').hidden=true);
 $('#scrub').addEventListener('input',e=>{stop();setStep(+e.target.value)});
 $('#speed').addEventListener('click',()=>{speed=speed===1?2:speed===2?4:1;$('#speed').textContent=speed+'×';if(playing){clearInterval(timer);run()}});
 let holdT=0;
-function run(){timer=setInterval(()=>{const n=cur.steps.length;if(step>=n-5||n<=8)preloadNext();if(step>=n-1){clearInterval(timer);holdT=setTimeout(()=>{if(playing)tourNext()},5000);return}setStep(step+1)},stepMs())}
+function run(){if(national){timer=setInterval(()=>{if(step>=nat.length-1){stop();return}setStep(step+1)},stepMs());return}
+  timer=setInterval(()=>{const n=cur.steps.length;if(step>=n-5||n<=8)preloadNext();if(step>=n-1){clearInterval(timer);holdT=setTimeout(()=>{if(playing)tourNext()},5000);return}setStep(step+1)},stepMs())}
 function tourNext(){const l=listNow(),i=l.findIndex(f=>f.id===cur.meta.id),nx=l[(i+1)%l.length];
   if(!nx||nx.id===cur.meta.id){setStep(0);run();return}
   go(nx.id,'tour')}
 function stop(){playing=false;clearInterval(timer);clearTimeout(holdT);$('#play').innerHTML=ICON.play;$('#play').setAttribute('aria-label','Play')}
-function start(){if(cur.steps.length<2)return;if(step>=cur.steps.length-1)setStep(0);playing=true;$('#play').innerHTML=ICON.pause;$('#play').setAttribute('aria-label','Pause');run()}
+function start(){const n=SER().length;if(n<2)return;if(step>=n-1)setStep(0);playing=true;$('#play').innerHTML=ICON.pause;$('#play').setAttribute('aria-label','Pause');run()}
 $('#play').addEventListener('click',()=>playing?stop():start());
 
+function natStep(i){
+  step=i;natT=i>=nat.length-1?null:i;const p=nat[i],l=natList(natT),t=statsFor(l),st=stateSel;
+  $('#scrub').value=i;head();
+  $('#v0').textContent=num(t.n);$('#x0').textContent=`Jan 1 to ${date(p.t)}`;
+  animateTo(t.ac,t.cost);
+  $('#x1').textContent=`${num(t.nc)} report a cost`;
+  $('#x2').textContent=t.cost?`${(100*t.cost/totals.cost).toFixed(st?1:0)}% of the season's national total`:' ';
+  $('#toll').innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
+  drawNat();
+}
 function setStep(i){
+  if(national)return natStep(i);
   step=i;const s=cur.steps[i],m=cur.meta;
   ['per','perc','perl'].forEach(l=>map.setFilter(l,['==',['get','g'],s.g]));
   /* the red edge marks only where the perimeter moved since the step before */
@@ -929,7 +967,7 @@ function stateRoster(q,s){
 }
 const CAUSE={Human:'#c8321f',Natural:'#2e7fb8',Undetermined:'#9a8f80'};
 const SIZE={cause:'Estimated cost',cost:'Estimated cost',ac:'Fire acres',pers:'Peak personnel',cnt:'Fires',sd:'Structures destroyed',dth:'Deaths',inj:'Injuries'},TOLL=k=>k==='sd'||k==='dth'||k==='inj';
-let natR=null;
+let natR=null,natBg={};
 const measure=f=>sizeBy==='cnt'?1:f[sizeBy==='cause'?'cost':sizeBy]||0;
 const fmtM=v=>sizeBy==='cost'||sizeBy==='cause'?money(v):sizeBy==='pers'||TOLL(sizeBy)?num(v):num(v)+' ac';
 function natKey(){
@@ -937,25 +975,26 @@ function natKey(){
   const m=natR.max,vals=[...new Set([m,m/4,m/16].map(v=>{const p=10**Math.floor(Math.log10(v)),r=Math.round(v/p)*p;return TOLL(sizeBy)?Math.round(r):r}).filter(v=>v>=(TOLL(sizeBy)?1:0)))];
   if(TOLL(sizeBy)&&!natR.any)return `<div>No ${SIZE[sizeBy].toLowerCase()} were found in reports for these fires.</div>`;
   const hint=sizeBy==='cost'||sizeBy==='cause'?'<div>Small dashed circles report no cost.</div>':TOLL(sizeBy)?'<div>Only fires with a reported figure are drawn.</div>':'';
-  const l=fires.filter(f=>!stateSel||f.st===stateSel),cz=sizeBy==='cause'?`<div class="lh" style="border:0;margin:0;padding:0">Ignition cause</div>${Object.entries(CAUSE).map(([k,c])=>{const g=l.filter(f=>f.c1===k);return `<div><span class="sw" style="background:${c};border-color:${c};border-radius:50%;width:13px;height:13px"></span>${k}: ${num(g.length)} fires, ${money(g.reduce((a,f)=>a+f.cost,0))||'$0'}</div>`}).join('')}`:'';
+  const l=natList(natT),cz=sizeBy==='cause'?`<div class="lh" style="border:0;margin:0;padding:0">Ignition cause</div>${Object.entries(CAUSE).map(([k,c])=>{const g=l.filter(f=>f.c1===k);return `<div><span class="sw" style="background:${c};border-color:${c};border-radius:50%;width:13px;height:13px"></span>${k}: ${num(g.length)} fires, ${money(g.reduce((a,f)=>a+f.cost,0))||'$0'}</div>`}).join('')}`:'';
   return `${cz}<div class="lh" style="border:0;margin:0;padding:0">${SIZE[sizeBy]}</div><div class="key${sizeBy==='cause'?' open':''}">${vals.map(v=>{const d=2*natR.r(v);return `<span><i style="width:${d}px;height:${d}px"></i>${fmtM(v)}</span>`}).join('')}</div>${hint}`;
 }
 function drawNat(){
   const el=$('#nat'),box=el.getBoundingClientRect(),W=box.width||800,H=box.height||600,narrow=innerWidth<=820;
-  const ext=[[14,narrow?14:96],[W-14,H-(narrow?14:200)]];
+  const ext=[[14,narrow?14:96],[W-14,H-(narrow?14:262)]];
   const feat=stateSel&&STATES.features.find(f=>f.properties.name===ST[stateSel]);
   let proj;
   if(feat){const [[x0,y0],[x1,y1]]=d3.geoBounds(feat);proj=d3.geoConicEqualArea().parallels([y0+(y1-y0)/6,y1-(y1-y0)/6]).rotate([-(x0+x1)/2,0]).center([0,(y0+y1)/2]).fitExtent(ext,feat)}
   else proj=d3.geoAlbersUsa().fitExtent(ext,{type:'FeatureCollection',features:STATES.features.filter(f=>!/Puerto|Guam|Samoa|Virgin|Mariana/.test(f.properties.name))});
-  const path=d3.geoPath(proj),list=fires.filter(f=>!stateSel||f.st===stateSel);
-  const vals=list.map(measure),max=Math.max(...vals,1),rmax=narrow?(feat?26:17):(feat?40:32);
+  const path=d3.geoPath(proj),list=natList(natT);
+  const vals=natList(null).map(measure),max=Math.max(...vals,1),rmax=narrow?(feat?26:17):(feat?40:32);
   natR={max,any:vals.some(v=>v>0),r:v=>Math.max(TOLL(sizeBy)?4:2.2,Math.sqrt(v/max)*rmax)};el.dataset.mode=sizeBy;
   const dots=list.map(f=>{const p=proj([f.lon,f.lat]),v=measure(f);return p&&(!TOLL(sizeBy)||v>0)&&{f,p,v}}).filter(Boolean).sort((a,b)=>b.v-a.v);
   const nst=Object.fromEntries(Object.entries(ST).map(([k,v])=>[v,k])),money$=sizeBy==='cost'||sizeBy==='cause';
   el.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  el.innerHTML=STATES.features.map(f=>{const d=path(f);if(!d)return '';const a=nst[f.properties.name],on=feat===f;return `<path class="s${on?' on':feat?' off':''}" d="${d}" data-st="${a||''}"><title>${esc(f.properties.name)}</title></path>`}).join('')
-   +(feat?`<path class="co" d="${path(base.co)||''}"/>`:'')
-   +dots.map(({f,p,v})=>{const nr=money$&&!f.cost,r=sizeBy==='cnt'?(feat?6:3.2):nr?2.2:natR.r(v);const co=sizeBy==='cause'&&!nr?` style="fill:${CAUSE[f.c1]||'#9a8f80'};fill-opacity:.7;stroke:#fff;stroke-width:.8"`:'';return `<circle${co} class="${nr?'nr':''}" data-id="${f.id}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(f.name)}, ${esc(f.st)}: ${money(f.cost)||'cost not reported'}, ${num(f.ac)} ac, cause: ${esc(f.c1||'not reported')}${tollShort(f)?', '+tollShort(f):''}</title></circle>`}).join('');
+  const key=[W,H,stateSel,narrow].join();
+  if(natBg.key!==key)natBg={key,h:STATES.features.map(f=>{const d=path(f);if(!d)return '';const a=nst[f.properties.name],on=feat===f;return `<path class="s${on?' on':feat?' off':''}" d="${d}" data-st="${a||''}"><title>${esc(f.properties.name)}</title></path>`}).join('')
+   +(feat?`<path class="co" d="${path(base.co)||''}"/>`:'')};
+  el.innerHTML=natBg.h+dots.map(({f,p,v})=>{const nr=money$&&!f.cost,r=sizeBy==='cnt'?(feat?6:3.2):nr?2.2:natR.r(v);const co=sizeBy==='cause'&&!nr?` style="fill:${CAUSE[f.c1]||'#9a8f80'};fill-opacity:.7;stroke:#fff;stroke-width:.8"`:'';return `<circle${co} class="${nr?'nr':''}" data-id="${f.id}" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(f.name)}, ${esc(f.st)}: ${money(f.cost)||'cost not reported'}, ${num(f.ac)} ac, cause: ${esc(f.c1||'not reported')}${tollShort(f)?', '+tollShort(f):''}</title></circle>`}).join('');
   legend();
 }
 $('#nat').addEventListener('click',e=>{const t=e.target;if(t.dataset.id)go(t.dataset.id,true);else if(t.dataset.st&&fires.some(f=>f.st===t.dataset.st))showAll(t.dataset.st)});
@@ -967,17 +1006,17 @@ function showAll(st){
   const l=fires.filter(f=>!st||f.st===st),t=statsFor(l),top=[...l].sort((a,b)=>b.cost-a.cost)[0];
   $('#fname').textContent=st?ST[st]||st:'All fires by state';$('#fmeta').textContent=st?`${num(t.n)} fire${t.n>1?'s':''}. Select a circle to open a fire.`:'Select a state or a circle.';
   ['#fwarn','#fcause','#fdmg'].forEach(s=>$(s).hidden=true);$('#ffacts').textContent=top&&top.cost?`Costliest: ${top.name}${st?'':', '+top.st}, ${money(top.cost)}`:'';
-  $('#ctl').hidden=true;$('#tl').hidden=true;
-  statsHTML([{k:'Fires',v:num(t.n),x:`${num(t.nc)} report a cost`},{k:'Fire acres',v:num(t.ac)+'<small>ac</small>'},{k:'Estimated cost',v:t.nc?money(t.cost):NR,hero:1,x:t.cost?`${(100*t.cost/totals.cost).toFixed(st?1:0)}% of the national total`:' '},{k:'Cost per acre',v:t.cost&&t.ac>=1?'$'+num(t.cost/t.ac)+'<small>per ac</small>':'n/a',x:'All cost over all acres'}]);
+  nat=natSeries();step=nat.length-1;natT=null;$('#ctl').hidden=false;$('#tl').hidden=false;$('#scrub').max=nat.length-1;$('#scrub').value=step;
+  statsHTML([{k:'Fires',v:num(t.n),x:`Jan 1 to ${date(nat[step].t)}`},{k:'Fire acres',v:num(t.ac)+'<small>ac</small>',x:`${num(t.nc)} report a cost`},{k:'Estimated cost',v:t.nc?money(t.cost):NR,hero:1,x:t.cost?`${(100*t.cost/totals.cost).toFixed(st?1:0)}% of the national total`:' '},{k:'Cost per acre',v:t.cost&&t.ac>=1?'$'+num(t.cost/t.ac)+'<small>per ac</small>':'n/a',x:'All cost over all acres'}]);
   const tl=$('#toll');tl.hidden=false;tl.innerHTML=tollHTML(t,st?'in '+(ST[st]||st):'nationwide');
-  applyLayers();drawNat();
+  shown={a:t.ac,b:t.cost};applyLayers();drawNat();drawChart();
 }
 function route(){const h=location.hash.slice(1);if(h==='all-fires'){started=true;showAll()}else if(/^state-[A-Z]{2}$/.test(h)&&ST[h.slice(6)]){started=true;showAll(h.slice(6))}else{const first=!started;started=true;go(fires.some(f=>f.id===h)?h:fires[0].id,first,first)}}
 let started=false;
 addEventListener('hashchange',route);
 $('#prev').addEventListener('click',()=>cur&&cur.meta.rank>1&&go(fires[cur.meta.rank-2].id,false));
 $('#next').addEventListener('click',()=>cur&&cur.meta.rank<fires.length&&go(fires[cur.meta.rank].id,false));
-addEventListener('resize',()=>{if(national)drawNat();else if(cur)drawChart()});
+addEventListener('resize',()=>{if(national){drawNat();drawChart()}else if(cur)drawChart()});
 if(!LIVE){document.querySelector('input[name=base][value=plain]').checked=true;$('#own').checked=false;document.querySelectorAll('#layers input').forEach(i=>i.disabled=true);$('#lstat').textContent='Preview: relief, imagery, ownership, roads, rivers and county lines load only on your website.'}
 renderRoster();$('#play').innerHTML=ICON.play;route();
 })();

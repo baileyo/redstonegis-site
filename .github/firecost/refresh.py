@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rebuild the data behind redstonegis.com/FireCost from the live WFIGS services.
 
-Writes fires.json, asof.json and data/*.json into the output folder given on the command line.
+Writes fires.json, timeline.json, asof.json and data/*.json into the output folder given on the command line.
 Fires: 2026 wildfires with a reported cost above zero or 500 acres or more.
 Stops with an error, writing nothing useful, if the services return too little to trust.
 """
@@ -239,6 +239,7 @@ def main():
     shutil.rmtree(OUT, ignore_errors=True)
     os.makedirs(data_dir)
     out, cur, size, nb = [], {}, 0, 0
+    tl, day0 = {}, 1767225600000  # 2026-01-01 UTC
 
     def flush():
         nonlocal cur, size, nb
@@ -253,6 +254,16 @@ def main():
         if d:
             text = json.dumps(d, separators=(',', ':'))
             f['n'], f['ng'] = len(d['steps']), len(d['per'])
+            # season timeline for the overview map: day number, acres, cost at each change, last reading of a day wins
+            byday = {}
+            for st in d['steps']:
+                byday[max(0, int((st['t'] - day0) // DAY))] = (int(round(st['a'] or 0)), int(round(st['c'] or 0)))
+            flat, last = [], None
+            for dd in sorted(byday):
+                if byday[dd] != last:
+                    flat += [dd, byday[dd][0], byday[dd][1]]
+                    last = byday[dd]
+            tl[f['id']] = flat
             if len(text) > 150e3:
                 open(os.path.join(data_dir, f['id'] + '.json'), 'w').write(text)
                 f['f'] = -1
@@ -265,6 +276,7 @@ def main():
         out.append(f)
     flush()
     json.dump(out, open(os.path.join(OUT, 'fires.json'), 'w'), separators=(',', ':'))
+    json.dump(dict(t0=day0, f=tl), open(os.path.join(OUT, 'timeline.json'), 'w'), separators=(',', ':'))
     json.dump(dict(t=int(time.time() * 1000), fires=len(out), mapped=len(raw), cost=total), open(os.path.join(OUT, 'asof.json'), 'w'))
     mb = sum(os.path.getsize(os.path.join(data_dir, x)) for x in os.listdir(data_dir)) / 1e6
     top = out[0]
