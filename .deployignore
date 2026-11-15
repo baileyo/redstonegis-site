@@ -4,9 +4,9 @@
 .deployignore
 README.md
 
-# Large folders uploaded by hand — the deploy never touches these
-GLO/d/
-GLO/n/
+# GLO/d/ and GLO/n/ (map tiles and name index) are deployed from the repo for files
+# committed here; the rest of those folders was uploaded by hand and stays on the server
+# untouched, because the deploy never deletes.
 
 # Cost of Fire data — rebuilt daily by the firecost-refresh workflow and
 # uploaded straight to the server, so the deploy must not overwrite it
