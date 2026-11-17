@@ -724,6 +724,21 @@ td.o{color:#8f2d06} td.i{color:#124a33}
 .cpw-ctl input[type=search],.cpw-ctl select{font:inherit;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink)}
 .cpw-ctl .chk{display:flex;gap:6px;align-items:center;cursor:pointer}
 .cpw-wrap{background:#fff;border:1px solid var(--rule)}
+.cpw-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.cpw-card{background:#fff;border:1px solid var(--rule);border-top:5px solid;padding:10px 14px}
+.cpw-card.in{border-top-color:var(--in)} .cpw-card.out{border-top-color:var(--out)}
+.cpw-card h3{font:600 16px/1.2 var(--display);letter-spacing:.02em;margin:0 0 8px;text-wrap:balance}
+.cpw-card ul{margin:0;padding:0;list-style:none;display:grid;gap:5px;font-size:13.5px}
+.cpw-card li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;border-bottom:1px solid var(--rule);padding-bottom:4px}
+.cpw-card li b{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.cpw-card.in li b{color:#124a33} .cpw-card.out li b{color:#8f2d06}
+.cpw-h3{font:600 19px/1.15 var(--display);letter-spacing:.02em;text-transform:uppercase;margin:8px 0 0;color:var(--accent)}
+#cpw-net{max-width:80ch;font-size:14px;color:var(--ink);margin:0}
+#cpw-rare{font-size:13.5px}
+#cpw-rare th,#cpw-rare td{text-align:left;white-space:normal;vertical-align:top}
+#cpw-rare td:first-child{font-weight:600;white-space:nowrap}
+.chip{display:inline-block;padding:1px 7px;border-radius:10px;font-size:12px;font-weight:600;white-space:nowrap;margin:0 4px 3px 0}
+.chip.fed{background:#fde2e2;color:#8a1c1c} .chip.st{background:#fdecc8;color:#7a4a00} .chip.sc{background:#e3ecf7;color:#1f4a7a}
 #cpw-t{font-size:13.5px}
 #cpw-t thead th{position:sticky;top:0;background:#fff;z-index:1;border-bottom:2px solid var(--ink);white-space:nowrap}
 #cpw-t thead tr.grp th{text-align:center;font:600 15px/1.1 var(--display);letter-spacing:.03em;text-transform:uppercase;border-bottom:0;padding-top:8px}
@@ -818,6 +833,15 @@ summary{cursor:pointer;font-weight:600}
   <div class="cpw-in">
     <h2 class="cpw-h">CPW species layers on the exchange lands</h2>
     <p id="cpw-lede"></p>
+    <div class="cpw-sum">
+      <div class="cpw-card in"><h3>Mapped on the land coming in, little or none on the land going out</h3><ul id="cpw-gain"></ul></div>
+      <div class="cpw-card out"><h3>Mapped on the land going out, none on the land coming in</h3><ul id="cpw-loss"></ul></div>
+    </div>
+    <p class="note" id="cpw-net"></p>
+    <h3 class="cpw-h3">Listed and special-status species</h3>
+    <div class="tablewrap cpw-wrap"><table id="cpw-rare"><thead><tr><th>Species</th><th>Status</th><th>Where it shows up</th><th>How strong the signal is</th></tr></thead><tbody></tbody></table></div>
+    <p class="note">Status is from the Colorado Parks and Wildlife <a href="https://cpw.state.co.us/threatened-and-endangered-wildlife">threatened and endangered list</a>, read in November 2026. The table covers the listed species matched to the layers below; it is not a full status check of every species in the table, and BLM and Forest Service sensitive-species lists were not consulted.</p>
+    <h3 class="cpw-h3">Every intersecting layer</h3>
     <div class="cpw-ctl">
       <label for="cpw-q">Find a layer</label><input type="search" id="cpw-q" placeholder="elk, bat, winter range…">
       <label for="cpw-g">Group</label><select id="cpw-g"><option value="">All groups</option></select>
@@ -1108,6 +1132,28 @@ summary{cursor:pointer;font-weight:600}
   const S=D.cpw,cs={key:null,dir:1};
   $('cpw-lede').innerHTML=`All ${S.total} layers in the CPWSpeciesData service (updated May 7, 2026) were intersected with the reconstructed exchange parcels. ${S.hit} layers touch at least one parcel; the rest do not and are left out. Acres are planar areas computed in <b>EPSG:26913, NAD83 / UTM zone 13N</b>, the coordinate system the geometry was requested in. Percent is the share of that side's ${fmt(S.A.in)} or ${fmt(S.A.out)} acres.`;
   $('cpw-foot').textContent='Overall, breeding and historic range layers are coarse statewide polygons, so 100% there says the parcel lies inside the mapped range, not that the species uses every acre. Migration pattern layers are lines and are reported as miles inside the parcels. Parcel shapes are reconstructed from the BLM map of February 23, 2026, so acreages carry that uncertainty. Federal land out is the main parcel, including the southwest corner, plus the isolated 40 acres.';
+  {
+    const by=(id,sub)=>S.rows.find(r=>r.id===id&&(sub?r.sub&&r.n.startsWith(sub):!r.sub))||{in:0,out:0,inp:0,outp:0};
+    const ac=v=>fmt(v)+' ac',pc=v=>v.toFixed(v>=99.95?0:1)+'%';
+    const li=(name,val)=>`<li><span>${name}</span><b>${val}</b></li>`;
+    const g=(id,name)=>{const r=by(id);return li(name,`${ac(r.in)} (${pc(r.inp)})`+(r.out?` vs ${ac(r.out)} (${pc(r.outp)})`:''))};
+    const l=(id,name)=>{const r=by(id);return li(name,r.t==='L'?r.out.toFixed(2)+' mi':`${ac(r.out)} (${pc(r.outp)})`)};
+    $('cpw-gain').innerHTML=g(21,'Black bear summer concentration')+g(64,'Greater sage-grouse priority and general habitat')+g(37,'Elk production (calving) area')+g(63,'Greater sage-grouse linkages')+g(65,'Greater sage-grouse overall range')+g(62,'Greater sage-grouse winter range');
+    $('cpw-loss').innerHTML=l(43,'Elk winter range')+l(105,'Mule deer winter range')+l(41,'Elk severe winter range')+l(6,'Bald eagle winter range and winter forage')+l(96,'Mule deer migration patterns')+l(33,'Elk migration patterns')+l(270,'Cutthroat trout watershed');
+    const e=by(37),w=by(43),d=by(105),sg=by(64);
+    $('cpw-net').textContent=`In short, the public would give up big-game winter range and take on summer and calving ground plus sage-grouse habitat. The land going out has ${ac(w.out)} of elk winter range and ${ac(d.out)} of mule deer winter range, and the land coming in has none of either. The land coming in is entirely elk production area, against ${ac(e.out)} on the land going out, and carries ${ac(sg.in)} of mapped greater sage-grouse habitat where the land going out has none. Both sides sit fully inside black bear fall concentration, elk summer range and mule deer summer range, so those do not change.`;
+    const ph=by(64,'Priority'),gh=by(64,'General'),lc=by(64,'Linkage'),be=by(7),bo=by(231),ly=by(79),gu=by(67),ct=by(270);
+    const chip=(c,t)=>`<span class="chip ${c}">${t}</span>`;
+    const rare=[
+      ['Greater sage-grouse',chip('sc','State special concern'),`Land coming in only: ${ac(sg.in)} of mapped habitat for the Parachute-Piceance-Roan population (${ac(ph.in)} priority, ${ac(gh.in)} general, ${ac(lc.in)} linkage).`,'Strong. These are habitat management polygons, not a broad range, and nothing comparable is mapped on the land going out.'],
+      ['Bald eagle',chip('sc','State special concern'),`Land going out only: ${ac(be.out)} (${pc(be.outp)}) of winter range and winter forage.`,'Moderate. A mapped seasonal use area covering a small part of the parcel.'],
+      ['Cutthroat trout',chip('sc','State special concern (Colorado River cutthroat)'),`Land going out only: ${ac(ct.out)} (${pc(ct.outp)}) inside the Mill Creek-Cattle Creek watershed, where CPW records cutthroat presence.`,'Weak. The layer flags a whole watershed, not a stream reach on the parcel, and does not name the subspecies.'],
+      ['Burrowing owl',chip('st','State threatened'),`Land coming in only: ${pc(bo.inp)} inside the breeding range.`,'Weak. A coarse statewide range polygon; it says the ranches lie inside the range, not that owls nest there.'],
+      ['Canada lynx',chip('fed','Federally threatened')+chip('st','State endangered'),`Land going out: ${pc(ly.outp)} inside the lynx habitat layer, all of it in the class CPW rates unlikely.`,'Very weak. CPW describes that class as poor habitat with a low chance of sustained occupancy.'],
+      ['Gunnison sage-grouse',chip('fed','Federally threatened')+chip('sc','State special concern'),`Land going out: ${pc(gu.outp)} inside historic habitat.`,'Very weak. Historic range only; no current habitat layer touches either side.'],
+    ];
+    $('cpw-rare').tBodies[0].innerHTML=rare.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('');
+  }
   [...new Set(S.rows.map(r=>r.g))].sort().forEach(g=>{const o=document.createElement('option');o.value=o.textContent=g;$('cpw-g').appendChild(o)});
   const num=(v,t)=>v?(v.toLocaleString('en-US',{minimumFractionDigits:t==='L'?2:1,maximumFractionDigits:t==='L'?2:1})+(t==='L'?' mi':'')):'–';
   function drawCpw(){
