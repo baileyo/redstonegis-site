@@ -788,10 +788,15 @@ summary{cursor:pointer;font-weight:600}
 .lbl.soft{color:#3f5a3a;font-weight:500;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase}
 .lbl.cty{color:#4a4a4a;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
 .lbl.out{color:#8f2d06} .lbl.in{color:#124a33} .lbl.gmu{color:#5b2f8f}
-.lbl.riv,.lbl.crk{color:#1f5d8f;font:italic 500 12.5px/1 var(--body);letter-spacing:0}
+.lbl.riv,.lbl.crk,.lbl.wat{color:#1f5d8f;font:italic 500 12.5px/1 var(--body);letter-spacing:0}
 .lbl.crk{font-size:11.5px}
-.lbl.hwy,.lbl.cr{font:600 11px/1 var(--body);letter-spacing:0;color:#fff;background:#7a2e1d;padding:2px 5px;border-radius:3px;text-shadow:none;border:1px solid #fff}
-.lbl.cr{background:#fff;color:#5a4632;border-color:#5a4632;font-weight:500}
+.lbl.shield{line-height:0;filter:drop-shadow(0 0 1.5px rgba(0,0,0,.45))}
+.lsvg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.lt{font-family:var(--body);paint-order:stroke;stroke:#fff;stroke-width:3.2px;stroke-linejoin:round}
+.lt.riv{font-size:13px;font-style:italic;font-weight:500;fill:#1f5d8f}
+.lt.crk{font-size:12px;font-style:italic;font-weight:500;fill:#1f5d8f}
+.lt.cr{font-size:11.5px;font-weight:600;fill:#4a3826}
+.lt.lr{font-size:11px;font-weight:500;fill:#5c5146}
 .on-imagery .lbl.soft,.on-imagery .lbl.cty{color:#1d2b1a}
 .leaflet-container{font:inherit;background:var(--paper)}
 .leaflet-popup-content{margin:10px 12px;font:400 13.5px/1.4 var(--body)}
@@ -992,8 +997,11 @@ summary{cursor:pointer;font-weight:600}
     G.county=L.geoJSON(fc(D.county),{renderer:R.lines,pane:'lines',interactive:false,style:{color:'#3d3d3d',weight:1.6,dashArray:'10 4 2 4'}});
     G.gmu=L.geoJSON(fc(D.gmu),{renderer:R.lines,pane:'lines',interactive:false,style:{color:'#6b3fa0',weight:1.6,opacity:.8}});
     const cr=n=>/^Co (Rd|Hwy) /.test(n);
-    DET.roads=L.geoJSON(fc(D.roads),{renderer:R.roads,pane:'roads',style:f=>({color:cr(f.properties.n)?'#5a4632':'#8a7a68',weight:cr(f.properties.n)?1.6:.8}),onEachFeature:(f,l)=>tip(l,rn(f.properties.n))});
-    G.roads=L.layerGroup([L.geoJSON(fc(D.hwy),{renderer:R.roads,pane:'roads',style:f=>({color:/^I- ?70/.test(f.properties.n)?'#b91c1c':'#7a2e1d',weight:/^I- ?70/.test(f.properties.n)?3:2.2}),onEachFeature:(f,l)=>tip(l,rn(f.properties.n))})]);
+    DET.roads=L.geoJSON(fc(D.roads),{renderer:R.roads,pane:'roads',style:f=>f.properties.c==='cr'?{color:'#5a4632',weight:1.8}:{color:'#8a7a68',weight:.9,dashArray:'5 3'},onEachFeature:(f,l)=>tip(l,rn(f.properties.n))});
+    const HW={st:{color:'#d97706',weight:2.6},us:{color:'#b91c1c',weight:3.2},i:{color:'#1d4ed8',weight:5}};
+    const hwOrd=['st','us','i'].map(c=>L.geoJSON(fc(D.hwy.filter(f=>f.properties.c===c)),{renderer:R.roads,pane:'roads',style:HW[c],onEachFeature:(f,l)=>tip(l,rn(f.properties.n))}));
+    hwOrd.push(L.geoJSON(fc(D.hwy.filter(f=>f.properties.c==='i')),{renderer:R.roads,pane:'roads',interactive:false,style:{color:'#fff',weight:1.3}}));
+    G.roads=L.layerGroup(hwOrd);
     G.obr=L.geoJSON(fc(D.obr),{renderer:R.obr,pane:'obr',style:{color:'#30363a',weight:2,dashArray:'6 4',fillColor:'#ffffff',fillOpacity:.45},onEachFeature:(f,l)=>l.bindPopup('<b>'+f.properties.name+'</b>Ranch parcels as drawn on the BLM map, about '+fmt(f.properties.ac)+' acres. Approximate trace.')});
     G.parcels=L.geoJSON(fc(D.parcels),{renderer:R.parcels,pane:'parcels',onEachFeature:(f,l)=>{const p=f.properties,e=D.elev[p.name];l.bindPopup('<b>'+p.name+'</b>'+p.sub+'.<br>About '+fmt(p.ac)+' acres on this map.'+(e?'<br>Elevation '+fmt(e.lo*3.28084)+' to '+fmt(e.hi*3.28084)+' ft; mean slope '+Math.round(e.slope)+'°.':''));tip(l,p.name)}});
     // rasters
@@ -1011,25 +1019,71 @@ summary{cursor:pointer;font-weight:600}
       [39.676,-107.9925,'Timber Valley Ranch','big in',0,12,99],[39.6575,-107.962,'Cow Creek Ranch','big in',0,12,99],
       [39.681,-107.968,'BLM block cited as about 8,900 acres','',0.5,12.25,99],[39.535,-107.185,'Out of Bounds Ranch','',0.5,12,99],
       [39.52,-107.152,'Exchange land out','big out',0,0,11.4],[39.70,-107.975,'Exchange land in','big in',0,0,11.9],
-      [39.60,-108.02,'Roan Plateau','soft',5,0,11.9],[39.4925,-107.158,'Consolidated Reservoir','riv',1,13.25,99]];
+      [39.60,-108.02,'Roan Plateau','soft',5,0,11.9],[39.4925,-107.158,'Consolidated Reservoir','wat',1,13.25,99]];
     const ALL=FIX.concat(D.labels).sort((a,b)=>a[4]-b[4]);
-    const CW={big:8.6,soft:9.6,cty:9.4,town:7.2,gmu:7.4,hwy:7.4,riv:6.6,crk:6.2,cr:6.4,out:7,'':7};
-    const need={soft:'usfs',gmu:'gmu',cty:'county',hwy:'roads',cr:'roads',riv:'water',crk:'water'};
+    const CW={big:8.6,soft:9.6,cty:9.4,town:7.2,gmu:7.4,riv:6.6,crk:6.2,out:7,'':7};
+    const need={soft:'usfs',gmu:'gmu',cty:'county',hwy:'roads',cr:'roads',lr:'roads',riv:'water',crk:'water',wat:'water'};
+    const FS={riv:13,crk:12,cr:11.5,lr:11};
+    const mid=MAPS.length;
+    // highway shields: interstate, US and state routes each get their own marker
+    function shield(t){
+      const m=t.match(/^(I-|US |CO )(\d+)/);if(!m)return null;const n=m[2],w=n.length>2?34:28,cx=w/2;
+      const num=(fill,y)=>`<text x="${cx}" y="${y}" text-anchor="middle" font-family="Public Sans,Arial,sans-serif" font-weight="700" font-size="${n.length>2?10.5:12}" fill="${fill}">${n}</text>`;
+      let body;
+      if(m[1]==='I-')body=`<path d="M2 5 Q${cx} 0 ${w-2} 5 Q${w} 17 ${cx} 27 Q0 17 2 5Z" fill="#1d4ed8" stroke="#fff" stroke-width="1.5"/><path d="M3 5.4 Q${cx} 1.5 ${w-3} 5.4 L${w-2.6} 9.5 L2.6 9.5Z" fill="#c81e1e"/>`+num('#fff',21);
+      else if(m[1]==='US ')body=`<path d="M4 3 Q${cx*.55} 5.5 ${cx} 2 Q${w-cx*.55} 5.5 ${w-4} 3 Q${w+1} 13 ${w-5} 19 Q${cx+4} 23 ${cx} 27 Q${cx-4} 23 5 19 Q-1 13 4 3Z" fill="#fff" stroke="#111" stroke-width="1.6"/>`+num('#111',18);
+      else body=`<rect x="1.5" y="4" width="${w-3}" height="20" rx="10" fill="#fff" stroke="#111" stroke-width="1.6"/>`+num('#111',18.5);
+      return {w,html:`<svg width="${w}" height="28" viewBox="0 0 ${w} 28" aria-label="${t}">${body}</svg>`};
+    }
+    // text that follows a line: cut the stretch of the feature under the label and set the text on it
+    function linePath(a,k){
+      const co=a[7],fs=FS[k],tw=a[2].length*fs*.57+10,pts=[];
+      for(let i=0;i<co.length;i+=2)pts.push(map.latLngToLayerPoint([co[i+1],co[i]]));
+      const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+pts[i].distanceTo(pts[i-1]));
+      const tot=cum[cum.length-1];if(tot<tw+6)return null;
+      const an=map.latLngToLayerPoint([a[0],a[1]]);let bi=0,bd=1e9;pts.forEach((p,i)=>{const d=p.distanceTo(an);if(d<bd){bd=d;bi=i}});
+      const st=Math.max(0,Math.min(tot-tw,cum[bi]-tw/2)),en=st+tw;
+      const at=d=>{let i=1;while(i<cum.length-1&&cum[i]<d)i++;const t=(d-cum[i-1])/((cum[i]-cum[i-1])||1);return L.point(pts[i-1].x+(pts[i].x-pts[i-1].x)*t,pts[i-1].y+(pts[i].y-pts[i-1].y)*t)};
+      let sub=[at(st)];for(let i=0;i<pts.length;i++)if(cum[i]>st&&cum[i]<en)sub.push(pts[i]);sub.push(at(en));
+      sub=L.LineUtil.simplify(sub,3.5);
+      let turn=0,maxT=0;for(let i=1;i<sub.length-1;i++){const a1=Math.atan2(sub[i].y-sub[i-1].y,sub[i].x-sub[i-1].x),a2=Math.atan2(sub[i+1].y-sub[i].y,sub[i+1].x-sub[i].x);let d=Math.abs(a2-a1);if(d>Math.PI)d=2*Math.PI-d;turn+=d;if(d>maxT)maxT=d}
+      const f=sub[0],l=sub[sub.length-1];
+      if(turn>1.9||maxT>1.05){ // too twisty to read: lay the name straight along the general direction
+        const c=at((st+en)/2),dx=l.x-f.x,dy=l.y-f.y,n=Math.hypot(dx,dy)||1,ux=dx/n*tw/2,uy=dy/n*tw/2;sub=[L.point(c.x-ux,c.y-uy),L.point(c.x+ux,c.y+uy)]}
+      if(sub[sub.length-1].x<sub[0].x)sub.reverse();
+      let d=`M${sub[0].x.toFixed(1)} ${sub[0].y.toFixed(1)}`;
+      if(sub.length===2)d+=`L${sub[1].x.toFixed(1)} ${sub[1].y.toFixed(1)}`;
+      else{for(let i=1;i<sub.length-1;i++){const mx=(sub[i].x+sub[i+1].x)/2,my=(sub[i].y+sub[i+1].y)/2;d+=`Q${sub[i].x.toFixed(1)} ${sub[i].y.toFixed(1)} ${i===sub.length-2?sub[i+1].x.toFixed(1):mx.toFixed(1)} ${i===sub.length-2?sub[i+1].y.toFixed(1):my.toFixed(1)}`}}
+      let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;sub.forEach(p=>{x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y)});
+      return {d,r:[x0-2,y0-fs*.7,x1+2,y1+fs*.7],c:at((st+en)/2)};
+    }
     function drawLabels(){
-      const z=map.getZoom(),b=map.getBounds(),placed=[];let html='';
+      const z=map.getZoom(),b=map.getBounds(),placed=[],sz=map.getSize();let html='',defs='',texts='',n=0;
+      const inView=r=>{const p0=map.layerPointToContainerPoint([r[0],r[1]]),p1=map.layerPointToContainerPoint([r[2],r[3]]);return p0.x>=2&&p0.y>=2&&p1.x<=sz.x-2&&p1.y<=sz.y-2};
+      const hits=r=>placed.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]);
       for(const a of ALL){
         if(z<a[5]||z>a[6]||!b.contains([a[0],a[1]]))continue;
         const c=a[3],k=c.split(' ')[0];if(need[k]&&!state.on[need[k]])continue;
-        const p=map.latLngToLayerPoint([a[0],a[1]]),w=a[2].length*(CW[k]??7)+14,hh=k==='big'||k==='soft'||k==='cty'?20:17;
-        const r=[p.x-w/2,p.y-hh/2,p.x+w/2,p.y+hh/2],cp=map.latLngToContainerPoint([a[0],a[1]]),sz=map.getSize();
-        if(cp.x-w/2<2||cp.x+w/2>sz.x-2||cp.y-hh/2<2||cp.y+hh/2>sz.y-2)continue;
-        if(placed.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]))continue;
-        // keep repeats of the same name apart
-        if(placed.some(q=>q[4]===a[2]&&Math.hypot(q[5]-p.x,q[6]-p.y)<(k==='hwy'||k==='cr'?170:260)))continue;
-        placed.push([r[0],r[1],r[2],r[3],a[2],p.x,p.y]);
-        html+=`<span class="lbl ${c}" style="left:${Math.round(p.x)}px;top:${Math.round(p.y)}px">${a[2]}</span>`;
+        const p=map.latLngToLayerPoint([a[0],a[1]]);
+        const far=(x,y,gap)=>!placed.some(q=>q[4]===a[2]&&Math.hypot(q[5]-x,q[6]-y)<gap);
+        if(a[7]){
+          const lp2=linePath(a,k);
+          if(lp2){
+            if(!inView(lp2.r)||hits(lp2.r)||!far(lp2.c.x,lp2.c.y,k==='riv'?320:240))continue;
+            placed.push([...lp2.r,a[2],lp2.c.x,lp2.c.y]);const id=`lp${mid}_${n++}`;
+            defs+=`<path id="${id}" d="${lp2.d}"/>`;texts+=`<text class="lt ${k}" dy=".33em"><textPath href="#${id}" startOffset="50%" text-anchor="middle">${a[2]}</textPath></text>`;
+            continue;
+          }
+          if(k==='lr'||k==='cr')continue; // road too short on screen for its name
+        }
+        const sh=k==='hwy'?shield(a[2]):null;
+        const w=sh?sh.w+4:a[2].length*(CW[k]??7)+14,hh=sh?30:k==='big'||k==='soft'||k==='cty'?20:17;
+        const r=[p.x-w/2,p.y-hh/2,p.x+w/2,p.y+hh/2];
+        if(!inView(r)||hits(r)||!far(p.x,p.y,k==='hwy'?190:260))continue;
+        placed.push([...r,a[2],p.x,p.y]);
+        html+=`<span class="lbl ${sh?'shield':c}" style="left:${Math.round(p.x)}px;top:${Math.round(p.y)}px">${sh?sh.html:a[2]}</span>`;
       }
-      lp.innerHTML=html;
+      lp.innerHTML=`<svg class="lsvg" width="1" height="1"><defs>${defs}</defs>${texts}</svg>`+html;
     }
     map.on('moveend',drawLabels);
     const set=(layer,want)=>{if(want&&!map.hasLayer(layer))map.addLayer(layer);if(!want&&map.hasLayer(layer))map.removeLayer(layer)};
@@ -1110,7 +1164,12 @@ summary{cursor:pointer;font-weight:600}
     ['local','City or county land',1,`background:${C('--local')}`],
     ['fed','Other federal land',1,`background:${C('--fed')}`],
     ['private','Private land',1,`background:${C('--private')}`],
-    ['roads','Roads',1,'border-top-color:#5a4632','line'],
+    ['roads','Roads',1,'','none'],
+    ['roads','Interstate',1,'border-top:5px double #1d4ed8','sline'],
+    ['roads','US highway',1,'border-top:3px solid #b91c1c','sline'],
+    ['roads','State highway',1,'border-top:3px solid #d97706','sline'],
+    ['roads','County road',1,'border-top:2px solid #5a4632','sline'],
+    ['roads','Local road',1,'border-top:1.5px dashed #8a7a68','sline'],
     ['water','Streams and reservoirs',1,'border-top-color:#4a86b5','line'],
     ['county','County lines',1,'border-top:3px dashed #3d3d3d','line'],
     ['gmu','CPW game management units',1,'border-top-color:#6b3fa0','line'],
@@ -1121,8 +1180,8 @@ summary{cursor:pointer;font-weight:600}
   ];
   const ul=$('layers');
   LIST.forEach(([k,name,on,sw,flag])=>{
-    const li=document.createElement('li'),line=flag==='line',shared=flag===true;
-    const s=`<span class="sw${line?' line':''}" style="${sw}"></span>`;
+    const li=document.createElement('li'),line=flag==='line'||flag==='sline',shared=flag===true||flag==='sline';
+    const s=flag==='none'?'<span></span>':`<span class="sw${line?' line':''}" style="${sw}"></span>`;
     if(shared){li.innerHTML=`<label style="cursor:default"><span class="nocheck"></span>${s}<span>${name}</span></label>`}
     else{state.on[k]=!!on;li.innerHTML=`<label><input type="checkbox" id="ly-${k}" ${on?'checked':''}>${s}<span>${name}</span></label>`;
       li.querySelector('input').addEventListener('change',e=>{state.on[k]=e.target.checked;refreshAll()})}
