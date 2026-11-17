@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GAME Act Land Exchange Map</title>
+<meta name="description" content="Interactive map of the draft GAME Act land exchange in Garfield County, Colorado: the BLM land near Consolidated Reservoir, the Timber Valley and Cow Creek ranches, terrain, imagery and CPW species layers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path {
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+</style>
+<style>
+/* Layout: one-screen map app. Map fills the left; a reading panel sits on the right and stacks below at phone width. */
+:root{
+  color-scheme: light;
+  --paper:#eef0ea; --panel:#f8f9f5; --ink:#1b2a2e; --muted:#5b6a6c; --rule:#cfd5cc;
+  --accent:#17404a;
+  --out:#c2410c;      /* federal land leaving public ownership */
+  --in:#1d6a4b;       /* private land coming into public ownership */
+  --keep:#2563a8;
+  --blm:#f0d98c; --usfs:#c3d5b5; --state:#b7cde0; --local:#d8d0e2; --fed:#e2cbb2;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--body)}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 400px;grid-template-rows:auto minmax(0,1fr);height:100%}
+header{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:10px 16px;background:var(--accent);color:#f3f6f2}
+h1{font:600 26px/1.1 var(--display);letter-spacing:.01em;margin:0;text-wrap:balance}
+header p{margin:0;font-size:13.5px;opacity:.9;flex:1 1 320px;max-width:70ch}
+.views{display:flex;flex-wrap:wrap;gap:6px}
+button{font:500 13.5px/1 var(--body);cursor:pointer}
+.views button{padding:8px 12px;border:1px solid rgba(255,255,255,.45);border-radius:3px;background:transparent;color:#f3f6f2}
+.views button[aria-pressed="true"]{background:#f3f6f2;color:var(--accent);border-color:#f3f6f2}
+button:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #e8a33d;outline-offset:2px}
+#stage{min-height:320px;min-width:0;position:relative;display:grid}
+#map{background:var(--paper);position:relative;min-height:0}
+#cmp{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto;gap:0 3px;background:var(--ink);min-height:0}
+#cmp[hidden],#map[hidden],#stage[hidden],aside[hidden]{display:none}
+#cmp figure{margin:0;display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0;min-width:0;background:var(--paper)}
+#cmp figcaption{padding:7px 12px;font-size:13px;color:#fff;line-height:1.3}
+#cmp figcaption b{font:600 17px/1.1 var(--display);letter-spacing:.03em;text-transform:uppercase;display:block}
+#cmp figcaption.out{background:var(--out)} #cmp figcaption.in{background:var(--in)}
+.cm{min-height:260px}
+.cmpnote{grid-column:1/-1;margin:0;max-width:none;padding:6px 12px;background:var(--panel);font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--accent);border-radius:3px;overflow:hidden}
+.seg label{display:block;text-align:center;padding:8px 4px;font-size:13.5px;font-weight:500;cursor:pointer;border-left:1px solid var(--accent);color:var(--accent);background:#fff}
+.seg label:first-of-type{border-left:0}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+label{background:var(--accent);color:#fff}
+.seg input:focus-visible+label{outline:2px solid #e8a33d;outline-offset:-3px}
+td.o{color:#8f2d06} td.i{color:#124a33}
+#cpw{grid-column:1/-1;overflow:auto;background:var(--panel);min-height:0}
+#cpw[hidden]{display:none}
+.cpw-in{max-width:1180px;margin:0 auto;padding:20px 16px 32px;display:flex;flex-direction:column;gap:12px}
+.cpw-h{font-size:26px;margin:0}
+#cpw-lede{max-width:80ch;margin:0}
+.cpw-ctl{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:13.5px}
+.cpw-ctl input[type=search],.cpw-ctl select{font:inherit;padding:6px 8px;border:1px solid var(--rule);border-radius:3px;background:#fff;color:var(--ink)}
+.cpw-ctl .chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+.cpw-wrap{background:#fff;border:1px solid var(--rule)}
+#cpw-t{font-size:13.5px}
+#cpw-t thead th{position:sticky;top:0;background:#fff;z-index:1;border-bottom:2px solid var(--ink);white-space:nowrap}
+#cpw-t thead tr.grp th{text-align:center;font:600 15px/1.1 var(--display);letter-spacing:.03em;text-transform:uppercase;border-bottom:0;padding-top:8px}
+#cpw-t thead tr.grp th.i{color:var(--in)} #cpw-t thead tr.grp th.o{color:var(--out)}
+#cpw-t th button{all:unset;cursor:pointer;font:inherit;color:inherit}
+#cpw-t th button:hover{text-decoration:underline}
+#cpw-t th[aria-sort] button::after{content:" ▲";font-size:10px}
+#cpw-t th[aria-sort=descending] button::after{content:" ▼"}
+#cpw-t td{white-space:nowrap}
+#cpw-t td:first-child{white-space:normal;min-width:240px}
+#cpw-t tr.sub td{color:var(--muted);font-size:12.5px;border-bottom-style:dashed}
+#cpw-t tr.sub td:first-child{padding-left:24px}
+#cpw-t td.g{text-align:left;color:var(--muted);font-size:12.5px}
+#cpw-t td.pc{min-width:92px;background-repeat:no-repeat;background-size:var(--w) 15px;background-position:left center}
+#cpw-t td.pc.i{background-image:linear-gradient(rgba(29,106,75,.22),rgba(29,106,75,.22))}
+#cpw-t td.pc.o{background-image:linear-gradient(rgba(194,65,12,.22),rgba(194,65,12,.22))}
+#cpw-t td.sep,#cpw-t th.sep{border-left:2px solid var(--rule)}
+#loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);z-index:500;pointer-events:none}
+aside{overflow-y:auto;background:var(--panel);border-left:1px solid var(--rule);padding:16px;display:flex;flex-direction:column;gap:18px}
+h2{font:600 19px/1.15 var(--display);letter-spacing:.02em;text-transform:uppercase;margin:0 0 8px;color:var(--accent)}
+.swap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border-left:5px solid;padding:6px 10px;background:#fff}
+.tile.out{border-color:var(--out)} .tile.in{border-color:var(--in)}
+.tile b{display:block;font:600 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.tile span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
+.layers{display:grid;gap:5px;margin:0;padding:0;list-style:none}
+.layers label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px}
+.sw{flex:none;width:22px;height:14px;border:1px solid rgba(0,0,0,.35)}
+.sw.line{height:0;border:0;border-top:3px solid}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:5px 6px;border-bottom:1px solid var(--rule);vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:600;color:var(--muted);font-size:12px}
+tr.sum td{font-weight:600;border-bottom:2px solid var(--ink)}
+p{margin:0 0 8px;max-width:65ch}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:6px;max-width:65ch}
+small,.note{font-size:12.5px;color:var(--muted)}
+a{color:var(--accent)}
+details{border-top:1px solid var(--rule);padding-top:8px}
+summary{cursor:pointer;font-weight:600}
+.lbl{position:absolute;transform:translate(-50%,-50%);font:600 13px/1.1 var(--display);letter-spacing:.03em;color:var(--ink);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 2px #fff,0 0 2px #fff;white-space:nowrap}
+.lbl.big{font-size:15px;text-transform:uppercase}
+.lbl.town{font:600 12.5px/1 var(--body)}
+.lbl.soft{color:#3f5a3a;font-weight:500;font-size:13.5px;letter-spacing:.1em;text-transform:uppercase}
+.lbl.cty{color:#4a4a4a;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase}
+.lbl.out{color:#8f2d06} .lbl.in{color:#124a33} .lbl.gmu{color:#5b2f8f}
+.lbl.riv,.lbl.crk{color:#1f5d8f;font:italic 500 12.5px/1 var(--body);letter-spacing:0}
+.lbl.crk{font-size:11.5px}
+.lbl.hwy,.lbl.cr{font:600 11px/1 var(--body);letter-spacing:0;color:#fff;background:#7a2e1d;padding:2px 5px;border-radius:3px;text-shadow:none;border:1px solid #fff}
+.lbl.cr{background:#fff;color:#5a4632;border-color:#5a4632;font-weight:500}
+.on-imagery .lbl.soft,.on-imagery .lbl.cty{color:#1d2b1a}
+.leaflet-container{font:inherit;background:var(--paper)}
+.leaflet-popup-content{margin:10px 12px;font:400 13.5px/1.4 var(--body)}
+.leaflet-popup-content b{font:600 17px/1.1 var(--display);display:block;margin-bottom:3px}
+.leaflet-popup-content-wrapper{border-radius:3px}
+@media (max-width:860px){
+  html,body{height:auto}
+  .app{display:block;height:auto}
+  #stage{height:72vh}
+  #cpw{overflow:visible}
+  #cmp{grid-template-columns:1fr;grid-template-rows:1fr 1fr auto;gap:3px 0}
+  aside{border-left:0;border-top:1px solid var(--rule)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>GAME Act Land Exchange</h1>
+  <p>Draft Greater Access for Multiple-Use Experiences Act, Garfield County, Colorado. Parcel shapes are reconstructed from the BLM map of February 23, 2026; the draft bill has no legal descriptions.</p>
+  <div class="views" role="group" aria-label="Map view">
+    <button type="button" data-v="all" aria-pressed="true">Both areas</button>
+    <button type="button" data-v="east" aria-pressed="false">Roaring Fork side</button>
+    <button type="button" data-v="west" aria-pressed="false">Roan Plateau side</button>
+    <button type="button" data-v="cmp" aria-pressed="false">Side by side</button>
+    <button type="button" data-v="cpw" aria-pressed="false">CPW layer summary</button>
+  </div>
+</header>
+<div id="stage">
+  <div id="map"><div id="loading">Loading map layers…</div></div>
+  <div id="cmp" hidden>
+    <figure><figcaption class="in"><b>Coming into public ownership</b> Timber Valley and Cow Creek ranches</figcaption><div id="mapR" class="cm"></div></figure>
+    <figure><figcaption class="out"><b>Leaving public ownership</b> BLM land near Consolidated Reservoir</figcaption><div id="mapL" class="cm"></div></figure>
+    <p class="cmpnote">Both panels are locked to the same scale. Zoom either one and the other follows; pan each side on its own.</p>
+  </div>
+</div>
+<section id="cpw" hidden>
+  <div class="cpw-in">
+    <h2 class="cpw-h">CPW species layers on the exchange lands</h2>
+    <p id="cpw-lede"></p>
+    <div class="cpw-ctl">
+      <label for="cpw-q">Find a layer</label><input type="search" id="cpw-q" placeholder="elk, bat, winter range…">
+      <label for="cpw-g">Group</label><select id="cpw-g"><option value="">All groups</option></select>
+      <label class="chk"><input type="checkbox" id="cpw-diff"> Only layers where the two sides differ by 10 points or more</label>
+      <label class="chk"><input type="checkbox" id="cpw-par"> Show each parcel</label>
+    </div>
+    <div class="tablewrap cpw-wrap">
+      <table id="cpw-t"><thead></thead><tbody></tbody></table>
+    </div>
+    <p class="note" id="cpw-foot"></p>
+  </div>
+</section>
+<aside>
+  <section>
+    <h2>The trade</h2>
+    <div class="swap">
+      <div class="tile out"><b id="t-out">–</b><span>acres of BLM land to Out of Bounds Ranch, measured on this map</span></div>
+      <div class="tile in"><b id="t-in">–</b><span>acres of private ranch land to the BLM, measured on this map</span></div>
+    </div>
+  </section>
+  <section>
+    <h2>Basemap</h2>
+    <div class="seg" role="radiogroup" aria-label="Basemap">
+      <input type="radio" name="bm" id="bm-own" value="own" checked><label for="bm-own">Ownership</label>
+      <input type="radio" name="bm" id="bm-relief" value="relief"><label for="bm-relief">Shaded relief</label>
+      <input type="radio" name="bm" id="bm-naip" value="naip"><label for="bm-naip">NAIP imagery</label>
+    </div>
+    <p class="note" id="bm-note" style="margin-top:6px">Land ownership as flat color.</p>
+  </section>
+  <section>
+    <h2>The two sides compared</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th></th><th>Private land in</th><th>Federal land out</th></tr></thead>
+      <tbody id="cmpt"></tbody>
+    </table>
+    </div>
+    <p class="note" style="margin-top:8px">Terrain figures are measured on these reconstructed shapes from USGS 3DEP 10-meter elevation. Elk shares use CPW species activity mapping, service updated May 2026. Open <a href="#" id="go-cmp">Side by side</a> to see both at one scale, or the <a href="#cpw-layers" id="go-cpw">CPW layer summary</a> for every species layer.</p>
+  </section>
+  <section>
+    <h2>Layers</h2>
+    <ul class="layers" id="layers"></ul>
+    <p class="note" style="margin-top:8px">Hover a road, stream or parcel for its name. Click a parcel for acreage.</p>
+  </section>
+  <section>
+    <h2>Acreage, by source</h2>
+    <div class="tablewrap">
+    <table>
+      <thead><tr><th>Parcel</th><th>This map</th><th>Draft bill</th><th>Ranch website</th></tr></thead>
+      <tbody id="acres"></tbody>
+    </table>
+    </div>
+    <p class="note" style="margin-top:8px">The Sopris Sun reported a third figure for the federal side: 2,274.72 acres in Garfield County Assessor records. "This map" is GIS area of the reconstructed shapes, not surveyed acreage.</p>
+  </section>
+  <section>
+    <h2>What each side says</h2>
+    <ul class="plain">
+      <li><b>Out of Bounds Ranch</b> says most of the federal land sits in an area the BLM has listed as having significantly restricted access, and that the Roan parcels would connect about 8,900 acres of BLM land to the north with a larger block to the south.</li>
+      <li><b>Colorado Parks and Wildlife</b> took no formal position in its September 3, 2026 letter. It wrote that the federal parcel holds elk calving areas and severe winter range, that losing it would limit access to the national forest to the north, and that the Roan parcels open no BLM land that was previously landlocked.</li>
+      <li><b>Garfield County commissioners</b> backed the exchange 2-0 on July 23, 2026 and asked that the Glenwood-side land stay undeveloped.</li>
+      <li><b>Wilderness Workshop</b> opposes the bill and calls it a bad deal for western Colorado.</li>
+    </ul>
+    <p class="note" style="margin-top:8px">Reporting through mid-November 2026 describes the bill as drafted by Rep. Jeff Hurd and not yet introduced.</p>
+  </section>
+  <section>
+    <h2>Elk habitat overlap</h2>
+    <p id="elk"></p>
+    <p class="note">From the CPWSpeciesData service on the Colorado geodata portal, last updated May 7, 2026. Shares are measured on the reconstructed parcel shapes.</p>
+  </section>
+  <details open>
+    <summary>How this was mapped, and its limits</summary>
+    <ul class="plain" style="margin-top:8px">
+      <li>The BLM Colorado State Office map dated February 23, 2026 was georeferenced by matching its BLM-land pattern to the national Surface Management Agency layer. Parcel edges then follow that layer's BLM boundary wherever the map shows them coinciding.</li>
+      <li>The line between Timber Valley and Cow Creek, the west edge of Timber Valley and the east edge of Cow Creek are traced from the map image and are good to roughly 100 feet at best.</li>
+      <li>The Out of Bounds Ranch outline covers only the ranch parcels drawn on the BLM map inset, about 2,700 acres. News reports put the ranch near 4,000 acres.</li>
+      <li>The ranch says it now proposes to leave out as much BLM land south of County Road 115 as it can. Its revised Fischer Creek map shows the southwest corner staying BLM; that corner is drawn separately here. Final boundaries would be set by survey.</li>
+      <li>Shaded relief is computed from USGS 3DEP elevation: 30-meter data for the region and 10-meter data around each exchange area.</li>
+      <li>NAIP imagery covers only the two exchange areas, at about 4 meters per pixel, taken from the USGS National Map NAIP service in November 2026. The service does not report the flight year for these tiles.</li>
+      <li>Land ownership is PAD-US 4.1; roads and water are Census TIGER; hunting units are CPW game management units.</li>
+    </ul>
+  </details>
+  <details>
+    <summary>Sources</summary>
+    <ul class="plain" style="margin-top:8px">
+      <li>BLM Colorado State Office, "Greater Access for Multiple-use Experiences Act" map, February 23, 2026 (Garfield County commissioners' packet, July 21, 2026)</li>
+      <li>CPW Director Laura Clellan to Rep. Hurd, September 3, 2026</li>
+      <li><a href="https://www.outofboundsranch.com/game-act-land-exchange">Out of Bounds Ranch, GAME Act land exchange page</a></li>
+      <li><a href="https://www.garfieldcountyco.gov/news/bocc-supports-proposed-federal-land-swap/">Garfield County press release, July 23, 2026</a></li>
+      <li><a href="https://soprissun.com/local-land-swap-update-and-a-bit-of-history/">Sopris Sun, "Local land swap update and a bit of history"</a></li>
+      <li><a href="https://wildernessworkshop.org/statement-on-the-game-act-and-the-proposed-land-exchange/">Wilderness Workshop statement</a></li>
+      <li>USGS PAD-US 4.1 Fee Managers; BLM Surface Management Agency; U.S. Census TIGERweb; CPW game management units</li>
+      <li><a href="https://geodata.colorado.gov/maps/50322b83e815436aadf588757822e72f/about">CPWSpeciesData, Colorado Parks and Wildlife</a>, all 313 layers, updated May 7, 2026</li>
+      <li>USGS 3D Elevation Program, 1 and 1/3 arc-second DEMs; USGS and USDA National Agriculture Imagery Program via The National Map</li>
+    </ul>
+  </details>
+</aside>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(async function(){
+  const css=getComputedStyle(document.documentElement), C=n=>css.getPropertyValue(n).trim();
+  const $=id=>document.getElementById(id);
+  let D;
+  try{D=await (await fetch('data.json')).json()}catch(e){$('loading').textContent='The map data file did not load. Reload the page to try again.';return}
+  $('loading').remove();
+  const VIEWS={all:[[39.43,-108.09],[39.74,-107.03]],east:[[39.468,-107.215],[39.562,-107.09]],west:[[39.64,-108.02],[39.715,-107.915]]};
+  const CMPB={L:[[39.476,-107.185],[39.558,-107.095]],R:[[39.648,-108.008],[39.700,-107.938]]};
+  const PANES=['land','relief','naip','landline','hab','water','lines','roads','obr','parcels'];
+  const fc=a=>({type:'FeatureCollection',features:a});
+  const fmt=n=>Math.round(n).toLocaleString('en-US');
+  const tip=(l,t)=>t&&l.bindTooltip(t,{sticky:true,direction:'top',opacity:.95});
+  const nm=n=>n.replace(/ Crk$/,' Creek').replace(/ Riv$/,' River');
+  const rn=n=>n.replace(/^Co Rd /,'County Road ').replace(/^State Hwy /,'Colorado ').replace(/^US Hwy /,'US ');
+  const landName={blm:'Bureau of Land Management',usfs:'White River National Forest',state:'State land',local:'City or county land',fed:'Other federal land'};
+  const lineCol={blm:'#ffd84d',usfs:'#9be37a',state:'#8fd0ff',local:'#d9c2ff',fed:'#ffc48a'};
+  const IMG=D.img;
+  const state={bm:'own',on:{}};
+  const MAPS=[];
+
+  function makeMap(el,opts){
+    const map=L.map(el,Object.assign({preferCanvas:true,zoomSnap:.25,zoomDelta:.5,minZoom:9,maxZoom:16,attributionControl:false,maxBounds:[[39.2,-108.45],[40.0,-106.7]]},opts||{}));
+    L.control.scale({imperial:true,metric:false,maxWidth:160}).addTo(map);
+    const R={};
+    PANES.forEach((p,i)=>{map.createPane(p).style.zIndex=400+i*4;if(p!=='relief'&&p!=='naip')R[p]=L.canvas({pane:p,tolerance:4})});
+    map.getPane('relief').style.mixBlendMode='multiply';
+    map.getPane('relief').style.pointerEvents='none';map.getPane('naip').style.pointerEvents='none';
+    const G={},DET={};
+    G.land=L.geoJSON(fc(D.land),{renderer:R.land,pane:'land',style:f=>({fillColor:C('--'+f.properties.k),fillOpacity:1,color:'#8d8a6a',weight:.4}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
+    const landline=L.geoJSON(fc(D.land),{renderer:R.landline,pane:'landline',style:f=>({fill:true,fillColor:lineCol[f.properties.k],fillOpacity:.1,color:lineCol[f.properties.k],weight:1.6}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
+    G.elkprod=L.geoJSON(fc(D.elkprod),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#7c3aed',fillOpacity:.22,color:'#6d28d9',weight:1.6,dashArray:'2 5'}});
+    G.elksev=L.geoJSON(fc(D.elksev),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#0e7490',fillOpacity:.22,color:'#0e7490',weight:1.6,dashArray:'7 4'}});
+    G.elkwc=L.geoJSON(fc(D.elkwc),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#be185d',fillOpacity:.18,color:'#be185d',weight:1.6}});
+    G.elkmig=L.geoJSON(fc(D.elkmig),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#b45309',fillOpacity:.22,color:'#b45309',weight:1.8,dashArray:'8 4'}});
+    DET.water=L.geoJSON(fc(D.streams),{renderer:R.water,pane:'water',style:f=>({color:'#4a86b5',weight:f.properties.n?1.3:.7,opacity:.9}),onEachFeature:(f,l)=>tip(l,nm(f.properties.n))});
+    G.water=L.layerGroup([
+      L.geoJSON(fc(D.water),{renderer:R.water,pane:'water',style:{fillColor:'#7fb2d9',fillOpacity:1,color:'#4a86b5',weight:.8},onEachFeature:(f,l)=>tip(l,f.properties.n)}),
+      L.geoJSON(fc(D.rivers),{renderer:R.water,pane:'water',style:{color:'#3b78ab',weight:2},onEachFeature:(f,l)=>tip(l,nm(f.properties.n))})]);
+    G.county=L.geoJSON(fc(D.county),{renderer:R.lines,pane:'lines',interactive:false,style:{color:'#3d3d3d',weight:1.6,dashArray:'10 4 2 4'}});
+    G.gmu=L.geoJSON(fc(D.gmu),{renderer:R.lines,pane:'lines',interactive:false,style:{color:'#6b3fa0',weight:1.6,opacity:.8}});
+    const cr=n=>/^Co (Rd|Hwy) /.test(n);
+    DET.roads=L.geoJSON(fc(D.roads),{renderer:R.roads,pane:'roads',style:f=>({color:cr(f.properties.n)?'#5a4632':'#8a7a68',weight:cr(f.properties.n)?1.6:.8}),onEachFeature:(f,l)=>tip(l,rn(f.properties.n))});
+    G.roads=L.layerGroup([L.geoJSON(fc(D.hwy),{renderer:R.roads,pane:'roads',style:f=>({color:/^I- ?70/.test(f.properties.n)?'#b91c1c':'#7a2e1d',weight:/^I- ?70/.test(f.properties.n)?3:2.2}),onEachFeature:(f,l)=>tip(l,rn(f.properties.n))})]);
+    G.obr=L.geoJSON(fc(D.obr),{renderer:R.obr,pane:'obr',style:{color:'#30363a',weight:2,dashArray:'6 4',fillColor:'#ffffff',fillOpacity:.45},onEachFeature:(f,l)=>l.bindPopup('<b>'+f.properties.name+'</b>Ranch parcels as drawn on the BLM map, about '+fmt(f.properties.ac)+' acres. Approximate trace.')});
+    G.parcels=L.geoJSON(fc(D.parcels),{renderer:R.parcels,pane:'parcels',onEachFeature:(f,l)=>{const p=f.properties,e=D.elev[p.name];l.bindPopup('<b>'+p.name+'</b>'+p.sub+'.<br>About '+fmt(p.ac)+' acres on this map.'+(e?'<br>Elevation '+fmt(e.lo*3.28084)+' to '+fmt(e.hi*3.28084)+' ft; mean slope '+Math.round(e.slope)+'°.':''));tip(l,p.name)}});
+    // rasters
+    const ov=(k,pre,pane)=>L.imageOverlay(pre+'_'+k+(pre==='naip'?'.webp':'.jpg'),IMG[pre][k].b,{pane,interactive:false,opacity:pre==='relief'?.92:1});
+    const RAS={reliefReg:ov('reg','relief','relief'),reliefDet:L.layerGroup([ov('east','relief','relief'),ov('west','relief','relief')]),naip:null};
+    // labels: one pane, greedy collision so names never stack
+    const lp=map.createPane('labels');lp.style.zIndex=640;lp.style.pointerEvents='none';lp.classList.add('leaflet-zoom-hide');
+    const FIX=[
+      ...D.places.map(p=>[p.ll[0],p.ll[1],p.n,'town',1,0,12.4]),
+      [39.508,-107.150,'Federal parcel','big out',0,11.5,99],[39.497,-107.104,'Isolated 40 acres','out',0,12.5,99],
+      [39.4865,-107.1765,'Stays BLM in revised map','',0.5,13.25,99],
+      [39.676,-107.9925,'Timber Valley Ranch','big in',0,12,99],[39.6575,-107.962,'Cow Creek Ranch','big in',0,12,99],
+      [39.681,-107.968,'BLM block cited as about 8,900 acres','',0.5,12.25,99],[39.535,-107.185,'Out of Bounds Ranch','',0.5,12,99],
+      [39.52,-107.152,'Exchange land out','big out',0,0,11.4],[39.70,-107.975,'Exchange land in','big in',0,0,11.9],
+      [39.60,-108.02,'Roan Plateau','soft',5,0,11.9],[39.4925,-107.158,'Consolidated Reservoir','riv',1,13.25,99]];
+    const ALL=FIX.concat(D.labels).sort((a,b)=>a[4]-b[4]);
+    const CW={big:8.6,soft:9.6,cty:9.4,town:7.2,gmu:7.4,hwy:7.4,riv:6.6,crk:6.2,cr:6.4,out:7,'':7};
+    const need={soft:'land',gmu:'gmu',cty:'county',hwy:'roads',cr:'roads',riv:'water',crk:'water'};
+    function drawLabels(){
+      const z=map.getZoom(),b=map.getBounds(),placed=[];let html='';
+      for(const a of ALL){
+        if(z<a[5]||z>a[6]||!b.contains([a[0],a[1]]))continue;
+        const c=a[3],k=c.split(' ')[0];if(need[k]&&!state.on[need[k]])continue;
+        const p=map.latLngToLayerPoint([a[0],a[1]]),w=a[2].length*(CW[k]??7)+14,hh=k==='big'||k==='soft'||k==='cty'?20:17;
+        const r=[p.x-w/2,p.y-hh/2,p.x+w/2,p.y+hh/2],cp=map.latLngToContainerPoint([a[0],a[1]]),sz=map.getSize();
+        if(cp.x-w/2<2||cp.x+w/2>sz.x-2||cp.y-hh/2<2||cp.y+hh/2>sz.y-2)continue;
+        if(placed.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]))continue;
+        // keep repeats of the same name apart
+        if(placed.some(q=>q[4]===a[2]&&Math.hypot(q[5]-p.x,q[6]-p.y)<(k==='hwy'||k==='cr'?170:260)))continue;
+        placed.push([r[0],r[1],r[2],r[3],a[2],p.x,p.y]);
+        html+=`<span class="lbl ${c}" style="left:${Math.round(p.x)}px;top:${Math.round(p.y)}px">${a[2]}</span>`;
+      }
+      lp.innerHTML=html;
+    }
+    map.on('moveend',drawLabels);
+    const set=(layer,want)=>{if(want&&!map.hasLayer(layer))map.addLayer(layer);if(!want&&map.hasLayer(layer))map.removeLayer(layer)};
+    function refresh(){
+      if(!map._loaded)return;
+      const z=map.getZoom(),bm=state.bm;
+      drawLabels();
+      for(const k in DET){const want=z>=11.25;if(want&&!G[k].hasLayer(DET[k]))G[k].addLayer(DET[k]);if(!want&&G[k].hasLayer(DET[k]))G[k].removeLayer(DET[k])}
+      for(const k in G)set(G[k],!!state.on[k]);
+      set(RAS.reliefReg,bm!=='own');
+      set(RAS.reliefDet,bm==='relief'&&z>=11);
+      if(bm==='naip'&&!RAS.naip)RAS.naip=L.layerGroup([ov('east','naip','naip'),ov('west','naip','naip')]);
+      if(RAS.naip)set(RAS.naip,bm==='naip');
+      set(landline,bm==='naip'&&!!state.on.land);
+      const im=bm==='naip';
+      G.parcels.setStyle(f=>({fed:{color:im?'#ff7a33':'#7a2705',weight:im?3.5:2.5,fillColor:C('--out'),fillOpacity:im?.12:bm==='relief'?.5:.72},
+        priv:{color:im?'#4ff0a8':'#0d3d2a',weight:im?3.5:2.5,fillColor:C('--in'),fillOpacity:im?.12:bm==='relief'?.5:.72},
+        fedkeep:{color:im?'#7fc1ff':C('--keep'),weight:im?3:2.5,dashArray:'5 4',fillColor:C('--blm'),fillOpacity:im?.1:bm==='relief'?.55:1}})[f.properties.k]);
+      G.obr.setStyle({color:im?'#ffffff':'#30363a',weight:im?2.5:2,dashArray:'6 4',fillColor:'#ffffff',fillOpacity:im?0:bm==='relief'?.25:.45});
+      G.land.setStyle(f=>({fillColor:C('--'+f.properties.k),fillOpacity:1,color:'#8d8a6a',weight:.4}));
+      el.classList.toggle('on-imagery',im);
+    }
+    map.on('zoomend',refresh);
+    const o={map,refresh};MAPS.push(o);return o;
+  }
+
+  // ---- main map and views
+  const main=makeMap($('map'));
+  let cmp=null,mode='single';
+  function press(v){document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v===v))}
+  function go(v){
+    press(v);
+    const isC=v==='cpw';$('cpw').hidden=!isC;$('stage').hidden=isC;document.querySelector('aside').hidden=isC;
+    try{history.replaceState(null,'',isC?'#cpw-layers':'#')}catch(e){}
+    if(isC){drawCpw();return}
+    if(v==='cmp'){
+      mode='cmp';$('map').hidden=true;$('cmp').hidden=false;
+      if(!cmp){
+        const Lm=makeMap($('mapL')),Rm=makeMap($('mapR'));cmp={L:Lm,R:Rm};
+        Lm.map.invalidateSize();Rm.map.invalidateSize();
+        const z=Math.min(Lm.map.getBoundsZoom(CMPB.L),Rm.map.getBoundsZoom(CMPB.R));
+        Lm.map.setView(L.latLngBounds(CMPB.L).getCenter(),z,{animate:false});Rm.map.setView(L.latLngBounds(CMPB.R).getCenter(),z,{animate:false});
+        let lock=false;const link=(a,b)=>a.map.on('zoomend',()=>{if(lock)return;lock=true;b.map.setZoom(a.map.getZoom(),{animate:false});lock=false});
+        link(Lm,Rm);link(Rm,Lm);
+      }else{cmp.L.map.invalidateSize();cmp.R.map.invalidateSize()}
+      cmp.L.refresh();cmp.R.refresh();
+    }else{
+      mode='single';$('cmp').hidden=true;$('map').hidden=false;main.map.invalidateSize();
+      main.map.fitBounds(VIEWS[v],{padding:[12,12],animate:false});main.refresh();
+    }
+  }
+  document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.v)));
+  $('go-cmp').addEventListener('click',e=>{e.preventDefault();go('cmp');$('stage').scrollIntoView({block:'start'})});
+  $('go-cpw').addEventListener('click',e=>{e.preventDefault();go('cpw')});
+  const refreshAll=()=>MAPS.forEach(m=>m.refresh());
+
+  // ---- basemap
+  const BMNOTE={own:'Land ownership as flat color.',relief:'Hillshade from USGS 3DEP elevation, tinted by land ownership.',naip:'Aerial imagery covers the two exchange areas only. Ownership is drawn as colored outlines; zoom to an exchange area to see it.'};
+  document.querySelectorAll('input[name=bm]').forEach(r=>r.addEventListener('change',()=>{state.bm=r.value;$('bm-note').textContent=BMNOTE[r.value];refreshAll()}));
+
+  // ---- layer list
+  const LIST=[
+    ['parcels','Federal land that would become private',1,`background:${C('--out')}`],
+    ['parcels','Private land that would become BLM',1,`background:${C('--in')}`,true],
+    ['obr','Out of Bounds Ranch, as drawn on the BLM map',1,'background:#fff;border:2px dashed #30363a'],
+    ['land','BLM land',1,`background:${C('--blm')}`],
+    ['land','National forest',1,`background:${C('--usfs')}`,true],
+    ['land','State, local and other federal land',1,`background:linear-gradient(90deg,${C('--state')} 34%,${C('--local')} 34% 67%,${C('--fed')} 67%)`,true],
+    ['roads','Roads',1,'border-top-color:#5a4632','line'],
+    ['water','Streams and reservoirs',1,'border-top-color:#4a86b5','line'],
+    ['county','County lines',1,'border-top:3px dashed #3d3d3d','line'],
+    ['gmu','CPW game management units',1,'border-top-color:#6b3fa0','line'],
+    ['elkprod','Elk production (calving) area',0,'background:rgba(124,58,237,.25);border:1.5px dotted #6d28d9'],
+    ['elksev','Elk severe winter range',0,'background:rgba(14,116,144,.25);border:1.5px dashed #0e7490'],
+    ['elkwc','Elk winter concentration area',0,'background:rgba(190,24,93,.22);border:1.5px solid #be185d'],
+    ['elkmig','Elk migration corridor',0,'background:rgba(180,83,9,.25);border:1.5px dashed #b45309'],
+  ];
+  const ul=$('layers');
+  LIST.forEach(([k,name,on,sw,flag])=>{
+    const li=document.createElement('li'),line=flag==='line',shared=flag===true;
+    const s=`<span class="sw${line?' line':''}" style="${sw}"></span>`;
+    if(shared){li.innerHTML=`<label style="cursor:default;padding-left:21px">${s}${name}</label>`}
+    else{state.on[k]=!!on;li.innerHTML=`<label><input type="checkbox" id="ly-${k}" ${on?'checked':''}>${s}${name}</label>`;
+      li.querySelector('input').addEventListener('change',e=>{state.on[k]=e.target.checked;refreshAll()})}
+    ul.appendChild(li);
+  });
+  // ---- CPW layer summary
+  const S=D.cpw,cs={key:null,dir:1};
+  $('cpw-lede').innerHTML=`All ${S.total} layers in the CPWSpeciesData service (updated May 7, 2026) were intersected with the reconstructed exchange parcels. ${S.hit} layers touch at least one parcel; the rest do not and are left out. Acres are planar areas computed in <b>EPSG:26913, NAD83 / UTM zone 13N</b>, the coordinate system the geometry was requested in. Percent is the share of that side's ${fmt(S.A.in)} or ${fmt(S.A.out)} acres.`;
+  $('cpw-foot').textContent='Overall, breeding and historic range layers are coarse statewide polygons, so 100% there says the parcel lies inside the mapped range, not that the species uses every acre. Migration pattern layers are lines and are reported as miles inside the parcels. Parcel shapes are reconstructed from the BLM map of February 23, 2026, so acreages carry that uncertainty. Federal land out is the main parcel, including the southwest corner, plus the isolated 40 acres.';
+  [...new Set(S.rows.map(r=>r.g))].sort().forEach(g=>{const o=document.createElement('option');o.value=o.textContent=g;$('cpw-g').appendChild(o)});
+  const num=(v,t)=>v?(v.toLocaleString('en-US',{minimumFractionDigits:t==='L'?2:1,maximumFractionDigits:t==='L'?2:1})+(t==='L'?' mi':'')):'–';
+  function drawCpw(){
+    const par=$('cpw-par').checked,q=$('cpw-q').value.trim().toLowerCase(),g=$('cpw-g').value,df=$('cpw-diff').checked;
+    const cols=par?[['tv','Timber Valley','i'],['cc','Cow Creek','i'],['in','Total in','i'],['fm','Main parcel','o'],['iso','Isolated 40','o'],['out','Total out','o']]:[['in','Private land in','i'],['out','Federal land out','o']];
+    const th=(k,l,c)=>`<th class="${c||''}"${cs.key===k?` aria-sort="${cs.dir>0?'ascending':'descending'}"`:''}><button type="button" data-k="${k}">${l}</button></th>`;
+    const nI=cols.filter(c=>c[2]==='i').length,nO=cols.length-nI;
+    $('cpw-t').tHead.innerHTML=`<tr class="grp"><th></th><th></th><th class="i sep" colspan="${nI*2}">Coming into public ownership</th><th class="o sep" colspan="${nO*2}">Leaving public ownership</th></tr><tr>${th('n','Layer')}${th('g','Group')}${cols.map((c,i)=>th(c[0],(par?c[1]+' ':'')+'acres',(i===0||i===nI?'sep':''))+th(c[0]+'p','%')).join('')}</tr>`;
+    // parents with children kept together
+    let fam=[];S.rows.forEach(r=>{if(r.sub)fam[fam.length-1].kids.push(r);else fam.push({r,kids:[]})});
+    fam=fam.filter(f=>(!q||(f.r.n+' '+f.kids.map(k=>k.n).join(' ')).toLowerCase().includes(q))&&(!g||f.r.g===g)&&(!df||(f.r.t==='P'?Math.abs(f.r.inp-f.r.outp)>=10:true)));
+    if(cs.key)fam.sort((a,b)=>{const x=a.r[cs.key]??-1,y=b.r[cs.key]??-1;return (typeof x==='string'?x.localeCompare(y):x-y)*cs.dir});
+    const row=r=>`<tr${r.sub?' class="sub"':''}><td>${r.n}</td><td class="g">${r.sub?'':r.g}</td>${cols.map((c,i)=>{const p=r[c[0]+'p'];return `<td class="${c[2]}${i===0||i===nI?' sep':''}">${num(r[c[0]],r.t)}</td><td class="pc ${c[2]}" style="--w:${p||0}%">${p==null?'–':p?p.toFixed(1)+'%':'–'}</td>`}).join('')}</tr>`;
+    $('cpw-t').tBodies[0].innerHTML=fam.map(f=>row(f.r)+f.kids.map(row).join('')).join('')||`<tr><td colspan="${2+cols.length*2}">No layer matches. Clear the search or the group filter.</td></tr>`;
+  }
+  $('cpw-t').tHead.addEventListener('click',e=>{const b=e.target.closest('button[data-k]');if(!b)return;const k=b.dataset.k;if(cs.key===k)cs.dir=-cs.dir;else{cs.key=k;cs.dir=(k==='n'||k==='g')?1:-1}drawCpw()});
+  ['cpw-q','cpw-g','cpw-diff','cpw-par'].forEach(id=>$(id).addEventListener('input',drawCpw));
+  window.addEventListener('hashchange',()=>{if(location.hash==='#cpw-layers')go('cpw')});
+  go(location.hash==='#cpw-layers'?'cpw':'all');
+
+  // ---- numbers
+  const P=Object.fromEntries(D.parcels.map(f=>[f.properties.name,f.properties.ac]));
+  const N={fm:'Federal parcel near Consolidated Reservoir',sw:'Southwest corner at County Roads 115 and 82',iso:'Isolated federal parcel',tv:'Timber Valley Ranch',cc:'Cow Creek Ranch'};
+  const fm=P[N.fm],sw=P[N.sw],iso=P[N.iso],tv=P[N.tv],cc=P[N.cc];
+  $('t-out').textContent=fmt(fm+sw+iso);$('t-in').textContent=fmt(tv+cc);
+  const rows=[['Federal parcel, main body',fm,'',''],['Southwest corner (stays BLM in revised map)',sw,'',''],['Isolated parcel',iso,'','40'],
+    ['Federal land out',fm+sw+iso,'2,158','2,179',1],['Timber Valley Ranch',tv,'1,020',''],['Cow Creek Ranch',cc,'1,083',''],['Private land in',tv+cc,'2,103','2,091',1]];
+  $('acres').innerHTML=rows.map(r=>`<tr${r[4]?' class="sum"':''}><td>${r[0]}</td><td>${fmt(r[1])}</td><td>${r[2]||'–'}</td><td>${r[3]||'–'}</td></tr>`).join('');
+  const agg=keys=>{const e=keys.map(k=>D.elev[k]),n=e.reduce((a,x)=>a+x.n,0),w=f=>e.reduce((a,x)=>a+x[f]*x.n,0)/n;return{lo:Math.min(...e.map(x=>x.lo))*3.28084,hi:Math.max(...e.map(x=>x.hi))*3.28084,mean:w('mean')*3.28084,slope:w('slope'),steep:w('steep')*100}};
+  const F=agg([N.fm,N.sw,N.iso]),V=agg([N.tv,N.cc]),o=D.stats.ov;
+  const ct=[['Acres on this map',fmt(fm+sw+iso),fmt(tv+cc)],['Elevation range',fmt(F.lo)+'–'+fmt(F.hi)+' ft',fmt(V.lo)+'–'+fmt(V.hi)+' ft'],['Mean elevation',fmt(F.mean)+' ft',fmt(V.mean)+' ft'],
+    ['Mean slope',Math.round(F.slope)+'°',Math.round(V.slope)+'°'],['Ground steeper than 25°',Math.round(F.steep)+'%',Math.round(V.steep)+'%'],
+    ['Inside elk production area',o.elkprod.fed+'%',o.elkprod.priv+'%'],['Inside elk severe winter range',o.elksev.fed+'%',o.elksev.priv+'%'],['Inside elk winter concentration area',o.elkwc.fed+'%',o.elkwc.priv+'%'],
+    ['CPW hunting unit','GMU 444','GMU 22'],['Adjoining public land','White River National Forest to the north','BLM on the north, east and south']];
+  $('cmpt').innerHTML=ct.map(r=>`<tr><td>${r[0]}</td><td class="i">${r[2]}</td><td class="o">${r[1]}</td></tr>`).join('');
+  $('elk').textContent=`About ${o.elkprod.fed}% of the main federal parcel falls inside mapped elk production area and ${o.elksev.fed}% inside elk severe winter range. ${o.elkprod.priv>=100?'All':'About '+o.elkprod.priv+'%'} of the two Roan Plateau ranches falls inside mapped elk production area and none inside severe winter range. Neither side overlaps a mapped winter concentration area or migration corridor.`;
+})();
+</script>
+</body>
+</html>
