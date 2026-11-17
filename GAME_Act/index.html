@@ -1024,6 +1024,7 @@ summary{cursor:pointer;font-weight:600}
       }
       for(const k in LL)set(LL[k],bm==='naip'&&!!state.on[k]);
       const im=bm==='naip';
+      D.land.forEach(f=>{const k=f.properties.k;G[k].setStyle({stroke:bm!=='relief'&&k!=='private'})});
       map.getPane('land').style.opacity=bm==='own'?1:1-state.tr/100;
       G.parcels.setStyle(f=>({fed:{color:im?'#ff7a33':'#7a2705',weight:im?3.5:2.5,fillColor:C('--out'),fillOpacity:im?.12:bm==='relief'?.5:.72},
         priv:{color:im?'#4ff0a8':'#0d3d2a',weight:im?3.5:2.5,fillColor:C('--in'),fillOpacity:im?.12:bm==='relief'?.5:.72},
