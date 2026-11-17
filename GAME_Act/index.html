@@ -677,7 +677,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --out:#c2410c;      /* federal land leaving public ownership */
   --in:#1d6a4b;       /* private land coming into public ownership */
   --keep:#2563a8;
-  --blm:#eadf8f; --usfs:#cdf8a8; --state:#a3cdff; --local:#d8d0e2; --fed:#e2cbb2;
+  --private:#ffffff; --blm:#eadf8f; --usfs:#cdf8a8; --state:#a3cdff; --local:#d8d0e2; --fed:#e2cbb2;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
@@ -750,8 +750,10 @@ h2{font:600 19px/1.15 var(--display);letter-spacing:.02em;text-transform:upperca
 .tile b{display:block;font:600 30px/1 var(--display);font-variant-numeric:tabular-nums}
 .tile span{font-size:12.5px;color:var(--muted);display:block;margin-top:3px}
 .layers{display:grid;gap:5px;margin:0;padding:0;list-style:none}
-.layers label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px}
-.sw{flex:none;width:22px;height:14px;border:1px solid rgba(0,0,0,.35)}
+.layers label{display:grid;grid-template-columns:16px 24px minmax(0,1fr);align-items:center;column-gap:8px;cursor:pointer;font-size:14px}
+.layers label input{margin:0;width:16px;height:16px}
+.layers label .nocheck{width:16px}
+.sw{width:24px;height:14px;border:1px solid rgba(0,0,0,.35);box-sizing:border-box}
 .sw.line{height:0;border:0;border-top:3px solid}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
@@ -935,8 +937,8 @@ summary{cursor:pointer;font-weight:600}
   const tip=(l,t)=>t&&l.bindTooltip(t,{sticky:true,direction:'top',opacity:.95});
   const nm=n=>n.replace(/ Crk$/,' Creek').replace(/ Riv$/,' River');
   const rn=n=>n.replace(/^Co Rd /,'County Road ').replace(/^State Hwy /,'Colorado ').replace(/^US Hwy /,'US ');
-  const landName={blm:'Bureau of Land Management',usfs:'White River National Forest',state:'State land',local:'City or county land',fed:'Other federal land'};
-  const lineCol={blm:'#eadf8f',usfs:'#cdf8a8',state:'#a3cdff',local:'#d9c2ff',fed:'#ffc48a'};
+  const landName={private:'Private land',blm:'Bureau of Land Management',usfs:'White River National Forest',state:'State land',local:'City or county land',fed:'Other federal land'};
+  const lineCol={private:'#ffffff',blm:'#eadf8f',usfs:'#cdf8a8',state:'#a3cdff',local:'#d9c2ff',fed:'#ffc48a'};
   const IMG=D.img;
   const state={bm:'own',on:{},tr:35};
   // Live Esri basemaps where the host allows outside tiles; otherwise the bundled images are used.
@@ -951,8 +953,10 @@ summary{cursor:pointer;font-weight:600}
     PANES.forEach((p,i)=>{map.createPane(p).style.zIndex=400+i*4;if(p!=='relief'&&p!=='naip')R[p]=L.canvas({pane:p,tolerance:4})});
     map.getPane('relief').style.pointerEvents='none';map.getPane('naip').style.pointerEvents='none';
     const G={},DET={};
-    G.land=L.geoJSON(fc(D.land),{renderer:R.land,pane:'land',style:f=>({fillColor:C('--'+f.properties.k),fillOpacity:1,color:'#8d8a6a',weight:.4}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
-    const landline=L.geoJSON(fc(D.land),{renderer:R.landline,pane:'landline',style:f=>({fill:true,fillColor:lineCol[f.properties.k],fillOpacity:0,color:lineCol[f.properties.k],weight:1.6}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
+    const LL={};
+    D.land.forEach(f=>{const k=f.properties.k,pv=k==='private';
+      G[k]=L.geoJSON(f,{renderer:R.land,pane:'land',style:{fillColor:C('--'+k),fillOpacity:1,color:'#8d8a6a',weight:pv?0:.4,stroke:!pv},onEachFeature:(ft,l)=>tip(l,landName[k])});
+      if(!pv)LL[k]=L.geoJSON(f,{renderer:R.landline,pane:'landline',interactive:false,style:{fill:false,color:lineCol[k],weight:1.6}})});
     G.elkprod=L.geoJSON(fc(D.elkprod),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#7c3aed',fillOpacity:.22,color:'#6d28d9',weight:1.6,dashArray:'2 5'}});
     G.elksev=L.geoJSON(fc(D.elksev),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#0e7490',fillOpacity:.22,color:'#0e7490',weight:1.6,dashArray:'7 4'}});
     G.elkwc=L.geoJSON(fc(D.elkwc),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#be185d',fillOpacity:.18,color:'#be185d',weight:1.6}});
@@ -986,7 +990,7 @@ summary{cursor:pointer;font-weight:600}
       [39.60,-108.02,'Roan Plateau','soft',5,0,11.9],[39.4925,-107.158,'Consolidated Reservoir','riv',1,13.25,99]];
     const ALL=FIX.concat(D.labels).sort((a,b)=>a[4]-b[4]);
     const CW={big:8.6,soft:9.6,cty:9.4,town:7.2,gmu:7.4,hwy:7.4,riv:6.6,crk:6.2,cr:6.4,out:7,'':7};
-    const need={soft:'land',gmu:'gmu',cty:'county',hwy:'roads',cr:'roads',riv:'water',crk:'water'};
+    const need={soft:'usfs',gmu:'gmu',cty:'county',hwy:'roads',cr:'roads',riv:'water',crk:'water'};
     function drawLabels(){
       const z=map.getZoom(),b=map.getBounds(),placed=[];let html='';
       for(const a of ALL){
@@ -1018,14 +1022,13 @@ summary{cursor:pointer;font-weight:600}
         if(bm==='naip'&&!RAS.naip)RAS.naip=L.layerGroup([ov('east','naip','naip'),ov('west','naip','naip')]);
         if(RAS.naip)set(RAS.naip,bm==='naip');
       }
-      set(landline,bm==='naip'&&!!state.on.land);
+      for(const k in LL)set(LL[k],bm==='naip'&&!!state.on[k]);
       const im=bm==='naip';
       map.getPane('land').style.opacity=bm==='own'?1:1-state.tr/100;
       G.parcels.setStyle(f=>({fed:{color:im?'#ff7a33':'#7a2705',weight:im?3.5:2.5,fillColor:C('--out'),fillOpacity:im?.12:bm==='relief'?.5:.72},
         priv:{color:im?'#4ff0a8':'#0d3d2a',weight:im?3.5:2.5,fillColor:C('--in'),fillOpacity:im?.12:bm==='relief'?.5:.72},
         fedkeep:{color:im?'#7fc1ff':C('--keep'),weight:im?3:2.5,dashArray:'5 4',fillColor:C('--blm'),fillOpacity:im?.1:bm==='relief'?.55:1}})[f.properties.k]);
       G.obr.setStyle({color:im?'#ffffff':'#30363a',weight:im?2.5:2,dashArray:'6 4',fillColor:'#ffffff',fillOpacity:im?0:bm==='relief'?.25:.45});
-      G.land.setStyle(f=>({fillColor:C('--'+f.properties.k),fillOpacity:1,color:'#8d8a6a',weight:.4}));
       el.classList.toggle('on-imagery',im);
     }
     map.on('zoomend',refresh);
@@ -1076,9 +1079,12 @@ summary{cursor:pointer;font-weight:600}
     ['parcels','Federal land that would become private',1,`background:${C('--out')}`],
     ['parcels','Private land that would become BLM',1,`background:${C('--in')}`,true],
     ['obr','Out of Bounds Ranch, as drawn on the BLM map',1,'background:#fff;border:2px dashed #30363a'],
-    ['land','BLM land',1,`background:${C('--blm')}`],
-    ['land','National forest',1,`background:${C('--usfs')}`,true],
-    ['land','State, local and other federal land',1,`background:linear-gradient(90deg,${C('--state')} 34%,${C('--local')} 34% 67%,${C('--fed')} 67%)`,true],
+    ['blm','BLM land',1,`background:${C('--blm')}`],
+    ['usfs','National forest',1,`background:${C('--usfs')}`],
+    ['state','State land',1,`background:${C('--state')}`],
+    ['local','City or county land',1,`background:${C('--local')}`],
+    ['fed','Other federal land',1,`background:${C('--fed')}`],
+    ['private','Private land',1,`background:${C('--private')}`],
     ['roads','Roads',1,'border-top-color:#5a4632','line'],
     ['water','Streams and reservoirs',1,'border-top-color:#4a86b5','line'],
     ['county','County lines',1,'border-top:3px dashed #3d3d3d','line'],
@@ -1092,8 +1098,8 @@ summary{cursor:pointer;font-weight:600}
   LIST.forEach(([k,name,on,sw,flag])=>{
     const li=document.createElement('li'),line=flag==='line',shared=flag===true;
     const s=`<span class="sw${line?' line':''}" style="${sw}"></span>`;
-    if(shared){li.innerHTML=`<label style="cursor:default;padding-left:21px">${s}${name}</label>`}
-    else{state.on[k]=!!on;li.innerHTML=`<label><input type="checkbox" id="ly-${k}" ${on?'checked':''}>${s}${name}</label>`;
+    if(shared){li.innerHTML=`<label style="cursor:default"><span class="nocheck"></span>${s}<span>${name}</span></label>`}
+    else{state.on[k]=!!on;li.innerHTML=`<label><input type="checkbox" id="ly-${k}" ${on?'checked':''}>${s}<span>${name}</span></label>`;
       li.querySelector('input').addEventListener('change',e=>{state.on[k]=e.target.checked;refreshAll()})}
     ul.appendChild(li);
   });
