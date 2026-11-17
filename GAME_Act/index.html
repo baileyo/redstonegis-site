@@ -710,6 +710,11 @@ button:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{o
 .seg input:checked+label{background:var(--accent);color:#fff}
 .seg input:focus-visible+label{outline:2px solid #e8a33d;outline-offset:-3px}
 td.o{color:#8f2d06} td.i{color:#124a33}
+.trow{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;margin-top:8px;font-size:13.5px}
+.trow[hidden]{display:none}
+.trow label{grid-column:1/-1;font-weight:500}
+.trow input{width:100%;accent-color:var(--accent)}
+.trow output{font-variant-numeric:tabular-nums;min-width:4ch;text-align:right}
 #cpw{grid-column:1/-1;overflow:auto;background:var(--panel);min-height:0}
 #cpw[hidden]{display:none}
 .cpw-in{max-width:1180px;margin:0 auto;padding:20px 16px 32px;display:flex;flex-direction:column;gap:12px}
@@ -839,6 +844,11 @@ summary{cursor:pointer;font-weight:600}
       <input type="radio" name="bm" id="bm-naip" value="naip"><label for="bm-naip" id="bm-naip-l">NAIP imagery</label>
     </div>
     <p class="note" id="bm-note" style="margin-top:6px">Land ownership as flat color.</p>
+    <div class="trow" id="tr-row" hidden>
+      <label for="tr">Land ownership transparency</label>
+      <input type="range" id="tr" min="0" max="100" step="5" value="35">
+      <output id="tr-out" for="tr">35%</output>
+    </div>
   </section>
   <section>
     <h2>The two sides compared</h2>
@@ -919,7 +929,7 @@ summary{cursor:pointer;font-weight:600}
   $('loading').remove();
   const VIEWS={all:[[39.43,-108.09],[39.74,-107.03]],east:[[39.468,-107.215],[39.562,-107.09]],west:[[39.64,-108.02],[39.715,-107.915]]};
   const CMPB={L:[[39.476,-107.185],[39.558,-107.095]],R:[[39.648,-108.008],[39.700,-107.938]]};
-  const PANES=['land','relief','naip','landline','hab','water','lines','roads','obr','parcels'];
+  const PANES=['relief','naip','land','landline','hab','water','lines','roads','obr','parcels'];
   const fc=a=>({type:'FeatureCollection',features:a});
   const fmt=n=>Math.round(n).toLocaleString('en-US');
   const tip=(l,t)=>t&&l.bindTooltip(t,{sticky:true,direction:'top',opacity:.95});
@@ -928,7 +938,7 @@ summary{cursor:pointer;font-weight:600}
   const landName={blm:'Bureau of Land Management',usfs:'White River National Forest',state:'State land',local:'City or county land',fed:'Other federal land'};
   const lineCol={blm:'#ffd84d',usfs:'#9be37a',state:'#8fd0ff',local:'#d9c2ff',fed:'#ffc48a'};
   const IMG=D.img;
-  const state={bm:'own',on:{}};
+  const state={bm:'own',on:{},tr:35};
   // Live Esri basemaps where the host allows outside tiles; otherwise the bundled images are used.
   const ESRI={img:'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',hs:'https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}'};
   const TILES=await new Promise(res=>{const i=new Image();let done=false;const fin=v=>{if(!done){done=true;res(v)}};i.onload=()=>fin(true);i.onerror=()=>fin(false);setTimeout(()=>fin(false),4000);i.src=ESRI.hs.replace('{z}',8).replace('{y}',97).replace('{x}',51)});
@@ -939,11 +949,10 @@ summary{cursor:pointer;font-weight:600}
     L.control.scale({imperial:true,metric:false,maxWidth:160}).addTo(map);
     const R={};
     PANES.forEach((p,i)=>{map.createPane(p).style.zIndex=400+i*4;if(p!=='relief'&&p!=='naip')R[p]=L.canvas({pane:p,tolerance:4})});
-    map.getPane('relief').style.mixBlendMode='multiply';
     map.getPane('relief').style.pointerEvents='none';map.getPane('naip').style.pointerEvents='none';
     const G={},DET={};
     G.land=L.geoJSON(fc(D.land),{renderer:R.land,pane:'land',style:f=>({fillColor:C('--'+f.properties.k),fillOpacity:1,color:'#8d8a6a',weight:.4}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
-    const landline=L.geoJSON(fc(D.land),{renderer:R.landline,pane:'landline',style:f=>({fill:true,fillColor:lineCol[f.properties.k],fillOpacity:.1,color:lineCol[f.properties.k],weight:1.6}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
+    const landline=L.geoJSON(fc(D.land),{renderer:R.landline,pane:'landline',style:f=>({fill:true,fillColor:lineCol[f.properties.k],fillOpacity:0,color:lineCol[f.properties.k],weight:1.6}),onEachFeature:(f,l)=>tip(l,landName[f.properties.k])});
     G.elkprod=L.geoJSON(fc(D.elkprod),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#7c3aed',fillOpacity:.22,color:'#6d28d9',weight:1.6,dashArray:'2 5'}});
     G.elksev=L.geoJSON(fc(D.elksev),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#0e7490',fillOpacity:.22,color:'#0e7490',weight:1.6,dashArray:'7 4'}});
     G.elkwc=L.geoJSON(fc(D.elkwc),{renderer:R.hab,pane:'hab',interactive:false,style:{fillColor:'#be185d',fillOpacity:.18,color:'#be185d',weight:1.6}});
@@ -1011,6 +1020,7 @@ summary{cursor:pointer;font-weight:600}
       }
       set(landline,bm==='naip'&&!!state.on.land);
       const im=bm==='naip';
+      map.getPane('land').style.opacity=bm==='own'?1:1-state.tr/100;
       G.parcels.setStyle(f=>({fed:{color:im?'#ff7a33':'#7a2705',weight:im?3.5:2.5,fillColor:C('--out'),fillOpacity:im?.12:bm==='relief'?.5:.72},
         priv:{color:im?'#4ff0a8':'#0d3d2a',weight:im?3.5:2.5,fillColor:C('--in'),fillOpacity:im?.12:bm==='relief'?.5:.72},
         fedkeep:{color:im?'#7fc1ff':C('--keep'),weight:im?3:2.5,dashArray:'5 4',fillColor:C('--blm'),fillOpacity:im?.1:bm==='relief'?.55:1}})[f.properties.k]);
@@ -1053,12 +1063,13 @@ summary{cursor:pointer;font-weight:600}
   const refreshAll=()=>MAPS.forEach(m=>m.refresh());
 
   // ---- basemap
-  const BMNOTE=TILES?{own:'Land ownership as flat color.',relief:'Esri World Hillshade, tinted by land ownership.',naip:'Esri World Imagery. Ownership is drawn as colored outlines.'}
-    :{own:'Land ownership as flat color.',relief:'Hillshade from USGS 3DEP elevation, tinted by land ownership.',naip:'Aerial imagery covers the two exchange areas only. Ownership is drawn as colored outlines; zoom to an exchange area to see it.'};
+  const BMNOTE=TILES?{own:'Land ownership as flat color.',relief:'Esri World Hillshade under the land ownership colors.',naip:'Esri World Imagery under the land ownership colors, with ownership edges outlined.'}
+    :{own:'Land ownership as flat color.',relief:'Hillshade from USGS 3DEP elevation under the land ownership colors.',naip:'Aerial imagery covers the two exchange areas only, under the land ownership colors. Zoom to an exchange area to see it.'};
   if(TILES){$('bm-naip-l').textContent='Imagery';
     $('how-relief').textContent='Shaded relief is the Esri World Hillshade map service. Terrain figures in the comparison table are still measured from USGS 3DEP 10-meter elevation.';
     $('how-img').textContent='Imagery is the Esri World Imagery map service, a mosaic of sources and dates that Esri updates over time. It is not a single NAIP flight.'}
-  document.querySelectorAll('input[name=bm]').forEach(r=>r.addEventListener('change',()=>{state.bm=r.value;$('bm-note').textContent=BMNOTE[r.value];refreshAll()}));
+  document.querySelectorAll('input[name=bm]').forEach(r=>r.addEventListener('change',()=>{state.bm=r.value;$('bm-note').textContent=BMNOTE[r.value];$('tr-row').hidden=r.value==='own';refreshAll()}));
+  $('tr').addEventListener('input',e=>{state.tr=+e.target.value;$('tr-out').textContent=state.tr+'%';MAPS.forEach(m=>{m.map.getPane('land').style.opacity=1-state.tr/100})});
 
   // ---- layer list
   const LIST=[
