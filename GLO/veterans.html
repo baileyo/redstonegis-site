@@ -556,8 +556,8 @@ const vShareText = k => ['issued to the warrantee','issued to someone with the w
 async function initVets(){
   const canvas=$('bmap'), ctx=canvas.getContext('2d'), hist=$('bhist'), hctx=hist.getContext('2d');
   let G;
-  try { const r=await fetch('glo_vets_v5.txt'); if(!r.ok) throw 0; G=parseGLO2(await r.text(), NVK); }
-  catch(e){ $('bloading').textContent='The veterans data (glo_vets_v5.txt) did not load. Check it sits next to this page, then reload.'; return; }
+  try { const r=await fetch('glo_vets_v6.txt'); if(!r.ok) throw 0; G=parseGLO2(await r.text(), NVK); }
+  catch(e){ $('bloading').textContent='The veterans data (glo_vets_v6.txt) did not load. Check it sits next to this page, then reload.'; return; }
   const {N,cLat,cLon,tK,tC,tLoc,tS,yStart,order,annual,kTot,cellKey,NY,NS}=G;
   const dSt = VDIST ? GSTATES.indexOf(VDIST.state) : -1;
   if (VDIST) for (const [y,oc,v] of VDIST.years){ const k=kOf(VDIST.act,oc); annual[(NS*NY+y-Y0)*NVK+k]+=v; if(dSt>=0) annual[(dSt*NY+y-Y0)*NVK+k]+=v; kTot[k]+=v; }
