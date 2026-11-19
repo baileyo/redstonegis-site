@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c100f">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>State Boundaries Time Series</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script defer src="/analytics/rs.js"></script>
+<style>
+/* Layout: one-screen instrument. Masthead, map canvas with a side panel, time bar along the bottom. Single dark theme, as on the other stand-alone pages. */
+:root{
+  --bg:#0c100f; --panel:#141a19; --ink:#e4e8e2; --muted:#94a19a; --rule:#2d3835;
+  --land:#161d1b; --border:#47554f; --accent:#e9a24a; --changed:#4fc4b5;
+  --f-nca:#1a211f; --f-unorg:#2b3033; --f-state:#22302c; --f-terr:#213552; --f-colony:#33291f;
+  --display:"IM Fell English","Iowan Old Style",Georgia,serif;
+  --ui:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box} [hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;display:flex;flex-direction:column;overflow:hidden}
+.gut{padding-left:16px;padding-right:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px;padding-block:10px 0;border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px;min-width:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(20px,2.4vw,27px);margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 em{color:var(--accent)}
+.by{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+nav{display:flex;gap:2px;margin-left:auto;align-self:flex-end}
+nav a{color:var(--muted);text-decoration:none;padding:8px 12px 9px;font-weight:500;white-space:nowrap}
+nav a:hover{color:var(--ink)}
+a{color:var(--accent)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 330px}
+#stage{position:relative;min-height:0;min-width:0}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#map.drag{cursor:grabbing}
+#bigyear{position:absolute;right:16px;bottom:8px;font-family:var(--display);font-size:clamp(44px,7vw,84px);line-height:1;color:var(--ink);opacity:.9;pointer-events:none;font-variant-numeric:tabular-nums}
+#status{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none}
+#tip{position:absolute;max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:13px;line-height:1.4;pointer-events:none;z-index:3}
+#tip b{font-weight:600;font-size:15px} #tip .d{color:var(--muted)}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
+aside{border-left:1px solid var(--rule);background:var(--panel);display:flex;flex-direction:column;min-height:0;min-width:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.stat .n{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border:1px solid var(--border);display:inline-block}
+.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px}
+.opts label{display:inline-flex;align-items:center;gap:6px}
+h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600;padding:12px 16px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2 button{font-size:12px;padding:2px 8px;text-transform:none;letter-spacing:0}
+#list{flex:1;min-height:0;overflow-y:auto;padding:0 8px 12px}
+.row{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;border-radius:0;padding:7px 8px;font-size:13px;line-height:1.4;color:var(--ink)}
+.row:hover{background:var(--bg)}
+.row.new{border-left-color:var(--accent)} .row.chg{border-left-color:var(--changed)} .row.cur{background:var(--bg)}
+.row b{font-weight:600} .row .d{color:var(--muted);font-family:var(--mono);font-size:12px}
+.empty{color:var(--muted);padding:8px;font-size:13px;line-height:1.5}
+details{border-top:1px solid var(--rule);padding:10px 16px;font-size:13px;line-height:1.5;color:var(--muted);max-height:45%;overflow-y:auto}
+details summary{cursor:pointer;color:var(--ink)} details p{margin:8px 0 0}
+footer{border-top:1px solid var(--rule);padding-block:8px 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center}
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-row:1/3}
+.track{min-width:0}
+#spark{display:block;width:100%;height:46px;cursor:pointer}
+#year{display:block;width:100%;margin:0;padding:0;border:0;background:none;accent-color:var(--accent)}
+.ticks{position:relative;height:14px;margin:0 8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ticks span{position:absolute;top:0;transform:translateX(-50%)}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 10px}
+button,select{cursor:pointer} button:hover{border-color:var(--muted)}
+#play{min-width:76px;border-color:var(--accent);color:var(--accent);font-weight:600}
+#yearnum{width:78px;font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:820px){
+  body{overflow:auto;height:auto} html{height:auto}
+  main{display:contents} #stage{height:62vh;order:1} footer{order:2;grid-template-columns:1fr} .ctl{grid-row:auto}
+  aside{order:3;border-left:0;border-top:1px solid var(--rule)} #list{max-height:50vh} details{max-height:none}
+}
+</style>
+</head>
+<body>
+<header class="gut">
+  <div class="brand">
+    <h1>State and Territory Boundaries <em>through time</em></h1>
+    <span class="by">United States · 1783–2025</span>
+  </div>
+  <nav aria-label="Site"><a href="counties.html">County boundaries</a><a href="index.html">All GLO patents →</a></nav>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="map" role="img" aria-label="Map of United States state and territory boundaries in the selected year"></canvas>
+    <div id="bigyear" aria-hidden="true"></div>
+    <div id="status">Loading state and territory outlines…</div>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zhome" aria-label="Show the whole country" title="Whole country">⌂</button></div>
+    <div id="tip" hidden></div>
+  </div>
+  <aside>
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-states">–</div><div class="l">States</div></div>
+      <div class="stat"><div class="n" id="s-terr">–</div><div class="l">Organized territories</div></div>
+      <div class="stat"><div class="n" id="s-other">–</div><div class="l">Unorganized and other areas</div></div>
+      <div class="stat"><div class="n" id="s-chg">–</div><div class="l">Changes this year</div></div>
+    </div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--f-state)"></i>State</span>
+      <span><i class="sw" style="background:var(--f-terr)"></i>Territory</span>
+      <span><i class="sw" style="background:var(--f-unorg)"></i>Unorganized territory</span>
+      <span><i class="sw" style="background:var(--f-colony)"></i>Other</span>
+      <span><i class="sw" style="background:var(--accent)"></i>New state, territory or area</span>
+      <span><i class="sw" style="background:var(--changed)"></i>Boundary changed</span>
+    </div>
+    <div class="opts">
+      <label for="zoomto">Zoom to</label>
+      <select id="zoomto"><option value="">United States</option></select>
+      <label><input type="checkbox" id="o-labels" checked> Labels</label>
+      <label><input type="checkbox" id="o-flash" checked> Mark changes</label>
+    </div>
+    <h2><span id="list-h">Changes</span><button id="clear" hidden>Back to the year</button></h2>
+    <div id="list"></div>
+    <details>
+      <summary>About this map</summary>
+      <p>Each outline is a dated version of a state, territory or other area from the <a href="https://publications.newberry.org/ahcb/">Atlas of Historical County Boundaries</a>, John H. Long, editor (Chicago: The Newberry Library, 2010): 220 outlines, beginning with the Treaty of Paris on 3 September 1783.</p>
+      <p>The map shows the outlines in force on 31 December of the selected year. An area is marked for five years after it was created or its boundary changed. Selecting an area lists its whole history, for example Alaska as a department, a district, a territory and a state.</p>
+      <p>Every state and territory in view is labelled: with its name where that fits inside the outline, otherwise with the atlas's short name, set outside with a leader line where there is no room.</p>
+      <p>Other covers the Vermont and Texas republics, Deseret, the Oregon Country and an uncertain boundary area. The atlas ends in 2000; no state boundary is changed after that here. Outlines are simplified to about 400 metres for the web. Alaska and Hawaii are drawn as insets, Alaska at about a third of its true size.</p>
+    </details>
+  </aside>
+</main>
+<footer class="gut">
+  <div class="ctl">
+    <button id="play" aria-pressed="false">▶ Play</button>
+    <label for="yearnum" class="by">Year</label>
+    <input type="number" id="yearnum" min="1783" max="2025" step="1">
+    <label for="speed" class="by">Speed</label>
+    <select id="speed"><option value="2">2 yr/s</option><option value="5" selected>5 yr/s</option><option value="12">12 yr/s</option></select>
+    <label><input type="checkbox" id="loop" checked> Repeat</label>
+  </div>
+  <div class="track">
+    <canvas id="spark" aria-hidden="true"></canvas>
+    <input type="range" id="year" min="1783" max="2025" step="1" aria-label="Year">
+    <div class="ticks" id="ticks"></div>
+  </div>
+</footer>
+<script>
+(async function(){
+const Y0=1783, FLASH=5; let Y1=2025, PRESENT=20251231;
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={land:css('--land'),border:css('--border'),muted:css('--muted'),ink:css('--ink'),accent:css('--accent'),changed:css('--changed'),bg:css('--bg')};
+const FILL=[css('--f-state'),css('--f-state'),css('--f-terr'),css('--f-unorg'),css('--f-colony')];
+const MON='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+const fmtDate=n=>(n%100)+' '+MON[Math.floor(n/100)%100-1]+' '+Math.floor(n/10000);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+let meta, xy;
+try{
+  const [j,b]=await Promise.all([fetch('state_ts.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('state_ts.bin').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).catch(()=>fetch('state_ts_xy.txt').then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0)).buffer))]);
+  meta=j; xy=new Uint16Array(b);
+}catch(e){ $('status').textContent='The outline files did not load. Check that state_ts.json and state_ts.bin sit beside this page.'; return; }
+$('status').hidden=true;
+PRESENT=meta.present; Y1=Math.floor(PRESENT/10000); $('year').max=$('yearnum').max=Y1;
+
+const ringN=meta.rings, ringOff=new Uint32Array(ringN.length+1);
+for(let i=0;i<ringN.length;i++) ringOff[i+1]=ringOff[i]+ringN[i];
+function mk(r0,rn){
+  const o={r0,rn,path:null,x0:1e9,y0:1e9,x1:-1e9,y1:-1e9};
+  for(let v=ringOff[r0]*2,e=ringOff[r0+rn]*2;v<e;v+=2){const x=xy[v],y=xy[v+1];if(x<o.x0)o.x0=x;if(x>o.x1)o.x1=x;if(y<o.y0)o.y0=y;if(y>o.y1)o.y1=y}
+  return o;
+}
+function path(o){
+  if(o.path) return o.path;
+  const p=new Path2D();
+  for(let r=o.r0;r<o.r0+o.rn;r++){let v=ringOff[r]*2;const e=ringOff[r+1]*2;p.moveTo(xy[v],xy[v+1]);for(v+=2;v<e;v+=2)p.lineTo(xy[v],xy[v+1]);p.closePath()}
+  return o.path=p;
+}
+const FE=meta.feats.map((a,i)=>Object.assign(mk(a[11],a[12]),{i,grp:a[0],name:a[1],type:a[2],s:a[3],e:a[4],ver:a[5],area:a[6],chg:a[7],abbr:a[8],lx:a[9],ly:a[10],id:a[13],sy:Math.floor(a[3]/10000)}));
+const byGrp=new Map(); FE.forEach(f=>{(byGrp.get(f.grp)||byGrp.set(f.grp,[]).get(f.grp)).push(f)});
+const firstOf=new Map(); FE.forEach(f=>{if(!firstOf.has(f.id)||f.s<firstOf.get(f.id))firstOf.set(f.id,f.s)});
+FE.forEach(f=>{f.isNew=firstOf.get(f.id)===f.s});
+const LAND=FE.filter(f=>f.e>=PRESENT);
+const counts=[]; for(let y=Y0;y<=Y1;y++){const n=y*10000+1231;let k=0;for(const f of FE)if(f.type===0&&f.s<=n&&f.e>=n)k++;counts.push(k)}
+const maxCount=Math.max(...counts);
+$('ticks').innerHTML=[1800,1825,1850,1875,1900,1925,1950,1975,2000].map(y=>`<span style="left:${(y-Y0)/(Y1-Y0)*100}%">${y}</span>`).join('');
+const zb=new Map(); LAND.forEach(f=>zb.set(f.name,f));
+[...zb.keys()].sort().forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;$('zoomto').appendChild(o)});
+const HOME={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9}; for(const b of LAND){HOME.x0=Math.min(HOME.x0,b.x0);HOME.y0=Math.min(HOME.y0,b.y0);HOME.x1=Math.max(HOME.x1,b.x1);HOME.y1=Math.max(HOME.y1,b.y1)}
+
+const cv=$('map'), ctx=cv.getContext('2d'), sp=$('spark'), sx=sp.getContext('2d');
+let year=1803, playing=false, k=1, tx=0, ty=0, W=0, H=0, dpr=1, active=[], sel=null, hover=null, need=true;
+function fit(b,pad=24){k=Math.min((W-2*pad)/(b.x1-b.x0),(H-2*pad)/(b.y1-b.y0));tx=(W-(b.x1-b.x0)*k)/2-b.x0*k;ty=(H-(b.y1-b.y0)*k)/2-b.y0*k;need=true}
+function resize(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();const first=!W;const cx=(W/2-tx)/k,cy=(H/2-ty)/k;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;
+  if(first)fit(HOME);else{tx=W/2-cx*k;ty=H/2-cy*k}
+  const s=sp.getBoundingClientRect();sp.width=s.width*dpr;sp.height=s.height*dpr;need=true;drawSpark()}
+new ResizeObserver(resize).observe($('stage'));
+
+function setYear(y){
+  year=Math.max(Y0,Math.min(Y1,Math.round(y)));
+  const n=year*10000+1231; active=FE.filter(f=>f.s<=n&&f.e>=n).sort((a,b)=>b.area-a.area);
+  let st=0,te=0,ot=0,ch=0; for(const f of active){ if(f.type===0)st++; else if(f.type===2)te++; else if(f.type>2)ot++; if(f.sy===year)ch++ }
+  $('year').value=year; if(document.activeElement!==$('yearnum'))$('yearnum').value=year; $('bigyear').textContent=year;
+  $('s-states').textContent=st; $('s-terr').textContent=te; $('s-other').textContent=ot; $('s-chg').textContent=ch;
+  if(sel&&!(sel.s<=n&&sel.e>=n)){const v=byGrp.get(sel.grp).filter(f=>f.s<=n&&f.e>=n).pop(); if(v)sel=v}
+  renderList(); drawSpark(); need=true;
+}
+function draw(){
+  need=false; ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=C.bg; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.setTransform(dpr*k,0,0,dpr*k,dpr*tx,dpr*ty);
+  ctx.fillStyle=C.land; for(const s of LAND) ctx.fill(path(s));
+  const flash=$('o-flash').checked; ctx.lineJoin='round'; ctx.lineWidth=1.1/k; ctx.strokeStyle=C.muted;
+  for(const f of active){ const p=path(f); ctx.fillStyle=FILL[f.type]; ctx.fill(p,'evenodd');
+    const age=year-f.sy; if(flash&&age<FLASH){ctx.globalAlpha=0.7*(1-age/FLASH);ctx.fillStyle=f.isNew?C.accent:C.changed;ctx.fill(p,'evenodd');ctx.globalAlpha=1}
+    if(f.type===3)ctx.setLineDash([5/k,4/k]); ctx.stroke(p); ctx.setLineDash([]) }
+  if(hover&&hover!==sel){ctx.lineWidth=1.8/k;ctx.strokeStyle=C.ink;ctx.stroke(path(hover))}
+  if(sel&&active.includes(sel)){ctx.lineWidth=2.6/k;ctx.strokeStyle='#fff';ctx.stroke(path(sel))}
+  if($('o-labels').checked) drawLabels();
+}
+// Labels: full name, then the name on two lines, then the short name, all inside the outline; otherwise the short name outside with a leader line.
+const UI=css('--ui'), F12='500 12px '+UI, F11='500 11px '+UI;
+const hitR=(r,rs)=>rs.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]);
+function fitsIn(f,cx,cy,w,h){ for(const a of [-0.5,0,0.5]) for(const b of [-0.5,0,0.5]) if(!inside(f,(cx+a*w-tx)/k,(cy+b*h-ty)/k)) return false; return true }
+function split2(t){ const w=t.split(' '); if(w.length<2) return null; let best=null;
+  for(let i=1;i<w.length;i++){const a=w.slice(0,i).join(' '),b=w.slice(i).join(' '),m=Math.max(a.length,b.length); if(!best||m<best.m)best={m,a,b}} return [best.a,best.b] }
+function text(lines,font,lh,x,y,alpha){ ctx.font=font; ctx.lineJoin='round'; ctx.lineWidth=3; ctx.strokeStyle=C.bg;
+  lines.forEach((t,i)=>{const yy=y+(i-(lines.length-1)/2)*lh; ctx.globalAlpha=0.55; ctx.strokeText(t,x,yy); ctx.globalAlpha=alpha; ctx.fillText(t,x,yy)}); ctx.globalAlpha=1 }
+function drawLabels(){
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=C.ink;
+  const placed=[], out=[]; const hx=((HOME.x0+HOME.x1)/2)*k+tx, hy=((HOME.y0+HOME.y1)/2)*k+ty;
+  for(const f of active){ const x=f.lx*k+tx,y=f.ly*k+ty; if(x<0||x>W||y<0||y>H) continue;
+    const tryIn=(lines,font,lh)=>{ ctx.font=font; const w=Math.max(...lines.map(t=>ctx.measureText(t).width))+6,h=lines.length*lh+2,r=[x-w/2,y-h/2,x+w/2,y+h/2];
+      if(!fitsIn(f,x,y,w,h)||hitR(r,placed)) return false; placed.push(r); text(lines,font,lh,x,y,f.type===0?0.95:0.8); return true };
+    const s2=split2(f.name), a2=split2(f.abbr);
+    if(!(tryIn([f.name],F12,14)||(s2&&tryIn(s2,F12,13))||tryIn([f.abbr],F11,13)||(a2&&tryIn(a2,F11,12)))) out.push(f) }
+  ctx.font=F11; const ANG=[0,0.5,-0.5,1,-1,1.6,-1.6,2.2,-2.2,3.14], DIST=[26,40,56,76,100,130];
+  for(const f of out.sort((a,b)=>a.area-b.area)){ const x=f.lx*k+tx,y=f.ly*k+ty, base=Math.atan2(y-hy,x-hx), w=ctx.measureText(f.abbr).width+6,h=14; let spot=null;
+    for(const clear of [true,false]){ for(const d of DIST){ for(const da of ANG){ const cx=x+d*Math.cos(base+da),cy=y+d*Math.sin(base+da),r=[cx-w/2,cy-h/2,cx+w/2,cy+h/2];
+      if(r[0]<2||r[2]>W-2||r[1]<2||r[3]>H-2||hitR(r,placed)) continue; if(clear&&pick(cx,cy)) continue; spot={cx,cy,r}; break } if(spot)break } if(spot)break }
+    if(!spot) continue; placed.push(spot.r);
+    const dx=x-spot.cx,dy=y-spot.cy,t=Math.min(1,(w/2)/(Math.abs(dx)||1e-9),(h/2)/(Math.abs(dy)||1e-9));
+    ctx.strokeStyle=C.ink; ctx.globalAlpha=0.7; ctx.lineWidth=0.8; ctx.beginPath(); ctx.moveTo(spot.cx+dx*t,spot.cy+dy*t); ctx.lineTo(x,y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); ctx.globalAlpha=1; text([f.abbr],F11,13,spot.cx,spot.cy,0.95) }
+}
+function drawSpark(){
+  const w=sp.width,h=sp.height,pad=8*dpr; if(!w) return; sx.clearRect(0,0,w,h);
+  const X=y=>pad+(y-Y0)/(Y1-Y0)*(w-2*pad), Yc=c=>h-2-(c/maxCount)*(h-14*dpr);
+  sx.beginPath(); sx.moveTo(X(Y0),h); counts.forEach((c,i)=>{sx.lineTo(X(Y0+i),Yc(c)); if(i<counts.length-1)sx.lineTo(X(Y0+i+1),Yc(c))}); sx.lineTo(X(Y1),h); sx.closePath(); sx.fillStyle=FILL[0]; sx.fill();
+  sx.beginPath(); counts.forEach((c,i)=>{i?sx.lineTo(X(Y0+i),Yc(c)):sx.moveTo(X(Y0),Yc(c)); if(i<counts.length-1)sx.lineTo(X(Y0+i+1),Yc(c))}); sx.strokeStyle=C.muted; sx.lineWidth=dpr; sx.stroke();
+  const x=X(year),c=counts[year-Y0]; sx.strokeStyle=C.accent; sx.beginPath(); sx.moveTo(x,h); sx.lineTo(x,Yc(c)); sx.stroke();
+  sx.fillStyle=C.accent; sx.beginPath(); sx.arc(x,Yc(c),3*dpr,0,7); sx.fill();
+  sx.font=(11*dpr)+'px '+css('--mono'); sx.fillStyle=C.muted; sx.textAlign='left'; sx.textBaseline='top'; sx.fillText('States in the Union',pad,2);
+  sx.fillStyle=C.ink; sx.textAlign=x>w*0.8?'right':'left'; sx.textBaseline='bottom'; sx.fillText(c,x+(x>w*0.8?-7:7)*dpr,Math.max(Yc(c)+4*dpr,26*dpr));
+}
+const span=f=>`${fmtDate(f.s)} to ${f.e>=PRESENT?'present':fmtDate(f.e)} · ${f.area.toLocaleString()} sq mi`;
+function rowHTML(f,cur){return `<button class="row ${f.isNew?'new':'chg'}${cur?' cur':''}" data-i="${f.i}"><b>${esc(f.name)}</b> <span class="d">${esc(meta.types[f.type])}</span><br><span class="d">${span(f)}</span><br>${esc(f.chg)}</button>`}
+function renderList(){
+  const L=$('list');
+  if(sel){ const vs=byGrp.get(sel.grp); $('list-h').textContent=meta.groups[sel.grp]+': '+vs.length+(vs.length>1?' outlines':' outline'); $('clear').hidden=false;
+    L.innerHTML=vs.map(f=>rowHTML(f,f===sel)).join(''); const cur=L.querySelector('.cur'); if(cur&&!playing)cur.scrollIntoView({block:'nearest'}); return }
+  $('clear').hidden=true; $('list-h').textContent='Changes in '+year;
+  const rows=active.filter(f=>f.sy===year).sort((a,b)=>a.s-b.s);
+  L.innerHTML=rows.length?rows.map(f=>rowHTML(f)).join(''):'<div class="empty">No state or territory boundary changed in '+year+'. Select an area on the map to see its whole history.</div>';
+}
+$('list').addEventListener('click',e=>{const b=e.target.closest('.row'); if(!b) return; const f=FE[+b.dataset.i]; stop(); sel=f; setYear(f.sy);
+  if(f.x1<-tx/k||f.x0>(W-tx)/k||f.y1<-ty/k||f.y0>(H-ty)/k) fit(f,60)});
+$('clear').onclick=()=>{sel=null;renderList();need=true};
+
+function inside(o,px,py){ let inn=false; for(let r=o.r0;r<o.r0+o.rn;r++){const a=ringOff[r]*2,e=ringOff[r+1]*2; for(let i=a,j=e-2;i<e;j=i,i+=2){const xi=xy[i],yi=xy[i+1],xj=xy[j],yj=xy[j+1]; if((yi>py)!==(yj>py)&&px<(xj-xi)*(py-yi)/(yj-yi)+xi)inn=!inn}} return inn }
+function pick(mx,my){ const px=(mx-tx)/k,py=(my-ty)/k; let best=null; for(const f of active) if(px>=f.x0&&px<=f.x1&&py>=f.y0&&py<=f.y1&&inside(f,px,py)&&(!best||f.area<best.area)) best=f; return best }
+const tip=$('tip');
+function showTip(f,mx,my){ if(!f){tip.hidden=true;return}
+  tip.innerHTML=`<b>${esc(f.name)}</b><br>${esc(meta.types[f.type])}<br><span class="d">This outline: ${span(f)}</span><br>${esc(f.chg)}`;
+  tip.hidden=false; const tw=tip.offsetWidth,th=tip.offsetHeight; tip.style.left=Math.max(4,Math.min(W-tw-4,mx+14))+'px'; tip.style.top=Math.max(4,my+th+18>H?my-th-10:my+14)+'px' }
+
+const pts=new Map(); let moved=0, pd=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.offsetX,e.offsetY]);moved=0;cv.classList.add('drag');if(pts.size===2){const a=[...pts.values()];pd=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])}});
+cv.addEventListener('pointermove',e=>{
+  const p=pts.get(e.pointerId);
+  if(!p){ if(e.pointerType==='mouse'&&!playing){const h=pick(e.offsetX,e.offsetY); if(h!==hover){hover=h;need=true} showTip(h,e.offsetX,e.offsetY)} return }
+  const dx=e.offsetX-p[0],dy=e.offsetY-p[1]; moved+=Math.abs(dx)+Math.abs(dy); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
+  if(pts.size===1){tx+=dx;ty+=dy}else if(pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);zoomAt((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2,d/(pd||d));pd=d}
+  tip.hidden=true; need=true });
+function up(e){ if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId); cv.classList.remove('drag');
+  if(moved<5&&e.type==='pointerup'){const f=pick(e.offsetX,e.offsetY); sel=f; renderList(); need=true; if(e.pointerType!=='mouse')showTip(f,e.offsetX,e.offsetY)} }
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerleave',()=>{hover=null;tip.hidden=true;need=true});
+function zoomAt(mx,my,f){const nk=Math.max(0.005,Math.min(3,k*f));tx=mx-(mx-tx)*nk/k;ty=my-(my-ty)*nk/k;k=nk;need=true}
+cv.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.offsetX,e.offsetY,Math.exp(-e.deltaY*0.0015))},{passive:false});
+$('zin').onclick=()=>zoomAt(W/2,H/2,1.6); $('zout').onclick=()=>zoomAt(W/2,H/2,1/1.6); $('zhome').onclick=()=>{$('zoomto').value='';fit(HOME)};
+$('zoomto').onchange=e=>fit(e.target.value?zb.get(e.target.value):HOME,e.target.value?60:24);
+$('o-labels').onchange=$('o-flash').onchange=()=>{need=true};
+
+let acc=0,last=0;
+function stop(){playing=false;$('play').textContent='▶ Play';$('play').setAttribute('aria-pressed','false')}
+function start(){ if(year>=Y1)setYear(Y0); playing=true;acc=0;hover=null;tip.hidden=true;$('play').textContent='❚❚ Pause';$('play').setAttribute('aria-pressed','true')}
+$('play').onclick=()=>playing?stop():start();
+$('year').oninput=e=>{stop();setYear(+e.target.value)};
+$('yearnum').onchange=e=>{stop();setYear(+e.target.value||year)};
+sp.addEventListener('click',e=>{const r=sp.getBoundingClientRect();stop();setYear(Y0+(e.clientX-r.left-8)/(r.width-16)*(Y1-Y0))});
+document.addEventListener('keydown',e=>{ if(/INPUT|SELECT|BUTTON/.test(e.target.tagName)) return;
+  if(e.key===' '){e.preventDefault();playing?stop():start()} else if(e.key==='ArrowRight'){stop();setYear(year+1)} else if(e.key==='ArrowLeft'){stop();setYear(year-1)} });
+function frame(t){
+  if(playing){ acc+=Math.min(0.25,(t-last)/1000)*(+$('speed').value); if(acc>=1){const s=Math.floor(acc);acc-=s; if(year+s>Y1){ if($('loop').checked)setYear(Y0); else{setYear(Y1);stop()} } else setYear(year+s)} }
+  last=t; if(need)draw(); requestAnimationFrame(frame);
+}
+resize(); setYear(year); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
