@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c100f">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Territorial Acquisitions Time Series</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script defer src="/analytics/rs.js"></script>
+<style>
+/* Layout: one-screen instrument, same frame as states.html. Masthead, map canvas with a side panel, time bar along the bottom. */
+:root{
+  --bg:#0c100f; --panel:#141a19; --ink:#e4e8e2; --muted:#94a19a; --rule:#2d3835;
+  --land:#161d1b; --border:#47554f; --accent:#e9a24a; --changed:#4fc4b5;
+  --p0:#8a4a5c; --p1:#3d66a6; --p2:#8c7434; --p3:#3b8460; --p4:#75579b; --p5:#3a7f95; --p6:#b0685f; --p7:#8e9a44;
+  --display:"IM Fell English","Iowan Old Style",Georgia,serif;
+  --ui:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box} [hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;display:flex;flex-direction:column;overflow:hidden}
+.gut{padding-left:16px;padding-right:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px;padding-block:10px 0;border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px;min-width:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(20px,2.4vw,27px);margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 em{color:var(--accent)}
+.by{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+nav{display:flex;gap:2px;margin-left:auto;align-self:flex-end}
+nav a{color:var(--muted);text-decoration:none;padding:8px 12px 9px;font-weight:500;white-space:nowrap}
+nav a:hover{color:var(--ink)}
+a{color:var(--accent)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 350px}
+#stage{position:relative;min-height:0;min-width:0}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#map.drag{cursor:grabbing}
+#bigyear{position:absolute;right:16px;bottom:8px;font-family:var(--display);font-size:clamp(44px,7vw,84px);line-height:1;color:var(--ink);opacity:.9;pointer-events:none;font-variant-numeric:tabular-nums}
+#status{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none}
+#tip{position:absolute;max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:13px;line-height:1.4;pointer-events:none;z-index:3}
+#tip b{font-weight:600;font-size:15px} #tip .d{color:var(--muted)}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
+aside{border-left:1px solid var(--rule);background:var(--panel);display:flex;flex-direction:column;min-height:0;min-width:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.stat .n{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border:1px solid var(--border);display:inline-block}
+.sw.gone{background:repeating-linear-gradient(45deg,var(--land) 0 3px,var(--muted) 3px 4px)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px}
+.opts label{display:inline-flex;align-items:center;gap:6px}
+h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600;padding:12px 16px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2 button{font-size:12px;padding:2px 8px;text-transform:none;letter-spacing:0}
+#list{flex:1;min-height:0;overflow-y:auto;padding:0 8px 12px}
+.row{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;border-radius:0;padding:7px 8px;font-size:13px;line-height:1.4;color:var(--ink)}
+.row:hover{background:var(--bg)}
+.row.new{border-left-color:var(--accent)} .row.later{opacity:.45}
+.row b{font-weight:600} .row .d{color:var(--muted);font-family:var(--mono);font-size:12px}
+.card{padding:4px 8px 10px;font-size:13px;line-height:1.5}
+.card h3{font-family:var(--display);font-weight:400;font-size:20px;margin:6px 0 2px}
+.card .who{color:var(--muted);margin-bottom:6px}
+.card dl{display:grid;grid-template-columns:92px minmax(0,1fr);gap:3px 10px;margin:6px 0}
+.card dt{color:var(--muted)} .card dd{margin:0}
+.card p{margin:8px 0 0}
+.card .gave{border-left:3px solid var(--muted);padding-left:8px;color:var(--muted)}
+.card hr{border:0;border-top:1px solid var(--rule);margin:12px 0 8px}
+.dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border);margin-right:6px;vertical-align:baseline}
+.empty{color:var(--muted);padding:8px;font-size:13px;line-height:1.5}
+details{border-top:1px solid var(--rule);padding:10px 16px;font-size:13px;line-height:1.5;color:var(--muted);max-height:45%;overflow-y:auto}
+details summary{cursor:pointer;color:var(--ink)} details p{margin:8px 0 0}
+footer{border-top:1px solid var(--rule);padding-block:8px 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center}
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-row:1/3}
+.track{min-width:0}
+#spark{display:block;width:100%;height:46px;cursor:pointer}
+#year{display:block;width:100%;margin:0;padding:0;border:0;background:none;accent-color:var(--accent)}
+.ticks{position:relative;height:14px;margin:0 8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ticks span{position:absolute;top:0;transform:translateX(-50%)}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 10px}
+button,select{cursor:pointer} button:hover{border-color:var(--muted)}
+#play{min-width:76px;border-color:var(--accent);color:var(--accent);font-weight:600}
+#yearnum{width:78px;font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:820px){
+  body{overflow:auto;height:auto} html{height:auto}
+  main{display:contents} #stage{height:62vh;order:1} footer{order:2;grid-template-columns:1fr} .ctl{grid-row:auto}
+  aside{order:3;border-left:0;border-top:1px solid var(--rule)} #list{max-height:60vh} details{max-height:none}
+}
+</style>
+</head>
+<body>
+<header class="gut">
+  <div class="brand">
+    <h1>Territorial Acquisitions <em>through time</em></h1>
+    <span class="by">United States · treaties, purchases and annexations · 1783–2025</span>
+  </div>
+  <nav aria-label="Site"><a href="states.html">State boundaries</a><a href="counties.html">County boundaries</a><a href="index.html">All GLO patents →</a></nav>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="map" role="img" aria-label="Map of land acquired by the United States from other nations, as of the selected year"></canvas>
+    <div id="bigyear" aria-hidden="true"></div>
+    <div id="status">Loading acquisition outlines…</div>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zhome" aria-label="Show the whole country" title="Whole country">⌂</button></div>
+    <div id="tip" hidden></div>
+  </div>
+  <aside>
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-acres">–</div><div class="l">Million acres held</div></div>
+      <div class="stat"><div class="n" id="s-inst">–</div><div class="l">Instruments so far</div></div>
+      <div class="stat"><div class="n" id="s-new">–</div><div class="l">Million acres added this year</div></div>
+      <div class="stat"><div class="n" id="s-gone">–</div><div class="l">Million acres given up</div></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="opts">
+      <label><input type="checkbox" id="o-labels" checked> Labels</label>
+      <label><input type="checkbox" id="o-states" checked> Present state lines</label>
+      <label><input type="checkbox" id="o-flash" checked> Mark new</label>
+    </div>
+    <h2><span id="list-h">Instruments</span><button id="clear" hidden>Back to the list</button></h2>
+    <div id="list"></div>
+    <details>
+      <summary>About this map</summary>
+      <p>Each area is land the United States took from another established nation by treaty, purchase, act of Congress or occupation. Outlines are from the National Atlas of the United States, "Territorial Acquisitions of the United States" (U.S. Geological Survey; a federal work in the public domain). Texas and West Florida are divided here along present state lines.</p>
+      <p>The map shows who had passed what to the United States by 31 December of the selected year. Each area is drawn from the date its instrument was signed or enacted, as on the <a href="states.html">state boundaries</a> page; the dates it came into force and the land changed hands are in the panel. An area is marked gold for five years.</p>
+      <p>These instruments passed sovereignty and the government's claim between nations. They did not end Native title, which was taken separately by treaties with Native nations, and most of them promised to respect private grants already made by the earlier power. The notes on property are summaries that have not yet been checked against the treaty texts.</p>
+      <p>Acres are measured from the outlines. "BLM" figures are from the Bureau of Land Management's <i>Public Land Statistics</i>, Table 1-1, which counts only land that became federal public domain. The acres drawn for an instrument count every area it covered, including claims later given up.</p>
+      <p>Not drawn, because the source has no outline for them: the state cessions of western land (1781–1802); the Jay Treaty (1794); the Treaty of San Lorenzo (1795), which settled the 31st parallel; the Webster–Ashburton Treaty (1842), which settled the Maine boundary; later boundary awards; and Guam, American Samoa, the Northern Marianas and the Philippines. Treaty texts: <a href="https://www.loc.gov/collections/united-states-treaties-and-other-international-agreements/about-this-collection/">Bevans, <i>Treaties and Other International Agreements of the United States, 1776–1949</i></a> (Library of Congress).</p>
+      <p>Outlines are simplified to about 400 metres. Alaska is an inset at about a third of its true size; Hawaii, Puerto Rico and the Virgin Islands are insets at true size.</p>
+    </details>
+  </aside>
+</main>
+<footer class="gut">
+  <div class="ctl">
+    <button id="play" aria-pressed="false">▶ Play</button>
+    <label for="yearnum" class="by">Year</label>
+    <input type="number" id="yearnum" min="1783" max="2025" step="1">
+    <label for="speed" class="by">Speed</label>
+    <select id="speed"><option value="2">2 yr/s</option><option value="5" selected>5 yr/s</option><option value="12">12 yr/s</option></select>
+    <label><input type="checkbox" id="loop" checked> Repeat</label>
+  </div>
+  <div class="track">
+    <canvas id="spark" aria-hidden="true"></canvas>
+    <input type="range" id="year" min="1783" max="2025" step="1" aria-label="Year">
+    <div class="ticks" id="ticks"></div>
+  </div>
+</footer>
+<script>
+(async function(){
+const Y0=1783, Y1=2025, FLASH=5, EVER=99991231;
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={land:css('--land'),border:css('--border'),muted:css('--muted'),ink:css('--ink'),accent:css('--accent'),bg:css('--bg'),rule:css('--rule')};
+const MON='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+const fmtDate=n=>(n%100)+' '+MON[Math.floor(n/100)%100-1]+' '+Math.floor(n/10000);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const M=a=>(a/1e6).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+
+let meta, xy;
+try{
+  const [j,b]=await Promise.all([fetch('acq_ts.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('acq_ts.bin').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).catch(()=>fetch('acq_ts_xy.txt').then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0)).buffer))]);
+  meta=j; xy=new Uint16Array(b);
+}catch(e){ $('status').textContent='The outline files did not load. Check that acq_ts.json and acq_ts.bin sit beside this page.'; return; }
+$('status').hidden=true;
+const PCOL=meta.parties.map((_,i)=>css('--p'+i)), INST=meta.inst;
+
+const ringN=meta.rings, ringOff=new Uint32Array(ringN.length+1);
+for(let i=0;i<ringN.length;i++) ringOff[i+1]=ringOff[i]+ringN[i];
+function mk(r0,rn){
+  const o={r0,rn,path:null,x0:1e9,y0:1e9,x1:-1e9,y1:-1e9};
+  for(let v=ringOff[r0]*2,e=ringOff[r0+rn]*2;v<e;v+=2){const x=xy[v],y=xy[v+1];if(x<o.x0)o.x0=x;if(x>o.x1)o.x1=x;if(y<o.y0)o.y0=y;if(y>o.y1)o.y1=y}
+  return o;
+}
+function path(o){
+  if(o.path) return o.path;
+  const p=new Path2D();
+  for(let r=o.r0;r<o.r0+o.rn;r++){let v=ringOff[r]*2;const e=ringOff[r+1]*2;p.moveTo(xy[v],xy[v+1]);for(v+=2;v<e;v+=2)p.lineTo(xy[v],xy[v+1]);p.closePath()}
+  return o.path=p;
+}
+const UN=meta.units.map((u,i)=>Object.assign(mk(u.r0,u.rn),u,{i}));
+const ST=meta.states.map(s=>Object.assign(mk(s[3],s[4]),{abbr:s[0],lx:s[1],ly:s[2],name:s[5]}));
+const HOME={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9}; for(const b of [...UN,...ST]){HOME.x0=Math.min(HOME.x0,b.x0);HOME.y0=Math.min(HOME.y0,b.y0);HOME.x1=Math.max(HOME.x1,b.x1);HOME.y1=Math.max(HOME.y1,b.y1)}
+// state of a unit on a date: {per} when held, {gone:lastPeriod} when given up and not yet back, null before
+function at(u,n){ let last=null; for(const p of u.periods){ if(p[1]<=n&&p[2]>=n) return {per:p}; if(p[2]<n) last=p } return last?{gone:last}:null }
+const held=[], gone=[]; for(let y=Y0;y<=Y1;y++){const n=y*10000+1231;let h=0,g=0;for(const u of UN){const a=at(u,n);if(a&&a.per)h+=u.acres;else if(a)g+=u.acres}held.push(h);gone.push(g)}
+const maxHeld=Math.max(...held);
+$('ticks').innerHTML=[1800,1825,1850,1875,1900,1925,1950,1975,2000].map(y=>`<span style="left:${(y-Y0)/(Y1-Y0)*100}%">${y}</span>`).join('');
+$('legend').innerHTML=meta.parties.map((p,i)=>`<span><i class="sw" style="background:${PCOL[i]}"></i>From ${esc(p)}</span>`).join('')+'<span><i class="sw" style="background:var(--accent)"></i>New in the last five years</span><span><i class="sw gone"></i>Given up</span>';
+
+const cv=$('map'), ctx=cv.getContext('2d'), sp=$('spark'), sx=sp.getContext('2d');
+let year=1803, playing=false, k=1, tx=0, ty=0, W=0, H=0, dpr=1, shown=[], sel=null, selInst=-1, hover=null, need=true, hatch=null;
+function mkHatch(){ const c=document.createElement('canvas'); c.width=c.height=8; const x=c.getContext('2d'); x.strokeStyle=C.muted; x.lineWidth=1; x.beginPath(); x.moveTo(-2,10); x.lineTo(10,-2); x.moveTo(-2,2); x.lineTo(2,-2); x.moveTo(6,10); x.lineTo(10,6); x.stroke(); hatch=ctx.createPattern(c,'repeat') }
+function fit(b,pad=24){k=Math.min((W-2*pad)/(b.x1-b.x0),(H-2*pad)/(b.y1-b.y0));tx=(W-(b.x1-b.x0)*k)/2-b.x0*k;ty=(H-(b.y1-b.y0)*k)/2-b.y0*k;need=true}
+function resize(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();const first=!W;const cx=(W/2-tx)/k,cy=(H/2-ty)/k;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;
+  if(first)fit(HOME);else{tx=W/2-cx*k;ty=H/2-cy*k}
+  const s=sp.getBoundingClientRect();sp.width=s.width*dpr;sp.height=s.height*dpr;need=true;drawSpark()}
+new ResizeObserver(resize).observe($('stage'));
+
+function setYear(y){
+  year=Math.max(Y0,Math.min(Y1,Math.round(y)));
+  const n=year*10000+1231; shown=[];
+  let add=0; for(const u of UN){ const a=at(u,n); if(!a) continue; u.now=a; shown.push(u); if(a.per&&Math.floor(a.per[1]/10000)===year&&!u.periods.some(q=>q!==a.per&&q[2]<a.per[1]&&a.per[1]-q[2]<=70)) add+=u.acres }
+  shown.sort((a,b)=>b.acres-a.acres);
+  $('year').value=year; if(document.activeElement!==$('yearnum'))$('yearnum').value=year; $('bigyear').textContent=year;
+  $('s-acres').textContent=M(held[year-Y0]); $('s-inst').textContent=INST.filter(d=>d.signed<=n).length; $('s-new').textContent=M(add); $('s-gone').textContent=M(gone[year-Y0]);
+  renderList(); drawSpark(); need=true;
+}
+function draw(){
+  need=false; if(!hatch) mkHatch(); ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=C.bg; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.setTransform(dpr*k,0,0,dpr*k,dpr*tx,dpr*ty);
+  ctx.fillStyle=C.land; for(const s of ST) ctx.fill(path(s),'evenodd');
+  const flash=$('o-flash').checked; ctx.lineJoin='round';
+  for(const u of shown){ const p=path(u), a=u.now;
+    if(a.per){ const d=INST[a.per[0]]; ctx.fillStyle=PCOL[d.p]; ctx.globalAlpha=selInst>=0&&selInst!==a.per[0]?0.35:0.9; ctx.fill(p,'evenodd'); ctx.globalAlpha=1;
+      const age=year-Math.floor(a.per[1]/10000); if(flash&&age<FLASH){ctx.globalAlpha=0.75*(1-age/FLASH);ctx.fillStyle=C.accent;ctx.fill(p,'evenodd');ctx.globalAlpha=1} }
+    else { ctx.fillStyle=C.land; ctx.fill(p,'evenodd'); ctx.save(); ctx.setTransform(dpr,0,0,dpr,0,0); ctx.fillStyle=hatch; const q=new Path2D(); q.addPath(p,new DOMMatrix([k,0,0,k,tx,ty])); ctx.fill(q,'evenodd'); ctx.restore() }
+  }
+  if($('o-states').checked){ ctx.lineWidth=0.6/k; ctx.strokeStyle='rgba(12,16,15,.55)'; for(const s of ST) ctx.stroke(path(s)) }
+  ctx.lineWidth=1.2/k; ctx.strokeStyle=C.ink; ctx.globalAlpha=0.55; for(const u of shown){ if(!u.now.per)ctx.setLineDash([5/k,4/k]); ctx.stroke(path(u)); ctx.setLineDash([]) } ctx.globalAlpha=1;
+  if(hover&&hover!==sel){ctx.lineWidth=1.8/k;ctx.strokeStyle=C.ink;ctx.stroke(path(hover))}
+  if(sel&&shown.includes(sel)){ctx.lineWidth=2.6/k;ctx.strokeStyle='#fff';ctx.stroke(path(sel))}
+  if($('o-labels').checked) drawLabels();
+}
+const UI=css('--ui'), F12='600 12px '+UI, F11='500 11px '+UI, F10='500 10px '+UI;
+const hitR=(r,rs)=>rs.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]);
+function fitsIn(f,cx,cy,w,h){ for(const a of [-0.5,0,0.5]) for(const b of [-0.5,0,0.5]) if(!inside(f,(cx+a*w-tx)/k,(cy+b*h-ty)/k)) return false; return true }
+function split2(t){ const w=t.split(' '); if(w.length<2) return null; let best=null;
+  for(let i=1;i<w.length;i++){const a=w.slice(0,i).join(' '),b=w.slice(i).join(' '),m=Math.max(a.length,b.length); if(!best||m<best.m)best={m,a,b}} return [best.a,best.b] }
+function text(lines,font,lh,x,y,alpha){ ctx.font=font; ctx.lineJoin='round'; ctx.lineWidth=3; ctx.strokeStyle=C.bg;
+  lines.forEach((t,i)=>{const yy=y+(i-(lines.length-1)/2)*lh; ctx.globalAlpha=0.6; ctx.strokeText(t,x,yy); ctx.globalAlpha=alpha; ctx.fillText(t,x,yy)}); ctx.globalAlpha=1 }
+function drawLabels(){
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=C.ink; const placed=[];
+  for(const u of shown){ const x=u.lx*k+tx,y=u.ly*k+ty; if(x<0||x>W||y<0||y>H) continue;
+    const d=u.now.per?INST[u.now.per[0]]:null, name=d?d.t+' '+d.y:u.label, yr=d?d.y:'given up';
+    const tryIn=(lines,font,lh)=>{ ctx.font=font; const w=Math.max(...lines.map(t=>ctx.measureText(t).width))+6,h=lines.length*lh+2,r=[x-w/2,y-h/2,x+w/2,y+h/2];
+      if(!fitsIn(u,x,y,w,h)||hitR(r,placed)) return false; placed.push(r); text(lines,font,lh,x,y,d?0.97:0.7); return true };
+    const s2=split2(name); tryIn([name],F12,14)||(s2&&tryIn(s2,F12,13))||tryIn([yr],F11,13) }
+  if($('o-states').checked){ ctx.fillStyle=C.ink; for(const s of ST){ const x=s.lx*k+tx,y=s.ly*k+ty; if(x<0||x>W||y<0||y>H) continue; ctx.font=F10; const w=ctx.measureText(s.abbr).width+4,r=[x-w/2,y-6,x+w/2,y+6]; if(hitR(r,placed)) continue; placed.push(r); ctx.globalAlpha=0.45; ctx.fillText(s.abbr,x,y); ctx.globalAlpha=1 } }
+}
+function drawSpark(){
+  const w=sp.width,h=sp.height,pad=8*dpr; if(!w) return; sx.clearRect(0,0,w,h);
+  const X=y=>pad+(y-Y0)/(Y1-Y0)*(w-2*pad), Yc=c=>h-2-(c/maxHeld)*(h-14*dpr);
+  sx.beginPath(); sx.moveTo(X(Y0),h); held.forEach((c,i)=>{sx.lineTo(X(Y0+i),Yc(c)); if(i<held.length-1)sx.lineTo(X(Y0+i+1),Yc(c))}); sx.lineTo(X(Y1),h); sx.closePath(); sx.fillStyle='#22302c'; sx.fill();
+  sx.beginPath(); held.forEach((c,i)=>{i?sx.lineTo(X(Y0+i),Yc(c)):sx.moveTo(X(Y0),Yc(c)); if(i<held.length-1)sx.lineTo(X(Y0+i+1),Yc(c))}); sx.strokeStyle=C.muted; sx.lineWidth=dpr; sx.stroke();
+  const x=X(year),c=held[year-Y0]; sx.strokeStyle=C.accent; sx.beginPath(); sx.moveTo(x,h); sx.lineTo(x,Yc(c)); sx.stroke();
+  sx.fillStyle=C.accent; sx.beginPath(); sx.arc(x,Yc(c),3*dpr,0,7); sx.fill();
+  sx.font=(11*dpr)+'px '+css('--mono'); sx.fillStyle=C.muted; sx.textAlign='left'; sx.textBaseline='top'; sx.fillText('Million acres held under these instruments',pad,2);
+  sx.fillStyle=C.ink; sx.textAlign=x>w*0.8?'right':'left'; sx.textBaseline='bottom'; sx.fillText(M(c),x+(x>w*0.8?-7:7)*dpr,Math.max(Yc(c)+4*dpr,26*dpr));
+}
+const drawnAcres=ii=>UN.reduce((s,u)=>s+(u.periods.some(p=>p[0]===ii)?u.acres:0),0);
+function instHTML(ii,per){ const d=INST[ii];
+  return `<h3>${esc(d.t)}, ${d.y}</h3><div class="who"><i class="dot" style="background:${PCOL[d.p]}"></i>From ${esc(meta.parties[d.p])} · ${esc(d.kind)}</div>
+  <dl>${per?`<dt>Held here</dt><dd>${fmtDate(per[1])} to ${per[2]>=EVER?'present':fmtDate(per[2])}</dd>`:''}
+  <dt>Signed</dt><dd>${fmtDate(d.signed)}${/signed/.test(d.ok)?'':' <span class="d">(unchecked)</span>'}</dd>
+  <dt>In force</dt><dd>${esc(d.force)}</dd>${d.poss?`<dt>Possession</dt><dd>${esc(d.poss)}</dd>`:''}
+  <dt>Payment</dt><dd>${esc(d.pay)}</dd>
+  <dt>Acres drawn</dt><dd>${Math.round(drawnAcres(ii)).toLocaleString()}</dd>
+  ${d.blm?`<dt>Acres, BLM</dt><dd>${d.blm.toLocaleString()} (land and water that became public domain)</dd>`:''}
+  <dt>Now in</dt><dd>${esc(d.st)}</dd>${d.cite?`<dt>Citation</dt><dd>${esc(d.cite)}</dd>`:''}</dl>
+  <p>${esc(d.prop)}</p>${d.url?`<p><a href="${d.url}" target="_blank" rel="noopener">Treaty at the National Archives</a></p>`:''}` }
+function renderList(){
+  const L=$('list'), n=year*10000+1231;
+  if(sel){ $('list-h').textContent='Selected area'; $('clear').hidden=false;
+    L.innerHTML=`<div class="card"><div class="who">${esc(sel.label)} · ${Math.round(sel.acres).toLocaleString()} acres drawn</div>${sel.gave?`<p class="gave">${esc(sel.gave)}</p>`:''}${sel.periods.map(p=>instHTML(p[0],p)).join('<hr>')}</div>`; return }
+  if(selInst>=0){ $('list-h').textContent='Selected instrument'; $('clear').hidden=false; L.innerHTML=`<div class="card">${instHTML(selInst)}</div>`; return }
+  $('clear').hidden=true; $('list-h').textContent='Instruments, '+INST.filter(d=>d.signed<=n).length+' of '+INST.length+' by '+year;
+  L.innerHTML=INST.map((d,i)=>`<button class="row${Math.floor(d.signed/10000)===year?' new':''}${d.signed>n?' later':''}" data-i="${i}"><i class="dot" style="background:${PCOL[d.p]}"></i><b>${esc(d.t)}</b> <span class="d">${fmtDate(d.signed)}</span><br><span class="d">From ${esc(meta.parties[d.p])} · ${M(drawnAcres(i))} M acres drawn</span></button>`).join('');
+}
+$('list').addEventListener('click',e=>{const b=e.target.closest('.row'); if(!b) return; stop(); selInst=+b.dataset.i; sel=null; const y=Math.floor(INST[selInst].signed/10000); setYear(Math.max(year,y)===year&&year-y<60?year:y); });
+$('clear').onclick=()=>{sel=null;selInst=-1;renderList();need=true};
+
+function inside(o,px,py){ let inn=false; for(let r=o.r0;r<o.r0+o.rn;r++){const a=ringOff[r]*2,e=ringOff[r+1]*2; for(let i=a,j=e-2;i<e;j=i,i+=2){const xi=xy[i],yi=xy[i+1],xj=xy[j],yj=xy[j+1]; if((yi>py)!==(yj>py)&&px<(xj-xi)*(py-yi)/(yj-yi)+xi)inn=!inn}} return inn }
+function pick(mx,my){ const px=(mx-tx)/k,py=(my-ty)/k; let best=null; for(const f of shown) if(px>=f.x0&&px<=f.x1&&py>=f.y0&&py<=f.y1&&inside(f,px,py)&&(!best||f.acres<best.acres)) best=f; return best }
+function stateAt(mx,my){ const px=(mx-tx)/k,py=(my-ty)/k; for(const s of ST) if(px>=s.x0&&px<=s.x1&&py>=s.y0&&py<=s.y1&&inside(s,px,py)) return s.name; return '' }
+const tip=$('tip');
+function showTip(f,mx,my){ if(!f){tip.hidden=true;return}
+  const a=f.now, st=stateAt(mx,my), d=a.per?INST[a.per[0]]:null;
+  tip.innerHTML=(d?`<b>${esc(d.t)}, ${d.y}</b><br>From ${esc(meta.parties[d.p])} · ${esc(d.kind)}<br><span class="d">Held from ${fmtDate(a.per[1])}${a.per[2]<EVER?' to '+fmtDate(a.per[2]):''}</span>`:`<b>${esc(f.label)}</b><br>${esc(f.gave)}`)
+    +`<br><span class="d">${Math.round(f.acres).toLocaleString()} acres drawn${st?' · now in '+esc(st):''}</span>`;
+  tip.hidden=false; const tw=tip.offsetWidth,th=tip.offsetHeight; tip.style.left=Math.max(4,Math.min(W-tw-4,mx+14))+'px'; tip.style.top=Math.max(4,my+th+18>H?my-th-10:my+14)+'px' }
+
+const pts=new Map(); let moved=0, pd=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.offsetX,e.offsetY]);moved=0;cv.classList.add('drag');if(pts.size===2){const a=[...pts.values()];pd=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])}});
+cv.addEventListener('pointermove',e=>{
+  const p=pts.get(e.pointerId);
+  if(!p){ if(e.pointerType==='mouse'&&!playing){const h=pick(e.offsetX,e.offsetY); if(h!==hover){hover=h;need=true} showTip(h,e.offsetX,e.offsetY)} return }
+  const dx=e.offsetX-p[0],dy=e.offsetY-p[1]; moved+=Math.abs(dx)+Math.abs(dy); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
+  if(pts.size===1){tx+=dx;ty+=dy}else if(pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);zoomAt((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2,d/(pd||d));pd=d}
+  tip.hidden=true; need=true });
+function up(e){ if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId); cv.classList.remove('drag');
+  if(moved<5&&e.type==='pointerup'){const f=pick(e.offsetX,e.offsetY); sel=f; selInst=-1; renderList(); need=true; if(e.pointerType!=='mouse')showTip(f,e.offsetX,e.offsetY)} }
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerleave',()=>{hover=null;tip.hidden=true;need=true});
+function zoomAt(mx,my,f){const nk=Math.max(0.005,Math.min(3,k*f));tx=mx-(mx-tx)*nk/k;ty=my-(my-ty)*nk/k;k=nk;need=true}
+cv.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.offsetX,e.offsetY,Math.exp(-e.deltaY*0.0015))},{passive:false});
+$('zin').onclick=()=>zoomAt(W/2,H/2,1.6); $('zout').onclick=()=>zoomAt(W/2,H/2,1/1.6); $('zhome').onclick=()=>fit(HOME);
+$('o-labels').onchange=$('o-flash').onchange=$('o-states').onchange=()=>{need=true};
+
+let acc=0,last=0;
+function stop(){playing=false;$('play').textContent='▶ Play';$('play').setAttribute('aria-pressed','false')}
+function start(){ if(year>=Y1)setYear(Y0); playing=true;acc=0;hover=null;tip.hidden=true;$('play').textContent='❚❚ Pause';$('play').setAttribute('aria-pressed','true')}
+$('play').onclick=()=>playing?stop():start();
+$('year').oninput=e=>{stop();setYear(+e.target.value)};
+$('yearnum').onchange=e=>{stop();setYear(+e.target.value||year)};
+sp.addEventListener('click',e=>{const r=sp.getBoundingClientRect();stop();setYear(Y0+(e.clientX-r.left-8)/(r.width-16)*(Y1-Y0))});
+document.addEventListener('keydown',e=>{ if(/INPUT|SELECT|BUTTON/.test(e.target.tagName)) return;
+  if(e.key===' '){e.preventDefault();playing?stop():start()} else if(e.key==='ArrowRight'){stop();setYear(year+1)} else if(e.key==='ArrowLeft'){stop();setYear(year-1)} });
+function frame(t){
+  if(playing){ acc+=Math.min(0.25,(t-last)/1000)*(+$('speed').value); if(acc>=1){const s=Math.floor(acc);acc-=s; if(year+s>Y1){ if($('loop').checked)setYear(Y0); else{setYear(Y1);stop()} } else setYear(year+s)} }
+  last=t; if(need)draw(); requestAnimationFrame(frame);
+}
+window.__acq={setYear,get k(){return k},UN,INST};
+resize(); setYear(year); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
