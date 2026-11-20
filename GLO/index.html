@@ -724,15 +724,19 @@ async function initMap(){
   }
 
   let proj, W=0, H=0, DPR, cx, cy, cw, ch, P = {};
+  let qd, tilt, cellPx=1;   // qd: four projected corners per cell; tilt: 1 where the projection turns the cell more than about 3 degrees; cellPx: a typical cell edge in unzoomed pixels
   function layout(){
     const r=canvas.getBoundingClientRect(); if(!r.width||!r.height) return false;   // map view hidden: keep the last good size
     DPR=window.devicePixelRatio||1; W=r.width; H=r.height;
     canvas.width=W*DPR; canvas.height=H*DPR;
     proj=d3.geoAlbersUsa().fitExtent([[12,W<700?140:16],[W-12,H-12]], statesGeo);
     const path=d3.geoPath(proj);
-    cx=new Float32Array(N); cy=new Float32Array(N); cw=new Float32Array(N); ch=new Float32Array(N);
+    cx=new Float32Array(N); cy=new Float32Array(N); cw=new Float32Array(N); ch=new Float32Array(N); qd=new Float32Array(N*8); tilt=new Uint8Array(N); let eSum=0, eN=0;
     for (let i=0;i<N;i++){ const p=proj([cLon[i],cLat[i]]), q=proj([cLon[i]+.1,cLat[i]+.1]);
-      if(!p||!q){cx[i]=NaN;continue;} cx[i]=Math.min(p[0],q[0]); cy[i]=Math.min(p[1],q[1]); cw[i]=Math.abs(q[0]-p[0]); ch[i]=Math.abs(q[1]-p[1]); }
+      if(!p||!q){cx[i]=NaN;continue;} const r1=proj([cLon[i]+.1,cLat[i]]), r2=proj([cLon[i],cLat[i]+.1]); if(!r1||!r2){cx[i]=NaN;continue;}
+      cx[i]=Math.min(p[0],q[0]); cy[i]=Math.min(p[1],q[1]); cw[i]=Math.abs(q[0]-p[0]); ch[i]=Math.abs(q[1]-p[1]);
+      qd.set([p[0],p[1],r1[0],r1[1],q[0],q[1],r2[0],r2[1]],i*8); tilt[i]=Math.abs(r1[1]-p[1])>0.05*Math.abs(r1[0]-p[0])?1:0; if(i%40===0){ eSum+=Math.min(Math.hypot(r1[0]-p[0],r1[1]-p[1]),Math.hypot(r2[0]-p[0],r2[1]-p[1])); eN++; } }
+    cellPx=eN?eSum/eN:1;
     P = { nation:new Path2D(path(nation)), mesh:new Path2D(path(mesh)), path };
     FARM.p=[]; FARM.c=[]; FARM.w=[]; FARM.h=[];
     for (const l of EGFARMS.lots){ const fp=new Path2D(); let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
@@ -783,6 +787,14 @@ async function initMap(){
     ctx.setTransform(DPR*st.k,0,0,DPR*st.k,DPR*st.x,DPR*st.y);
     ctx.fillStyle=C.land; ctx.fill(P.nation);
     const mp=0.9/st.k, seam=0.6/st.k;
+    // a cell is drawn as its true projected outline, pushed out by e so neighbours meet and a cell never falls under the smallest visible size
+    const quadPath=(b,e,i0=0,i1=b.length)=>{ ctx.beginPath(); for (let j=i0;j<i1;j++){ const o=b[j]*8, mx=(qd[o]+qd[o+4])/2, my=(qd[o+1]+qd[o+5])/2;
+      for (let c=0;c<4;c++){ const dx=qd[o+2*c]-mx, dy=qd[o+2*c+1]-my, f=1+e*1.4142/(Math.hypot(dx,dy)||1); if(c) ctx.lineTo(mx+dx*f,my+dy*f); else ctx.moveTo(mx+dx*f,my+dy*f); } ctx.closePath(); } };
+    // Upright rectangles are kept where they are right or too small to matter: at the national view, and for cells the projection barely tilts.
+    // Elsewhere the outline is filled, in short runs (one path holding tens of thousands of outlines is many times slower to fill).
+    const eFill=(seam+Math.max(0,mp-cellPx))/2, useQuads=st.k>=1.5;
+    const fillCells=b=>{ let q=null; for (const i of b){ if(useQuads&&tilt[i]){ (q||(q=[])).push(i); continue; } ctx.fillRect(cx[i],cy[i],Math.max(cw[i],mp)+seam,Math.max(ch[i],mp)+seam); }
+      if(q) for (let j=0;j<q.length;j+=16){ quadPath(q,eFill,j,Math.min(q.length,j+16)); ctx.fill(); } };
     if (st.color==='type'){
       // bucket cells by (most common type, shade); colour = type, opacity = number of patents
       const B=Array.from({length:NC*SHADES},()=>[]);
@@ -790,19 +802,19 @@ async function initMap(){
         B[dom[i]*SHADES+Math.min(SHADES-1,Math.floor(Math.log1p(v)/L*(SHADES-1)+.5))].push(i); }
       for (let k=0;k<NC;k++){ ctx.fillStyle=CAT[k];
         for (let s=0;s<SHADES;s++){ const b=B[k*SHADES+s]; if(!b.length) continue; ctx.globalAlpha=alphaOf(s);
-          for (const i of b) ctx.fillRect(cx[i],cy[i],Math.max(cw[i],mp)+seam,Math.max(ch[i],mp)+seam); } }
+          fillCells(b); } }
       ctx.globalAlpha=1;
     } else {
       // density: all selected types together on one sequential ramp
       const B=Array.from({length:LEVELS},()=>[]);
       for (let i=0;i<N;i++){ const v=vals[i]; if(!v||cx[i]!==cx[i]) continue; B[Math.min(LEVELS-1,Math.floor(Math.log1p(v)/L*(LEVELS-1)+.5))].push(i); }
-      for (let l=0;l<LEVELS;l++){ if(!B[l].length) continue; ctx.fillStyle=LUT[l]; for (const i of B[l]) ctx.fillRect(cx[i],cy[i],Math.max(cw[i],mp)+seam,Math.max(ch[i],mp)+seam); }
+      for (let l=0;l<LEVELS;l++){ if(!B[l].length) continue; ctx.fillStyle=LUT[l]; fillCells(B[l]); }
     }
     ctx.lineWidth=0.7/st.k; ctx.strokeStyle=C.border; ctx.stroke(P.mesh); ctx.stroke(P.nation);
     if (st.focus){ const f=statesGeo.features.find(d=>d.properties.name===st.focus); if(f){ ctx.lineWidth=2/st.k; ctx.strokeStyle=C.ink; ctx.stroke(new Path2D(P.path(f))); } }
     drawFarms();
-    if (hitCells.length){ ctx.lineWidth=1.6/st.k; ctx.strokeStyle=C.accent; const pad=1.5/st.k; for (const i of hitCells){ if(cx[i]!==cx[i]) continue; ctx.strokeRect(cx[i]-pad,cy[i]-pad,Math.max(cw[i],1/st.k)+2*pad,Math.max(ch[i],1/st.k)+2*pad); } }
-    if (selCell>=0 && cx[selCell]===cx[selCell]){ ctx.lineWidth=3.2/st.k; ctx.strokeStyle=C.ink; ctx.strokeRect(cx[selCell]-1/st.k,cy[selCell]-1/st.k,Math.max(cw[selCell],.9/st.k)+2/st.k,Math.max(ch[selCell],.9/st.k)+2/st.k); }
+    if (hitCells.length){ ctx.lineWidth=1.6/st.k; ctx.strokeStyle=C.accent; quadPath(hitCells.filter(i=>cx[i]===cx[i]),1.5/st.k); ctx.stroke(); }
+    if (selCell>=0 && cx[selCell]===cx[selCell]){ ctx.lineWidth=3.2/st.k; ctx.strokeStyle=C.ink; quadPath([selCell],1/st.k); ctx.stroke(); }
     MAP.onFilters && MAP.onFilters();
     const [a,b]=range();
     $('yLabel').classList.toggle('long', st.mode!=='cum' && range()[0]!==range()[1] && Math.floor(range()[0]/100)!==Math.floor(range()[1]/100));
