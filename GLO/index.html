@@ -498,7 +498,7 @@ footer.site{border-top:1px solid var(--rule);margin-top:40px;padding-top:14px;fo
     <h3>Ohio's older surveys</h3>
     <div class="prose">
       <p>Ohio was where the federal survey was worked out, and much of the state was laid off before the standard grid existed: the Seven Ranges and the Ohio River Survey in the south-east, the lands between and west of the Miami rivers, and the United States Military District in the centre. Their townships are numbered from rivers and private purchase lines, so the method used for the other states could not place them, and until November 2026 they were missing from the map. 85,756 Ohio patents on these surveys are now shown. Each survey's grid was fitted so that its townships fall inside the county each patent names, and a patent is placed at the centre of its township, not at its own section. The list under a cell says so on each row. On the map this shows as stripes: a township's patents pile into one or two cells with thinner cells between.</p>
-      <p>The Virginia Military District, between the Scioto and Little Miami rivers, was kept by Virginia to pay its Revolutionary soldiers and was never surveyed into townships. A warrant holder chose his own ground and had it run by metes and bounds, and the United States then issued the patent. The GLO index holds 4,775 of these patents, 2,625,405 acres, with no township, county or survey number. 273 have been placed on the stream named in the scanned patent. The rest are spread evenly over the district, so they show that the land was patented and to whom, but not where inside the district it lies. They are not in the Surname Origin view. Many early Virginia Military District patents are not in the GLO index at all.</p>
+      <p>The Virginia Military District, between the Scioto and Little Miami rivers, was kept by Virginia to pay its Revolutionary soldiers and was never surveyed into townships. A warrant holder chose his own ground and had it run by metes and bounds, and the United States then issued the patent. The GLO index holds 4,775 of these patents, 2,625,405 acres, with no township, county or survey number. 329 have been placed on the stream named in the scanned patent. The rest are spread evenly over the district, so they show that the land was patented and to whom, but not where inside the district it lies. They are not in the Surname Origin view. Many early Virginia Military District patents are not in the GLO index at all.</p>
       <p>The Fire Lands, the western end of Connecticut's Western Reserve, never passed through a federal land office. Connecticut granted the half-million acres in May 1792 to the people burned out by British raids, and on 9 November 1808 the 120 quarter-township sections were drawn by lot among 120 groups of claims. The map shows that 1808 partition, counted under Ohio: 417 entries, one for each holder a section was classified to, as printed in W. W. Williams's <i>History of the Fire-Lands</i> (1879), spelled as printed. Each holder's acreage is a share of the section's mapped area in proportion to the value of the claims held there, so it is an estimate, and the mapped areas add up to 507,655 acres against the 500,000 granted. Most holders had bought their claims from the original sufferers. For Berlin, Ruggles and Danbury no table is printed and the sections are shown without holders. The sufferers themselves are on a separate page, <a href="firelands.html">The Fire Lands</a>. Fire Lands entries are counted as grants and claims and are not in the Surname Origin view.</p>
       <p>Still blank or thin in Ohio: the rest of the Connecticut Western Reserve in the north-east, which Connecticut sold and whose first titles are land-company deeds; the Ohio Company's purchase around Marietta and John Cleves Symmes's purchase around Cincinnati, where the United States patented the whole tract to the company and the buyers took company deeds; and the canal, school and road lands the State of Ohio sold itself.</p>
     </div>
@@ -677,12 +677,12 @@ async function initMap(){
   const canvas = $('map'), ctx = canvas.getContext('2d'), hist = $('hist'), hctx = hist.getContext('2d');
   let buf;
   try {
-    const r = await fetch('glo_grid_v20.txt'); if (!r.ok) throw 0;
+    const r = await fetch('glo_grid_v21.txt'); if (!r.ok) throw 0;
     const bin = atob((await r.text()).trim()); const u8 = new Uint8Array(bin.length);
     for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); buf = u8.buffer;
-  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v20.txt) did not load. Check it sits next to this page, then reload.'; return; }
+  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v21.txt) did not load. Check it sits next to this page, then reload.'; return; }
   const dv = new DataView(buf);
-  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v20.txt that came with this page.'; return; }  // "GLO3"
+  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v21.txt that came with this page.'; return; }  // "GLO3"
   // entries: one per (state, 0.1° cell); a cell on a state line has one entry per state
   const E = dv.getUint32(4,true);
   const eLa=new Uint16Array(E), eLo=new Uint16Array(E), eSt=new Uint8Array(E), eStart=new Uint32Array(E+1);
@@ -1292,7 +1292,7 @@ function oShareText(k){
        : "whose patentee's surname is "+ORIG[k];
 }
 
-// decode a GLO3 grid file (same layout as glo_grid_v20.txt)
+// decode a GLO3 grid file (same layout as glo_grid_v21.txt)
 function parseGLO2(txt, NK){
   const bin=atob(txt.trim()), u8=new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
   const dv=new DataView(u8.buffer); if (dv.getUint32(0,true)!==0x334F4C47) throw new Error('format');
