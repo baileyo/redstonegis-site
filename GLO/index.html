@@ -505,7 +505,7 @@ footer.site{border-top:1px solid var(--rule);margin-top:40px;padding-top:14px;fo
     <h3>New York</h3>
     <div class="prose">
       <p>New York was never federal public domain. The Dutch West India Company and then the English governors granted its land as manors, town patents and patents to groups of associates, from Rensselaerswyck in 1630 to the last royal patents of 1775. After the Revolution the State sold or granted what was left: the Military Tract set apart for its soldiers, Macomb's Purchase in the north, the Chenango Twenty Townships and many smaller tracts. West of the Preemption Line, Massachusetts held the right to buy the land from the Senecas under the Hartford agreement of 1786 and sold it to Phelps and Gorham and to Robert Morris, who sold most of it on to the Holland Land Company.</p>
-      <p>The 319 grant entries shown here are the dated rows of the tables of manors, colonial patents, purchases and land grants in J. H. French's <i>Gazetteer of the State of New York</i> (1860), with 28 Dutch and English town patents of Long Island, New York City, Ulster and Westchester taken from his county chapters. Each is one record, however large: a manor of several hundred thousand acres counts the same as a patent of two thousand. They are placed in a single cell inside the present-day towns the grant covers where those are known. For 81 more, the town is the one under the grant's name on J. R. Bien's 1895 map of New York's original land grants, patents and purchases, which places them to within a town or so. The rest stay inside the counties French names, so those county-level entries stand only for "somewhere in this county". Another 78 State tracts that French lists without a date are counted on the States tab but not mapped.</p>
+      <p>The 319 grant entries shown here are the dated rows of the tables of manors, colonial patents, purchases and land grants in J. H. French's <i>Gazetteer of the State of New York</i> (1860), with 28 Dutch and English town patents of Long Island, New York City, Ulster and Westchester taken from his county chapters. Each is one record, however large: a manor of several hundred thousand acres counts the same as a patent of two thousand. They are placed in a single cell inside the present-day towns the grant covers where those are known. For 87 more, the town is the one under the grant's name on J. R. Bien's 1895 map of New York's original land grants, patents and purchases, which places them to within a town or so. The rest stay inside the counties French names, so those county-level entries stand only for "somewhere in this county". Another 78 State tracts that French lists without a date are counted on the States tab but not mapped.</p>
       <p>The 2,665 warrant entries are lots of the Military Tract, balloted to New York's Revolutionary soldiers in July 1790, one record per lot, all at 1790. They name the soldier the lot was balloted to and, where the 1825 register of patent deliveries or a transcription of the patent records it, who received the patent; most patents went to someone other than the soldier. Lot positions come from surveyed lot lines in Cayuga County and in Ovid, Hector and Ulysses, and elsewhere from the 1790–91 township survey maps, fitted to present-day town lines.</p>
       <p>Acreage on the States tab adds the grants whose size French states, leaving out parts of larger grants listed separately, plus 600 acres for each Military Tract lot. Many manors and the largest patents have no stated size, so the figure is a lower bound. Not yet shown: smaller colonial patents French gives only in his town entries, the Dutch ground-briefs of Manhattan and Long Island, and the State's later sales of escheated and forfeited land.</p>
     </div>
@@ -692,12 +692,12 @@ async function initMap(){
   const canvas = $('map'), ctx = canvas.getContext('2d'), hist = $('hist'), hctx = hist.getContext('2d');
   let buf;
   try {
-    const r = await fetch('glo_grid_v24.txt'); if (!r.ok) throw 0;
+    const r = await fetch('glo_grid_v25.txt'); if (!r.ok) throw 0;
     const bin = atob((await r.text()).trim()); const u8 = new Uint8Array(bin.length);
     for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); buf = u8.buffer;
-  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v24.txt) did not load. Check it sits next to this page, then reload.'; return; }
+  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v25.txt) did not load. Check it sits next to this page, then reload.'; return; }
   const dv = new DataView(buf);
-  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v24.txt that came with this page.'; return; }  // "GLO3"
+  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v25.txt that came with this page.'; return; }  // "GLO3"
   // entries: one per (state, 0.1° cell); a cell on a state line has one entry per state
   const E = dv.getUint32(4,true);
   const eLa=new Uint16Array(E), eLo=new Uint16Array(E), eSt=new Uint8Array(E), eStart=new Uint32Array(E+1);
@@ -1309,7 +1309,7 @@ function oShareText(k){
        : "whose patentee's surname is "+ORIG[k];
 }
 
-// decode a GLO3 grid file (same layout as glo_grid_v24.txt)
+// decode a GLO3 grid file (same layout as glo_grid_v25.txt)
 function parseGLO2(txt, NK){
   const bin=atob(txt.trim()), u8=new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
   const dv=new DataView(u8.buffer); if (dv.getUint32(0,true)!==0x334F4C47) throw new Error('format');
