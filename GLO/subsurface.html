@@ -183,6 +183,18 @@ function path(o){ if(o.path) return o.path; const p=new Path2D();
 const ST=meta.states.map((s,i)=>Object.assign(mk(s[3],s[4]),{abbr:s[0],lx:s[1],ly:s[2],name:s[5],i}));
 const has=new Uint8Array(NS); for(let i=0;i<N;i++)has[cS[i]]=1;
 const HOME={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9}; for(const b of ST){ if(b.abbr==='PR'||b.abbr==='VI')continue; HOME.x0=Math.min(HOME.x0,b.x0);HOME.y0=Math.min(HOME.y0,b.y0);HOME.x1=Math.max(HOME.x1,b.x1);HOME.y1=Math.max(HOME.y1,b.y1)}
+// one image of the squares: each pixel knows its square, so a year is painted in one pass and drawn as a picture
+const RS=20, RX0=Math.floor(HOME.x0/RS)-4, RY0=Math.floor(HOME.y0/RS)-4, RW=Math.ceil(HOME.x1/RS)+4-RX0, RH=Math.ceil(HOME.y1/RS)+4-RY0;
+const owner=new Int32Array(RW*RH).fill(-1);
+for(let i=0;i<N;i++){ const x=cXY[2*i],y=cXY[2*i+1],ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3],det=ex*ny-ey*nx; if(!det)continue;
+  const hx=(Math.abs(ex)+Math.abs(nx))*1.15+RS,hy=(Math.abs(ey)+Math.abs(ny))*1.15+RS;
+  const a0=Math.max(0,Math.floor((x-hx)/RS)-RX0),a1=Math.min(RW-1,Math.floor((x+hx)/RS)-RX0),b0=Math.max(0,Math.floor((y-hy)/RS)-RY0),b1=Math.min(RH-1,Math.floor((y+hy)/RS)-RY0);
+  for(let b=b0;b<=b1;b++) for(let a=a0;a<=a1;a++){ const dx=(a+RX0+.5)*RS-x,dy=(b+RY0+.5)*RS-y,u=(dx*ny-dy*nx)/det,v=(ex*dy-ey*dx)/det; if(u>=-1.15&&u<1.15&&v>=-1.15&&v<1.15&&(owner[b*RW+a]<0||(u>=-1&&u<1&&v>=-1&&v<1))) owner[b*RW+a]=i }
+  const ca=Math.floor(x/RS)-RX0,cb=Math.floor(y/RS)-RY0; if(ca>=0&&ca<RW&&cb>=0&&cb<RH&&owner[cb*RW+ca]<0) owner[cb*RW+ca]=i }
+const lc=document.createElement('canvas'); lc.width=RW; lc.height=RH; const lctx=lc.getContext('2d'), limg=lctx.createImageData(RW,RH), l32=new Uint32Array(limg.data.buffer);
+const SA=[0.4,0.68,0.95], PAL=new Uint32Array(NG*3);
+GCOL.forEach((c,g)=>{const n=parseInt(c.slice(1),16),r=n>>16,gg=(n>>8)&255,b=n&255; for(let st=0;st<3;st++) PAL[g*3+st]=((Math.round(SA[st]*255)<<24)|(b<<16)|(gg<<8)|r)>>>0});
+function paint(){ for(let p=0,n=owner.length;p<n;p++){const o=owner[p]; l32[p]=(o<0||cG[o]<0)?0:PAL[cG[o]*3+cStr[o]]} lctx.putImageData(limg,0,0) }
 $('o-state').innerHTML+=ST.filter(s=>has[s.i]).sort((a,b)=>a.name<b.name?-1:1).map(s=>`<option value="${s.i}">${esc(s.name)}</option>`).join('');
 $('ticks').innerHTML=[1800,1825,1850,1875,1900,1925,1950,1975,2000].map(y=>`<span style="left:${(y-Y0)/(Y1-Y0)*100}%">${y}</span>`).join('');
 const on=G.map(()=>true);
@@ -197,27 +209,22 @@ function resize(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRec
   if(first)fit(HOME);else{tx=W/2-cx*k;ty=H/2-cy*k}
   const s=sp.getBoundingClientRect();sp.width=s.width*dpr;sp.height=s.height*dpr;need=true;drawSpark()}
 new ResizeObserver(resize).observe($('stage'));
+let tYear=-1;
 function recolor(){
-  cT.fill(0);
-  for(let i=0;i<N;i++){ const b=i*NG; for(let e=cOff[i];e<cOff[i+1];e++) if(eYr[e]<=year) cT[b+eG[e]]+=acres[e];
+  const inc=tYear>=0&&year>tYear&&year-tYear<=12, lo=inc?tYear:-1; if(!inc) cT.fill(0); tYear=year;
+  for(let i=0;i<N;i++){ const b=i*NG; for(let e=cOff[i];e<cOff[i+1];e++){const y=eYr[e]; if(y<=year&&y>lo) cT[b+eG[e]]+=acres[e]}
     let tot=0,res=0,bg=-1,bv=0; for(let g=0;g<NG;g++){ if(!on[g])continue; const v=cT[b+g]; tot+=v; if(g){res+=v; if(v>bv){bv=v;bg=g}} }
     if(tot<=0){cG[i]=-1;continue}
     const r=res/tot;
     if(r>=0.05&&bg>0){cG[i]=bg;cStr[i]=r>0.5?2:r>0.2?1:0}
     else if(on[0]&&cT[b]>0){cG[i]=0;const f=cT[b]/cArea[i];cStr[i]=f>0.5?2:f>0.2?1:0}
     else cG[i]=-1 }
-  need=true }
-const SA=[0.4,0.68,0.95];
+  paint(); need=true }
 function draw(){
   need=false; ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=C.bg; ctx.fillRect(0,0,cv.width,cv.height);
   ctx.setTransform(dpr*k,0,0,dpr*k,dpr*tx,dpr*ty);
   ctx.fillStyle=C.land; for(const s of ST) ctx.fill(path(s),'evenodd');
-  const vx0=-tx/k-80,vx1=(W-tx)/k+80,vy0=-ty/k-80,vy1=(H-ty)/k+80, pad=0.6/k;
-  for(let g=0;g<NG;g++) for(let st=0;st<3;st++){ ctx.beginPath(); let any=false;
-    for(let i=0;i<N;i++){ if(cG[i]!==g||cStr[i]!==st) continue; const x=cXY[2*i],y=cXY[2*i+1]; if(x<vx0||x>vx1||y<vy0||y>vy1) continue;
-      const ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3]; any=true;
-      ctx.moveTo(x-ex-nx,y-ey-ny); ctx.lineTo(x+ex-nx,y+ey-ny); ctx.lineTo(x+ex+nx,y+ey+ny); ctx.lineTo(x-ex+nx,y-ey+ny); ctx.closePath() }
-    if(any){ctx.globalAlpha=SA[st]; ctx.fillStyle=GCOL[g]; ctx.fill(); if(k<0.08){ctx.strokeStyle=GCOL[g];ctx.lineWidth=pad;ctx.stroke()}} }
+  ctx.imageSmoothingEnabled=k*RS<1; ctx.drawImage(lc,RX0*RS,RY0*RS,RW*RS,RH*RS);
   ctx.globalAlpha=1;
   if($('o-states').checked){ ctx.lineWidth=0.8/k; ctx.strokeStyle='rgba(228,232,226,.32)'; for(const s of ST) ctx.stroke(path(s)) }
   if(selState>=0){ctx.lineWidth=1.8/k;ctx.strokeStyle=C.ink;ctx.stroke(path(ST[selState]))}
@@ -253,10 +260,12 @@ function cellHTML(i,full){ const b=i*NG; let tot=0; for(let g=0;g<NG;g++)tot+=cT
   return `<b>${esc(ST[cS[i]].name)}</b><br><span class="d">${Math.round(tot).toLocaleString()} acres patented here by ${year}</span>`+(full?`<dl>${rows}</dl>`:'') }
 function renderList(){ const L=$('list');
   if(selCell>=0){ $('list-h').textContent='Selected square'; $('clear').hidden=false; let first=9999,ev=[];
+    delete L.dataset.sig;
     for(let e=cOff[selCell];e<cOff[selCell+1];e++) if(eG[e]>0) ev.push([eYr[e],meta.classes[eC[e]],acres[e]]);
     ev.sort((a,b)=>a[0]-b[0]);
     L.innerHTML=`<div class="card">${cellHTML(selCell,true)}<p class="d">Square is about ${Math.round(cArea[selCell]).toLocaleString()} acres. Acres are index acreage and can exceed it.</p>`+(ev.length?`<hr><div class="who">Patents with the flag set, all years</div>`+ev.slice(0,200).map(r=>`<div class="${r[0]>year?'row later':'row'}"><span class="d">${r[0]}</span> ${Math.round(r[2]).toLocaleString()} acres · ${esc(r[1])}</div>`).join(''):'<p>No patent in this square has the flag set.</p>')+`</div>`; return }
   $('clear').hidden=true; $('list-h').textContent='Laws and rulings';
+  const sig=meta.laws.map(d=>d[0]===year?'n':d[0]>year?'l':'p').join(''); if(L.dataset.sig===sig) return; L.dataset.sig=sig;
   L.innerHTML=meta.laws.map((d,i)=>`<button class="row${d[0]===year?' new':''}${d[0]>year?' later':''}" data-i="${i}"><span class="d">${d[0]}</span> <b>${esc(d[1])}</b><br>${esc(d[2])}</button>`).join('');
   if(playing||true){const c=[...L.querySelectorAll('.row:not(.later)')].pop(); if(c&&playing)c.scrollIntoView({block:'nearest'})}
 }
@@ -264,10 +273,7 @@ $('list').addEventListener('click',e=>{const b=e.target.closest('button.row'); i
 $('clear').onclick=()=>{selCell=-1;renderList();need=true};
 $('o-state').onchange=e=>{selState=+e.target.value; fit(selState>=0?ST[selState]:HOME,40); setYear(year)};
 $('o-states').onchange=()=>{need=true};
-function pick(mx,my){ const px=(mx-tx)/k,py=(my-ty)/k; let best=-1,bd=1e9;
-  for(let i=0;i<N;i++){ if(cG[i]<0)continue; const dx=px-cXY[2*i],dy=py-cXY[2*i+1]; if(dx>70||dx<-70||dy>70||dy<-70)continue;
-    const ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3],det=ex*ny-ey*nx; if(!det)continue; const u=(dx*ny-dy*nx)/det,v=(ex*dy-ey*dx)/det;
-    if(u>=-1&&u<=1&&v>=-1&&v<=1){const d=u*u+v*v; if(d<bd){bd=d;best=i}} } return best }
+function pick(mx,my){ const a=Math.floor((mx-tx)/k/RS)-RX0,b=Math.floor((my-ty)/k/RS)-RY0; if(a<0||a>=RW||b<0||b>=RH) return -1; const o=owner[b*RW+a]; return o>=0&&cG[o]>=0?o:-1 }
 const tip=$('tip');
 function showTip(i,mx,my){ if(i<0){tip.hidden=true;return} tip.innerHTML=cellHTML(i,true); tip.hidden=false; const tw=tip.offsetWidth,th=tip.offsetHeight; tip.style.left=Math.max(4,Math.min(W-tw-4,mx+14))+'px'; tip.style.top=Math.max(4,my+th+18>H?my-th-10:my+14)+'px' }
 const pts=new Map(); let moved=0, pd=0;
