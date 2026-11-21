@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c100f">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subsurface Time Series</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IBM+Plex+Sans+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script defer src="/analytics/rs.js"></script>
+<style>
+/* Layout: one-screen instrument, same frame as states.html. Masthead, map canvas with a side panel, time bar along the bottom. */
+:root{
+  --bg:#0c100f; --panel:#141a19; --ink:#e4e8e2; --muted:#94a19a; --rule:#2d3835;
+  --land:#161d1b; --border:#47554f; --accent:#e9a24a; --changed:#4fc4b5;
+  --g0:#4b6a8f; --g1:#e9a24a; --g2:#d4574a; --g3:#b98fd9; --g4:#4fc4b5; --g5:#8e9a44; --g6:#8a8f8c;
+  --display:"IM Fell English","Iowan Old Style",Georgia,serif;
+  --ui:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box} [hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;display:flex;flex-direction:column;overflow:hidden}
+.gut{padding-left:16px;padding-right:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px;padding-block:10px 0;border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:8px;min-width:0}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(20px,2.4vw,27px);margin:0;letter-spacing:.01em;text-wrap:balance}
+h1 em{color:var(--accent)}
+.by{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+nav{display:flex;gap:2px;margin-left:auto;align-self:flex-end}
+nav a{color:var(--muted);text-decoration:none;padding:8px 12px 9px;font-weight:500;white-space:nowrap}
+nav a:hover{color:var(--ink)}
+a{color:var(--accent)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 350px}
+#stage{position:relative;min-height:0;min-width:0}
+#map{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#map.drag{cursor:grabbing}
+#bigyear{position:absolute;right:16px;bottom:8px;font-family:var(--display);font-size:clamp(44px,7vw,84px);line-height:1;color:var(--ink);opacity:.9;pointer-events:none;font-variant-numeric:tabular-nums}
+#status{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none}
+#tip{position:absolute;max-width:300px;background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:8px 10px;font-size:13px;line-height:1.4;pointer-events:none;z-index:3}
+#tip b{font-weight:600;font-size:15px} #tip .d{color:var(--muted)}
+.zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
+aside{border-left:1px solid var(--rule);background:var(--panel);display:flex;flex-direction:column;min-height:0;min-width:0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.stat .n{font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.legend{display:flex;flex-direction:column;gap:5px;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.legend button{display:flex;align-items:flex-start;gap:8px;text-align:left;background:none;border:0;padding:1px 0;color:var(--ink);font-size:13px;line-height:1.3}.legend button.off{opacity:.35}.legend .sw{flex:none;margin-top:2px}.legend small{display:block;color:var(--muted);font-size:11.5px}
+.sw{width:14px;height:14px;border:1px solid var(--border);display:inline-block}
+.sw.gone{background:repeating-linear-gradient(45deg,var(--land) 0 3px,var(--muted) 3px 4px)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--rule);font-size:13px}
+.opts label{display:inline-flex;align-items:center;gap:6px}
+h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600;padding:12px 16px 6px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2 button{font-size:12px;padding:2px 8px;text-transform:none;letter-spacing:0}
+#list{flex:1;min-height:0;overflow-y:auto;padding:0 8px 12px}
+.row{display:block;width:100%;text-align:left;background:none;border:0;border-left:3px solid transparent;border-radius:0;padding:7px 8px;font-size:13px;line-height:1.4;color:var(--ink)}
+.row:hover{background:var(--bg)}
+.row.new{border-left-color:var(--accent)} .row.later{opacity:.45}
+.row b{font-weight:600} .row .d{color:var(--muted);font-family:var(--mono);font-size:12px}
+.card{padding:4px 8px 10px;font-size:13px;line-height:1.5}
+.card h3{font-family:var(--display);font-weight:400;font-size:20px;margin:6px 0 2px}
+.card .who{color:var(--muted);margin-bottom:6px}
+.card dl{display:grid;grid-template-columns:92px minmax(0,1fr);gap:3px 10px;margin:6px 0}
+.card dt{color:var(--muted)} .card dd{margin:0}
+.card p{margin:8px 0 0}
+.card .gave{border-left:3px solid var(--muted);padding-left:8px;color:var(--muted)}
+.card hr{border:0;border-top:1px solid var(--rule);margin:12px 0 8px}
+.dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border);margin-right:6px;vertical-align:baseline}
+.empty{color:var(--muted);padding:8px;font-size:13px;line-height:1.5}
+details{border-top:1px solid var(--rule);padding:10px 16px;font-size:13px;line-height:1.5;color:var(--muted);max-height:45%;overflow-y:auto}
+details summary{cursor:pointer;color:var(--ink)} details p{margin:8px 0 0}
+footer{border-top:1px solid var(--rule);padding-block:8px 12px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:center}
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;grid-row:1/3}
+.track{min-width:0}
+#spark{display:block;width:100%;height:46px;cursor:pointer}
+#year{display:block;width:100%;margin:0;padding:0;border:0;background:none;accent-color:var(--accent)}
+.ticks{position:relative;height:14px;margin:0 8px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.ticks span{position:absolute;top:0;transform:translateX(-50%)}
+button,select,input[type=number]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:6px 10px}
+button,select{cursor:pointer} button:hover{border-color:var(--muted)}
+#play{min-width:76px;border-color:var(--accent);color:var(--accent);font-weight:600}
+#yearnum{width:78px;font-family:var(--mono)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:820px){
+  body{overflow:auto;height:auto} html{height:auto}
+  main{display:contents} #stage{height:62vh;order:1} footer{order:2;grid-template-columns:1fr} .ctl{grid-row:auto}
+  aside{order:3;border-left:0;border-top:1px solid var(--rule)} #list{max-height:60vh} details{max-height:none}
+}
+</style>
+</head>
+<body>
+<header class="gut">
+  <div class="brand">
+    <h1>Who kept the minerals <em>through time</em></h1>
+    <span class="by">United States · federal land patents and the subsurface · 1785–2025</span>
+  </div>
+  <nav aria-label="Site"><a href="states.html">State boundaries</a><a href="acquisitions.html">Acquisitions</a><a href="index.html">All GLO patents →</a></nav>
+</header>
+<main>
+  <div id="stage">
+    <canvas id="map" role="img" aria-label="Map of federal land patents by whether the minerals were kept back, as of the selected year"></canvas>
+    <div id="bigyear" aria-hidden="true"></div>
+    <div id="status">Loading patent cells…</div>
+    <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zhome" aria-label="Show the whole country" title="Whole country">⌂</button></div>
+    <div id="tip" hidden></div>
+  </div>
+  <aside>
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-pat">–</div><div class="l">Million acres patented</div></div>
+      <div class="stat"><div class="n" id="s-res">–</div><div class="l">Million acres, minerals kept back</div></div>
+      <div class="stat"><div class="n" id="s-yr">–</div><div class="l">Of this year's acres, minerals kept</div></div>
+      <div class="stat"><div class="n" id="s-back">–</div><div class="l">Million acres bought back, seller kept minerals</div></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="opts">
+      <label>Zoom to <select id="o-state"><option value="-1">All states</option></select></label>
+      <label><input type="checkbox" id="o-states" checked> State lines</label>
+    </div>
+    <h2><span id="list-h">Laws and rulings</span><button id="clear" hidden>Back to the list</button></h2>
+    <div id="list"></div>
+    <details>
+      <summary>About this map</summary>
+      <p>Until 1909 a federal patent passed the land whole, surface and minerals together; land known to hold minerals was kept out of farm entry and sold under the mining and coal laws. From 1909 Congress began to keep what lay underneath, and from 1920 it leased those minerals. The result is split estate: private or state surface over minerals the United States still owns.</p>
+      <p>Each square is a tenth of a degree. It is coloured for full title unless at least 5% of the acres patented in it by the selected year carry a mineral reservation; then it takes the colour of the largest kind of reservation, in three strengths (5–20%, 20–50%, over 50%). Click a legend entry to switch a kind off.</p>
+      <p>Source: the Bureau of Land Management's General Land Office records for the 30 public-land states, 5.94 million patents. The index has a yes-or-no field, "Subsurface Reserved". It does not say which minerals or under which law, so the kinds here are read from each patent's authority and date. "Coal or named minerals" is a presumption: the patent itself says whether coal, or oil, gas, phosphate and potash, were kept. Flags on patents dated before 1909 are shown as not explained.</p>
+      <p>Not shown: minerals a private seller kept in a later deed, which sit in county records; the 13 original states, Texas and the other state-land states; mineral rights sold back to surface owners since 1976; and about 10,500 patents with no usable date. Acres are the index acreage, placed at the patent's mapped locations, so a large grant can exceed the square it sits in. The law notes are from general knowledge and have not been checked against the statute texts.</p>
+      <p>Alaska is an inset at about a third of its true size.</p>
+    </details>
+  </aside>
+</main>
+<footer class="gut">
+  <div class="ctl">
+    <button id="play" aria-pressed="false">▶ Play</button>
+    <label for="yearnum" class="by">Year</label>
+    <input type="number" id="yearnum" min="1785" max="2025" step="1">
+    <label for="speed" class="by">Speed</label>
+    <select id="speed"><option value="2">2 yr/s</option><option value="5" selected>5 yr/s</option><option value="12">12 yr/s</option></select>
+    <label><input type="checkbox" id="loop" checked> Repeat</label>
+  </div>
+  <div class="track">
+    <canvas id="spark" aria-hidden="true"></canvas>
+    <input type="range" id="year" min="1785" max="2025" step="1" aria-label="Year">
+    <div class="ticks" id="ticks"></div>
+  </div>
+</footer>
+<script>
+(async function(){
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={land:css('--land'),border:css('--border'),muted:css('--muted'),ink:css('--ink'),accent:css('--accent'),bg:css('--bg')};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const M=a=>(a/1e6).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
+const b64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0)).buffer;
+let meta, buf;
+try{
+  if(window.__SUB){ meta=window.__SUB.meta; buf=b64(window.__SUB.b64) }
+  else { [meta,buf]=await Promise.all([fetch('sub_ts.json').then(r=>{if(!r.ok)throw 0;return r.json()}),
+    fetch('sub_ts.bin').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).catch(()=>fetch('sub_ts_b64.txt').then(r=>{if(!r.ok)throw 0;return r.text()}).then(b64))]) }
+}catch(e){ $('status').textContent='The data files did not load. Check that sub_ts.json and sub_ts.bin sit beside this page.'; return; }
+$('status').hidden=true;
+const Y0=meta.y0, Y1=meta.y1, NY=Y1-Y0+1, G=meta.groups, NG=G.length, S=meta.secs;
+const sec=(n,T)=>new T(buf,S[n][0],S[n][1]);
+const xy=sec('stXY',Uint16Array), cXY=sec('cellXY',Uint16Array), cV=sec('cellVec',Int8Array), cS=sec('cellState',Uint8Array), cOff=sec('cellOff',Uint32Array), eA=sec('evAcres',Uint16Array), eY=sec('evYear',Uint8Array), eC=sec('evCls',Uint8Array);
+const N=cS.length, E=eY.length, c2g=new Uint8Array(meta.classes.length); G.forEach((g,i)=>g.cls.forEach(c=>c2g[c]=i));
+const GCOL=G.map((_,i)=>css('--g'+i));
+const acres=new Float32Array(E), eG=new Uint8Array(E), eYr=new Uint16Array(E);
+for(let i=0;i<E;i++){acres[i]=Math.exp(eA[i]/65535*meta.logmax)-1; eG[i]=c2g[eC[i]]; eYr[i]=Math.max(Y0,eY[i]+1780)}
+// cell land acres from its half-vectors (frame unit 100 m; Alaska drawn at 0.35)
+const AK=meta.states.findIndex(s=>s[0]==='AK'), cArea=new Float32Array(N);
+for(let i=0;i<N;i++){const a=Math.abs(cV[4*i]*cV[4*i+3]-cV[4*i+1]*cV[4*i+2])*4*2.471; cArea[i]=a/(cS[i]===AK?0.1225:1)}
+// yearly series per state and group
+const NS=meta.states.length, ser=new Float64Array((NS+1)*NG*NY);
+for(let i=0;i<N;i++){const s=cS[i]; for(let e=cOff[i];e<cOff[i+1];e++){const o=eG[e]*NY+eYr[e]-Y0; ser[s*NG*NY+o]+=acres[e]; ser[NS*NG*NY+o]+=acres[e]}}
+const cum=new Float64Array(ser.length); for(let b=0;b<(NS+1)*NG;b++){let t=0;for(let y=0;y<NY;y++){t+=ser[b*NY+y];cum[b*NY+y]=t}}
+const RES=[1,2,3,4];
+const ringN=meta.rings, ringOff=new Uint32Array(ringN.length+1); for(let i=0;i<ringN.length;i++) ringOff[i+1]=ringOff[i]+ringN[i];
+function mk(r0,rn){const o={r0,rn,path:null,x0:1e9,y0:1e9,x1:-1e9,y1:-1e9};
+  for(let v=ringOff[r0]*2,e=ringOff[r0+rn]*2;v<e;v+=2){const x=xy[v],y=xy[v+1];if(x<o.x0)o.x0=x;if(x>o.x1)o.x1=x;if(y<o.y0)o.y0=y;if(y>o.y1)o.y1=y} return o}
+function path(o){ if(o.path) return o.path; const p=new Path2D();
+  for(let r=o.r0;r<o.r0+o.rn;r++){let v=ringOff[r]*2;const e=ringOff[r+1]*2;p.moveTo(xy[v],xy[v+1]);for(v+=2;v<e;v+=2)p.lineTo(xy[v],xy[v+1]);p.closePath()} return o.path=p }
+const ST=meta.states.map((s,i)=>Object.assign(mk(s[3],s[4]),{abbr:s[0],lx:s[1],ly:s[2],name:s[5],i}));
+const has=new Uint8Array(NS); for(let i=0;i<N;i++)has[cS[i]]=1;
+const HOME={x0:1e9,y0:1e9,x1:-1e9,y1:-1e9}; for(const b of ST){ if(b.abbr==='PR'||b.abbr==='VI')continue; HOME.x0=Math.min(HOME.x0,b.x0);HOME.y0=Math.min(HOME.y0,b.y0);HOME.x1=Math.max(HOME.x1,b.x1);HOME.y1=Math.max(HOME.y1,b.y1)}
+$('o-state').innerHTML+=ST.filter(s=>has[s.i]).sort((a,b)=>a.name<b.name?-1:1).map(s=>`<option value="${s.i}">${esc(s.name)}</option>`).join('');
+$('ticks').innerHTML=[1800,1825,1850,1875,1900,1925,1950,1975,2000].map(y=>`<span style="left:${(y-Y0)/(Y1-Y0)*100}%">${y}</span>`).join('');
+const on=G.map(()=>true);
+$('legend').innerHTML=G.map((g,i)=>`<button data-g="${i}" aria-pressed="true"><i class="sw" style="background:${GCOL[i]}"></i><span>${esc(g.name)}<small>${esc(g.note)}</small></span></button>`).join('');
+$('legend').addEventListener('click',e=>{const b=e.target.closest('button'); if(!b)return; const i=+b.dataset.g; on[i]=!on[i]; b.classList.toggle('off',!on[i]); b.setAttribute('aria-pressed',on[i]); recolor(); drawSpark()});
+
+const cv=$('map'), ctx=cv.getContext('2d'), sp=$('spark'), sx=sp.getContext('2d');
+let year=1925, playing=false, k=1, tx=0, ty=0, W=0, H=0, dpr=1, need=true, selState=-1, selCell=-1, selLaw=-1;
+const cG=new Int8Array(N), cStr=new Uint8Array(N), cT=new Float32Array(N*NG);
+function fit(b,pad=24){k=Math.min((W-2*pad)/(b.x1-b.x0),(H-2*pad)/(b.y1-b.y0));tx=(W-(b.x1-b.x0)*k)/2-b.x0*k;ty=(H-(b.y1-b.y0)*k)/2-b.y0*k;need=true}
+function resize(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();const first=!W;const cx=(W/2-tx)/k,cy=(H/2-ty)/k;W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;
+  if(first)fit(HOME);else{tx=W/2-cx*k;ty=H/2-cy*k}
+  const s=sp.getBoundingClientRect();sp.width=s.width*dpr;sp.height=s.height*dpr;need=true;drawSpark()}
+new ResizeObserver(resize).observe($('stage'));
+function recolor(){
+  cT.fill(0);
+  for(let i=0;i<N;i++){ const b=i*NG; for(let e=cOff[i];e<cOff[i+1];e++) if(eYr[e]<=year) cT[b+eG[e]]+=acres[e];
+    let tot=0,res=0,bg=-1,bv=0; for(let g=0;g<NG;g++){ if(!on[g])continue; const v=cT[b+g]; tot+=v; if(g){res+=v; if(v>bv){bv=v;bg=g}} }
+    if(tot<=0){cG[i]=-1;continue}
+    const r=res/tot;
+    if(r>=0.05&&bg>0){cG[i]=bg;cStr[i]=r>0.5?2:r>0.2?1:0}
+    else if(on[0]&&cT[b]>0){cG[i]=0;const f=cT[b]/cArea[i];cStr[i]=f>0.5?2:f>0.2?1:0}
+    else cG[i]=-1 }
+  need=true }
+const SA=[0.4,0.68,0.95];
+function draw(){
+  need=false; ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=C.bg; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.setTransform(dpr*k,0,0,dpr*k,dpr*tx,dpr*ty);
+  ctx.fillStyle=C.land; for(const s of ST) ctx.fill(path(s),'evenodd');
+  const vx0=-tx/k-80,vx1=(W-tx)/k+80,vy0=-ty/k-80,vy1=(H-ty)/k+80, pad=0.6/k;
+  for(let g=0;g<NG;g++) for(let st=0;st<3;st++){ ctx.beginPath(); let any=false;
+    for(let i=0;i<N;i++){ if(cG[i]!==g||cStr[i]!==st) continue; const x=cXY[2*i],y=cXY[2*i+1]; if(x<vx0||x>vx1||y<vy0||y>vy1) continue;
+      const ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3]; any=true;
+      ctx.moveTo(x-ex-nx,y-ey-ny); ctx.lineTo(x+ex-nx,y+ey-ny); ctx.lineTo(x+ex+nx,y+ey+ny); ctx.lineTo(x-ex+nx,y-ey+ny); ctx.closePath() }
+    if(any){ctx.globalAlpha=SA[st]; ctx.fillStyle=GCOL[g]; ctx.fill(); if(k<0.08){ctx.strokeStyle=GCOL[g];ctx.lineWidth=pad;ctx.stroke()}} }
+  ctx.globalAlpha=1;
+  if($('o-states').checked){ ctx.lineWidth=0.8/k; ctx.strokeStyle='rgba(228,232,226,.32)'; for(const s of ST) ctx.stroke(path(s)) }
+  if(selState>=0){ctx.lineWidth=1.8/k;ctx.strokeStyle=C.ink;ctx.stroke(path(ST[selState]))}
+  if(selCell>=0){const i=selCell,x=cXY[2*i],y=cXY[2*i+1],ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3];ctx.beginPath();ctx.moveTo(x-ex-nx,y-ey-ny);ctx.lineTo(x+ex-nx,y+ey-ny);ctx.lineTo(x+ex+nx,y+ey+ny);ctx.lineTo(x-ex+nx,y-ey+ny);ctx.closePath();ctx.lineWidth=2/k;ctx.strokeStyle='#fff';ctx.stroke()}
+  if($('o-states').checked&&k>0.012){ ctx.setTransform(dpr,0,0,dpr,0,0); ctx.font='500 10px '+css('--ui'); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillStyle=C.ink; ctx.globalAlpha=0.5;
+    for(const s of ST){const x=s.lx*k+tx,y=s.ly*k+ty; if(x>0&&x<W&&y>0&&y<H) ctx.fillText(s.abbr,x,y)} ctx.globalAlpha=1 }
+}
+const sIdx=()=>selState>=0?selState:NS;
+const cumAt=(g,y)=>cum[(sIdx()*NG+g)*NY+y-Y0];
+function drawSpark(){
+  const w=sp.width,h=sp.height,pad=8*dpr; if(!w) return; sx.clearRect(0,0,w,h);
+  const gs=[1,2,3,4,5,6].filter(g=>on[g]); let max=0; for(const g of gs) max+=cumAt(g,Y1); max=max||1;
+  const X=y=>pad+(y-Y0)/(Y1-Y0)*(w-2*pad), Yc=c=>h-2-(c/max)*(h-16*dpr);
+  const base=new Float64Array(NY);
+  for(const g of gs){ sx.beginPath(); sx.moveTo(X(Y0),Yc(base[0])); const top=new Float64Array(NY);
+    for(let y=0;y<NY;y++){top[y]=base[y]+cumAt(g,Y0+y); sx.lineTo(X(Y0+y),Yc(top[y]))}
+    for(let y=NY-1;y>=0;y--) sx.lineTo(X(Y0+y),Yc(base[y])); sx.closePath(); sx.fillStyle=GCOL[g]; sx.globalAlpha=0.85; sx.fill(); sx.globalAlpha=1; base.set(top) }
+  const x=X(year),c=base[year-Y0]; sx.strokeStyle=C.ink; sx.lineWidth=dpr; sx.beginPath(); sx.moveTo(x,h); sx.lineTo(x,Yc(c)); sx.stroke();
+  sx.font=(11*dpr)+'px '+css('--mono'); sx.fillStyle=C.muted; sx.textAlign='left'; sx.textBaseline='top';
+  sx.fillText('Million acres patented with the flag set, by kind'+(selState>=0?' · '+ST[selState].name:''),pad,2);
+  sx.fillStyle=C.ink; sx.textAlign=x>w*0.8?'right':'left'; sx.textBaseline='bottom'; sx.fillText(M(c),x+(x>w*0.8?-7:7)*dpr,Math.max(Yc(c)+4*dpr,26*dpr));
+}
+function setYear(y){
+  year=Math.max(Y0,Math.min(Y1,Math.round(y)));
+  $('year').value=year; if(document.activeElement!==$('yearnum'))$('yearnum').value=year; $('bigyear').textContent=year;
+  let pat=0,res=0; for(let g=0;g<NG;g++){ if(g!==5) pat+=cumAt(g,year) } for(const g of RES) res+=cumAt(g,year);
+  const b=sIdx()*NG; let yp=0,yr=0; for(let g=0;g<NG;g++){ if(g===5)continue; const v=ser[(b+g)*NY+year-Y0]; yp+=v; if(RES.includes(g))yr+=v }
+  $('s-pat').textContent=M(pat); $('s-res').textContent=M(res); $('s-yr').textContent=yp>0?Math.round(yr/yp*100)+'%':'–'; $('s-back').textContent=M(cumAt(5,year));
+  recolor(); renderList(); drawSpark();
+}
+function cellHTML(i,full){ const b=i*NG; let tot=0; for(let g=0;g<NG;g++)tot+=cT[b+g];
+  const rows=G.map((g,j)=>cT[b+j]>0?`<dt><i class="dot" style="background:${GCOL[j]}"></i>${Math.round(cT[b+j]).toLocaleString()}</dt><dd>${esc(g.name)}</dd>`:'').join('');
+  return `<b>${esc(ST[cS[i]].name)}</b><br><span class="d">${Math.round(tot).toLocaleString()} acres patented here by ${year}</span>`+(full?`<dl>${rows}</dl>`:'') }
+function renderList(){ const L=$('list');
+  if(selCell>=0){ $('list-h').textContent='Selected square'; $('clear').hidden=false; let first=9999,ev=[];
+    for(let e=cOff[selCell];e<cOff[selCell+1];e++) if(eG[e]>0) ev.push([eYr[e],meta.classes[eC[e]],acres[e]]);
+    ev.sort((a,b)=>a[0]-b[0]);
+    L.innerHTML=`<div class="card">${cellHTML(selCell,true)}<p class="d">Square is about ${Math.round(cArea[selCell]).toLocaleString()} acres. Acres are index acreage and can exceed it.</p>`+(ev.length?`<hr><div class="who">Patents with the flag set, all years</div>`+ev.slice(0,200).map(r=>`<div class="${r[0]>year?'row later':'row'}"><span class="d">${r[0]}</span> ${Math.round(r[2]).toLocaleString()} acres · ${esc(r[1])}</div>`).join(''):'<p>No patent in this square has the flag set.</p>')+`</div>`; return }
+  $('clear').hidden=true; $('list-h').textContent='Laws and rulings';
+  L.innerHTML=meta.laws.map((d,i)=>`<button class="row${d[0]===year?' new':''}${d[0]>year?' later':''}" data-i="${i}"><span class="d">${d[0]}</span> <b>${esc(d[1])}</b><br>${esc(d[2])}</button>`).join('');
+  if(playing||true){const c=[...L.querySelectorAll('.row:not(.later)')].pop(); if(c&&playing)c.scrollIntoView({block:'nearest'})}
+}
+$('list').addEventListener('click',e=>{const b=e.target.closest('button.row'); if(!b) return; stop(); setYear(meta.laws[+b.dataset.i][0])});
+$('clear').onclick=()=>{selCell=-1;renderList();need=true};
+$('o-state').onchange=e=>{selState=+e.target.value; fit(selState>=0?ST[selState]:HOME,40); setYear(year)};
+$('o-states').onchange=()=>{need=true};
+function pick(mx,my){ const px=(mx-tx)/k,py=(my-ty)/k; let best=-1,bd=1e9;
+  for(let i=0;i<N;i++){ if(cG[i]<0)continue; const dx=px-cXY[2*i],dy=py-cXY[2*i+1]; if(dx>70||dx<-70||dy>70||dy<-70)continue;
+    const ex=cV[4*i],ey=cV[4*i+1],nx=cV[4*i+2],ny=cV[4*i+3],det=ex*ny-ey*nx; if(!det)continue; const u=(dx*ny-dy*nx)/det,v=(ex*dy-ey*dx)/det;
+    if(u>=-1&&u<=1&&v>=-1&&v<=1){const d=u*u+v*v; if(d<bd){bd=d;best=i}} } return best }
+const tip=$('tip');
+function showTip(i,mx,my){ if(i<0){tip.hidden=true;return} tip.innerHTML=cellHTML(i,true); tip.hidden=false; const tw=tip.offsetWidth,th=tip.offsetHeight; tip.style.left=Math.max(4,Math.min(W-tw-4,mx+14))+'px'; tip.style.top=Math.max(4,my+th+18>H?my-th-10:my+14)+'px' }
+const pts=new Map(); let moved=0, pd=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.offsetX,e.offsetY]);moved=0;cv.classList.add('drag');if(pts.size===2){const a=[...pts.values()];pd=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])}});
+cv.addEventListener('pointermove',e=>{ const p=pts.get(e.pointerId);
+  if(!p){ if(e.pointerType==='mouse'&&!playing) showTip(pick(e.offsetX,e.offsetY),e.offsetX,e.offsetY); return }
+  const dx=e.offsetX-p[0],dy=e.offsetY-p[1]; moved+=Math.abs(dx)+Math.abs(dy); pts.set(e.pointerId,[e.offsetX,e.offsetY]);
+  if(pts.size===1){tx+=dx;ty+=dy}else if(pts.size===2){const a=[...pts.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);zoomAt((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2,d/(pd||d));pd=d}
+  tip.hidden=true; need=true });
+function up(e){ if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId); cv.classList.remove('drag');
+  if(moved<5&&e.type==='pointerup'){selCell=pick(e.offsetX,e.offsetY); renderList(); need=true} }
+cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerleave',()=>{tip.hidden=true});
+function zoomAt(mx,my,f){const nk=Math.max(0.005,Math.min(3,k*f));tx=mx-(mx-tx)*nk/k;ty=my-(my-ty)*nk/k;k=nk;need=true}
+cv.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.offsetX,e.offsetY,Math.exp(-e.deltaY*0.0015))},{passive:false});
+$('zin').onclick=()=>zoomAt(W/2,H/2,1.6); $('zout').onclick=()=>zoomAt(W/2,H/2,1/1.6); $('zhome').onclick=()=>{$('o-state').value=-1;selState=-1;fit(HOME);setYear(year)};
+let acc=0,last=0;
+function stop(){playing=false;$('play').textContent='▶ Play';$('play').setAttribute('aria-pressed','false')}
+function start(){ if(year>=Y1)setYear(Y0); playing=true;acc=0;tip.hidden=true;$('play').textContent='❚❚ Pause';$('play').setAttribute('aria-pressed','true')}
+$('play').onclick=()=>playing?stop():start();
+$('year').oninput=e=>{stop();setYear(+e.target.value)};
+$('yearnum').onchange=e=>{stop();setYear(+e.target.value||year)};
+sp.addEventListener('click',e=>{const r=sp.getBoundingClientRect();stop();setYear(Y0+(e.clientX-r.left-8)/(r.width-16)*(Y1-Y0))});
+document.addEventListener('keydown',e=>{ if(/INPUT|SELECT|BUTTON/.test(e.target.tagName)) return;
+  if(e.key===' '){e.preventDefault();playing?stop():start()} else if(e.key==='ArrowRight'){stop();setYear(year+1)} else if(e.key==='ArrowLeft'){stop();setYear(year-1)} });
+function frame(t){
+  if(playing){ acc+=Math.min(0.25,(t-last)/1000)*(+$('speed').value); if(acc>=1){const s=Math.floor(acc);acc-=s; if(year+s>Y1){ if($('loop').checked)setYear(Y0); else{setYear(Y1);stop()} } else setYear(year+s)} }
+  last=t; if(need)draw(); requestAnimationFrame(frame);
+}
+window.__sub={setYear,cumAt,get year(){return year},ST,N,sel:i=>{$('o-state').value=i;$('o-state').onchange({target:$('o-state')})}};
+resize(); setYear(year); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
