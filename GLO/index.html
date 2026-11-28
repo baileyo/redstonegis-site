@@ -729,12 +729,12 @@ async function initMap(){
   const canvas = $('map'), ctx = canvas.getContext('2d'), hist = $('hist'), hctx = hist.getContext('2d');
   let buf;
   try {
-    const r = await fetch('glo_grid_v50.txt'); if (!r.ok) throw 0;
+    const r = await fetch('glo_grid_v51.txt'); if (!r.ok) throw 0;
     const bin = atob((await r.text()).trim()); const u8 = new Uint8Array(bin.length);
     for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); buf = u8.buffer;
-  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v50.txt) did not load. Check it sits next to this page, then reload.'; return; }
+  } catch(e){ $('loading').textContent = 'The map data (glo_grid_v51.txt) did not load. Check it sits next to this page, then reload.'; return; }
   const dv = new DataView(buf);
-  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v50.txt that came with this page.'; return; }  // "GLO3"
+  if (dv.getUint32(0,true)!==0x334F4C47){ $('loading').textContent='The map data file is out of date. Upload the glo_grid_v51.txt that came with this page.'; return; }  // "GLO3"
   // entries: one per (state, 0.1° cell); a cell on a state line has one entry per state
   const E = dv.getUint32(4,true);
   const eLa=new Uint16Array(E), eLo=new Uint16Array(E), eSt=new Uint8Array(E), eStart=new Uint32Array(E+1);
@@ -1349,7 +1349,7 @@ function drawTimeline(){
 // =====================================================================
 // SURNAME ORIGIN
 // =====================================================================
-// classes in glo_origin_v15.txt, in file order (k = index)
+// classes in glo_origin_v16.txt, in file order (k = index)
 const ORIG = ["English/Welsh","Irish","Scottish","German","Dutch","Scandinavian","French","Spanish/Portuguese","Italian","Eastern European","Other European","Asian","Middle Eastern/African","Uncertain","Native allottee","Spanish/Mexican/French-era claim","Organization/government"];
 const NO = ORIG.length, O_UNC = 13, O_NAT = 14, O_CLM = 15, O_ORG = 16;
 const ORI = { ready:false };
@@ -1365,7 +1365,7 @@ function oShareText(k){
        : "whose patentee's surname is "+ORIG[k];
 }
 
-// decode a GLO3 grid file (same layout as glo_grid_v50.txt)
+// decode a GLO3 grid file (same layout as glo_grid_v51.txt)
 function parseGLO2(txt, NK){
   const bin=atob(txt.trim()), u8=new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
   const dv=new DataView(u8.buffer); if (dv.getUint32(0,true)!==0x334F4C47) throw new Error('format');
@@ -1389,8 +1389,8 @@ function parseGLO2(txt, NK){
 async function initOrigin(){
   const canvas=$('omap'), ctx=canvas.getContext('2d'), hist=$('ohist'), hctx=hist.getContext('2d');
   let G;
-  try { const r=await fetch('glo_origin_v15.txt'); if(!r.ok) throw 0; G=parseGLO2(await r.text(), NO); }
-  catch(e){ $('oloading').textContent='The surname data (glo_origin_v15.txt) did not load. Check it sits next to this page, then reload.'; return; }
+  try { const r=await fetch('glo_origin_v16.txt'); if(!r.ok) throw 0; G=parseGLO2(await r.text(), NO); }
+  catch(e){ $('oloading').textContent='The surname data (glo_origin_v16.txt) did not load. Check it sits next to this page, then reload.'; return; }
   const {N,cLat,cLon,tK,tC,tLoc,tS,yStart,order,annual,kTot,cellKey,NY,NS}=G;
   const OBR=[.02,.05,.1,.2,.35,.5,.75];                  // share bins (lower edges after 0)
   const on=()=> ost.color==='share' ? (ost.omask|1<<ost.origin) : ost.omask;
